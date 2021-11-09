@@ -6,7 +6,7 @@ begin
 ;---Open file; substitute your own WRF output file here
 
     ;files = systemfunc("ls ./sim8/wrfout_d02_*")
-    a = addfile("/user_home/jyyin/dta/sim9/wrfout_d02_2000-09-02_12:00:00.nc","r")
+    a = addfile("/user_home/jyyin/dta/sim9/wrfout_d02_2000-09-04_12:00:00.nc","r")
 
     
     ;f = addfiles(files, "r")
@@ -39,7 +39,7 @@ begin
     ;t_adv_h2 = a->T_TEND_ADV_H2
     ;t_adv_h = a->T_TEND_ADV_H
     ;t_adv_v = a->T_TEND_ADV_V
-    td = a->h_diabatic
+    td = a->H_DIABATIC
 
     printVarSummary(td)
     ;printVarSummary(t_adv_v2)
@@ -112,7 +112,7 @@ begin
     ;printMinMax(p, 0)
     ;printMinMax(pp, 0)
 
-    wks = gsn_open_wks("pdf","sim8/test-adv-9")
+    wks = gsn_open_wks("pdf","sim9/test-adv-9")
     gsn_define_colormap(wks, "MPL_coolwarm")
 
     res = True

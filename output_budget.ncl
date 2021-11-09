@@ -10,7 +10,7 @@ begin
   ;a = addfile("/user_home/jyyin/dta/wrfout_d02_2000-04-04_00:00:00","r")
   ;a1 = addfile("/user_home/jyyin/dta/wrfout_d01_2000-04-04_00:00:00","r")
 
-  a = addfile("/user_home/jyyin/dta/sim9/wrfout_d02_2000-09-02_12:00:00","r")
+  a = addfile("/user_home/jyyin/dta/sim9/wrfout_d02_2000-09-02_00:00:00","r")
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
  
   FirstTime = True
@@ -39,7 +39,7 @@ begin
     latout@units = "km"
     lonout@units=  "km"
   
-  imin = 120
+  imin = 118
   jmin = 120
 
   imin0 = 80
@@ -102,8 +102,9 @@ end do
  ta_diff  = new((/ntimes,nz,nr/),"float")
  ta_heat  = new((/ntimes,nz,nr/),"float")
  ta_pbl   = new((/ntimes,nz,nr/),"float")
- 
- tb_heat  = new((/68,240,240/),"float")
+ ta_cu   = new((/ntimes,nz,nr/),"float")
+ ta_ra   = new((/ntimes,nz,nr/),"float")
+
 
 
   do it = 0 , ntimes-1 , 1; TIME LOOP
@@ -120,15 +121,16 @@ end do
     tb_cu    = wrf_user_getvar(a, "RTHCUTEN", it)
     tb_ra    = wrf_user_getvar(a, "RTHRATEN", it)
     tb_pbl   = wrf_user_getvar(a, "RTHBLTEN", it)
+    tb_heat  = wrf_user_getvar(a, "H_DIABATIC", it)
 
     mut = wrf_user_getvar(a, "MUT", it)
-    
-    tb_heat = tb_cu + tb_ra
+    ;mub = wrf_user_getvar(a, "MUB", it)
+    ;mut = mu+mub
 
 ;-------------------------------------------------------------------------------------
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; vertical interp & decoupled mass;;;;;;;;;;;;;;;;;;;;;;;
 
-    hei = fspan(500, 26500, 68)
+    hei = fspan(500, 27500, 68)
 
     t_adv_h = tb_adv_h
     t_adv_v = tb_adv_v
@@ -136,17 +138,21 @@ end do
 
     t_diff  = tb_diff
     t_heat  = tb_heat
+    t_cu    = tb_cu
+    t_ra    = tb_ra
     t_pbl   = tb_pbl
 
     do iz = 0, nz-1
 
       t_adv_v(iz,:,:) = wrf_interp_3d_z(tb_adv_v, z, hei(iz))/mut(:,:)
       t_adv_h(iz,:,:) = wrf_interp_3d_z(tb_adv_h, z, hei(iz))/mut(:,:)
-      t_adv(iz,:,:)  = wrf_interp_3d_z(tb_adv, z, hei(iz))/mut(:,:)
+      t_adv(iz,:,:)  = wrf_interp_3d_z(tb_adv, z, hei(iz))
 
       t_diff(iz,:,:)  = wrf_interp_3d_z(tb_diff, z, hei(iz))/mut(:,:)
       t_heat(iz,:,:)  = wrf_interp_3d_z(tb_heat, z, hei(iz))
       t_pbl(iz,:,:)   = wrf_interp_3d_z(tb_pbl, z, hei(iz))
+      t_cu(iz,:,:)    = wrf_interp_3d_z(tb_cu, z, hei(iz))
+      t_ra(iz,:,:)    = wrf_interp_3d_z(tb_ra, z, hei(iz))
 
     end do
 
@@ -160,6 +166,8 @@ end do
  tp_diff  = new((/nz,nr*360/),"float")
  tp_heat  = new((/nz,nr*360/),"float")
  tp_pbl   = new((/nz,nr*360/),"float")
+ tp_cu   = new((/nz,nr*360/),"float")
+ tp_ra   = new((/nz,nr*360/),"float")
 
  tp_adv_v = linint2_points(lat,lon,t_adv_v,False,lat_p,lon_p,1)
  tp_adv_h = linint2_points(lat,lon,t_adv_h,False,lat_p,lon_p,1)
@@ -169,6 +177,8 @@ end do
  tp_diff  = linint2_points(lat,lon,t_diff,False,lat_p,lon_p,1)
  tp_heat  = linint2_points(lat,lon,t_heat,False,lat_p,lon_p,1)
  tp_pbl   = linint2_points(lat,lon,t_pbl,False,lat_p,lon_p,1)
+ tp_cu    = linint2_points(lat,lon,t_cu,False,lat_p,lon_p,1)
+ tp_ra    = linint2_points(lat,lon,t_ra,False,lat_p,lon_p,1)
  
 do lev = 0,nz-1
   do i = 0,nr-1
@@ -180,6 +190,8 @@ do lev = 0,nz-1
       sum_diff = 0.0
       sum_heat = 0.0
       sum_pbl = 0.0
+      sum_cu = 0.0
+      sum_ra = 0.0
 
       do j = 0,359,1
 
@@ -190,8 +202,9 @@ do lev = 0,nz-1
          sum_diff  = sum_diff  + tp_diff(lev,i*360+j)
          sum_heat  = sum_heat  + tp_heat(lev,i*360+j)
          sum_pbl   = sum_pbl   + tp_pbl(lev,i*360+j)
-         
-
+         sum_cu    = sum_cu    + tp_cu(lev,i*360+j)
+         sum_ra    = sum_ra    + tp_ra(lev,i*360+j)
+        
       end do
 
       ta_adv_v(it,lev,i) = sum_adv_v/360.0
@@ -201,6 +214,8 @@ do lev = 0,nz-1
       ta_diff(it,lev,i)  = sum_diff/360.0
       ta_heat(it,lev,i)  = sum_heat/360.0
       ta_pbl(it,lev,i)   = sum_pbl/360.0
+      ta_cu(it,lev,i)    = sum_cu/360.0
+      ta_ra(it,lev,i)    = sum_ra/360.0
 
     end do
 end do
@@ -211,14 +226,14 @@ end do
  ta_adv_v!0 = "time"
  ta_adv_v!1 = "height"
  ta_adv_v!2 = "Radial"
- ta_adv_v@long_name = "temperature vertical advection"
+ ta_adv_v@long_name = "vertical advection"
  ta_adv_v@units = "K/s"
  ta_adv_v@_FillValue = 9.96921e+36
 
  ta_adv_h!0 = "time"
  ta_adv_h!1 = "height"
  ta_adv_h!2 = "Radial"
- ta_adv_h@long_name = "temperature Horizontal advection"
+ ta_adv_h@long_name = "Horizontal advection"
  ta_adv_h@units = "K/s"
  ta_adv_h@_FillValue = 9.96921e+36
 
@@ -226,40 +241,60 @@ end do
  ta_diff!0 = "time"
  ta_diff!1 = "height"
  ta_diff!2 = "Radial"
- ta_diff@long_name = "temperature diffusion"
+ ta_diff@long_name = "diffusion"
  ta_diff@units = "K"
  ta_diff@_FillValue = 9.96921e+36
  
  ta_heat!0 = "time"
  ta_heat!1 = "height"
  ta_heat!2 = "Radial"
- ta_heat@long_name = "temperature heat"
+ ta_heat@long_name = "Nondiabatic heating"
  ta_heat@units = "K"
  ta_heat@_FillValue = 9.96921e+36
 
  ta_pbl!0 = "time"
  ta_pbl!1 = "height"
  ta_pbl!2 = "Radial"
- ta_pbl@long_name = "temperature pbl"
+ ta_pbl@long_name = "pbl"
  ta_pbl@units = "K"
  ta_pbl@_FillValue = 9.96921e+36
 
-outfilet = addfile("sim9/bud/adv_h_d2.nc","c")
+ ta_cu!0 = "time"
+ ta_cu!1 = "height"
+ ta_cu!2 = "Radial"
+ ta_cu@long_name = "cu"
+ ta_cu@units = "K"
+ ta_cu@_FillValue = 9.96921e+36
+
+ ta_ra!0 = "time"
+ ta_ra!1 = "height"
+ ta_ra!2 = "Radial"
+ ta_ra@long_name = "pbl"
+ ta_ra@units = "K"
+ ta_ra@_FillValue = 9.96921e+36
+
+outfilet = addfile("sim9/bud/adv_h.nc","c")
 outfilet->t_adv_h = ta_adv_h
 
-outfilet = addfile("sim9/bud/adv_v_d2.nc","c")
+outfilet = addfile("sim9/bud/adv_v.nc","c")
 outfilet->t_adv_v = ta_adv_v
 
-outfilet = addfile("sim9/bud/adv_d2.nc","c")
+outfilet = addfile("sim9/bud/adv.nc","c")
 outfilet->t_adv = ta_adv
 
-outfilet = addfile("sim9/bud/diff_d2.nc","c")
+outfilet = addfile("sim9/bud/diff.nc","c")
 outfilet->t_diff = ta_diff
 
-outfilet = addfile("sim9/bud/uncp_heat_d2.nc","c")
+outfilet = addfile("sim9/bud/heat.nc","c")
 outfilet->t_heat = ta_heat
 
-outfilet = addfile("sim9/bud/uncp_pbl_d2.nc","c")
+outfilet = addfile("sim9/bud/pbl.nc","c")
 outfilet->t_pbl = ta_pbl
+
+outfilet = addfile("sim9/bud/cu.nc","c")
+outfilet->t_cu = ta_cu
+
+outfilet = addfile("sim9/bud/ra.nc","c")
+outfilet->t_ra = ta_ra
 
 end
