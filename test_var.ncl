@@ -6,13 +6,15 @@ begin
 ;---Open file; substitute your own WRF output file here
 
     ;files = systemfunc("ls ./sim8/wrfout_d02_*")
-    a = addfile("/user_home/jyyin/dta/sim9/wrfout_d02_2000-09-04_12:00:00.nc","r")
-
+    ;a = addfile("/user_home/jyyin/dta/sim9/wrfout_d02_2000-09-04_12:00:00.nc","r")
+    ano_h = addfile("sim9/tano_d1_00.nc","r")
     
-    ;f = addfiles(files, "r")
-    ;ListSetType(f, "cat")
-    ;f2 = addfile (, "r")
-
+    
+    ;files = systemfunc("ls ./sim9/heat*")
+    ;a_heat = addfiles(files, "r")
+    ;ListSetType(a_heat, "cat")
+    ;t_heat = a_heat[:]->t_heat
+    t_ano = ano_h->ta
 ;--Read variables
 
     ;times = wrf_user_getvar(f2,"times",-1)  ; get all time values on file
@@ -22,7 +24,11 @@ begin
     ;th = wrf_user_getvar(f,"th",-1)
     ;t = wrf_user_getvar(f, "T", -1)
 
-    ;printVarSummary(t)
+    printVarSummary(t_ano)
+    hei = fspan(500, 27500, 68)
+    print(hei)
+    r = fspan(0.0,700.0,150)
+    print(r)
     ;printVarSummary(th)
     
     ;printVarSummary(mu)
@@ -39,9 +45,7 @@ begin
     ;t_adv_h2 = a->T_TEND_ADV_H2
     ;t_adv_h = a->T_TEND_ADV_H
     ;t_adv_v = a->T_TEND_ADV_V
-    td = a->H_DIABATIC
 
-    printVarSummary(td)
     ;printVarSummary(t_adv_v2)
 
     ;differ1 = t_adv_h - t_adv_h1
@@ -112,14 +116,29 @@ begin
     ;printMinMax(p, 0)
     ;printMinMax(pp, 0)
 
-    wks = gsn_open_wks("pdf","sim9/test-adv-9")
+
+
+    wks = gsn_open_wks("pdf","sim9/ta00")
     gsn_define_colormap(wks, "MPL_coolwarm")
 
     res = True
+    res@tmXBMode    = "Explicit"
+    res@tmXBValues  = (/0, 22, 43, 64, 85,107,128/)
+    res@tmXBLabels  = (/0,100,200,300,400,500,600/)
+
+    res@tmYLMode    = "Explicit"
+    res@tmYLValues  = (/0, 11,24,36,40/)
+    res@tmYLLabels  = (/0.5,5,10,15,17/)
     res@cnFillOn = True
-    plot = gsn_csm_contour(wks, td(30,:,120,:), res)
+
+    do it = 0, 119, 5
+
+    res@tiMainString = "time = "+it
+
+    plot = gsn_csm_contour(wks, t_ano(it,0:40,:), res)
     ;plot = gsn_csm_contour(wks, differ2(30,:,120,:), res)
     ;plot = gsn_csm_contour(wks, differ3(30,:,120,:), res)
     ;plot = gsn_csm_contour(wks, t_adv_v(30,:,120,:), res)
+    end do
 
 end
