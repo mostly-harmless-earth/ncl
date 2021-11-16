@@ -65,6 +65,7 @@ begin
     r1 = fspan(0.0,700.0,150)
     hei@units = "m"
     r1@units = "km"
+    print(hei)
 
     printVarSummary(t_ano)
 
@@ -117,6 +118,11 @@ begin
   ;t_ano2=transpose(t_ano(:,0:44,1))
   ;plots = gsn_csm_contour(wks,t_ano2, res)
 
+    plots = new(2,graphic)
+
+    res@gsnDraw            = False                   ; don't draw
+    res@gsnFrame           = False                   ; don't advance frame
+
     res@tmXBMode    = "Explicit"
     res@tmXBValues  = (/0, 22, 43, 64, 85,107,128/)
     res@tmXBLabels  = (/0,100,200,300,400,500,600/)
@@ -125,11 +131,15 @@ begin
     res@tmYLValues  = (/0, 11,24,36,40/)
     res@tmYLLabels  = (/0.5,5,10,15,17/)
 
-  plots =  gsn_csm_contour(wks,t_ano(80,:,:), res)
+  plots(0) =  gsn_csm_contour(wks,t_ano(70,:,:), res)
+  plots(1) =  gsn_csm_contour(wks,t_ano(80,:,:), res)
+
+  gres = True
+  gsn_panel(wks, plots, (/1,2/), gres)
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Draw budget term ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-  plot9 = new(9,graphic)
+  plot9 = new(6,graphic)
   
   ares = True
   ares@gsnDraw            = False                   ; don't draw
@@ -158,41 +168,41 @@ begin
   ares@tmYRLabelFontHeightF    = 0.025
   ares@gsnStringFontHeightF    = 0.025
 
-  ares@tiMainString = "Total Advection"
-  plot9(0) = gsn_csm_contour(wks,t_adv_1h(0:41,:)*360, ares)
+  ;ares@tiMainString = "Total Advection"
+  ;plot9(0) = gsn_csm_contour(wks,t_adv_1h(0:41,:)*360, ares)
 
   ares@tiMainString = "Vertical Advection"
-  plot9(1) = gsn_csm_contour(wks,t_adv_v_1h(0:41,:)*360, ares)
+  plot9(0) = gsn_csm_contour(wks,t_adv_v_1h(0:41,:)*360, ares)
 
   ares@tiMainString = "Horizontal Advection"
-  plot9(2) = gsn_csm_contour(wks,t_adv_h_1h(0:41,:)*360, ares)
+  plot9(1) = gsn_csm_contour(wks,t_adv_h_1h(0:41,:)*360, ares)
 ;
   ares@tiMainString = "Diffusion"
-  plot9(3) = gsn_csm_contour(wks,t_diff_1h(0:41,:)*360, ares)
+  plot9(2) = gsn_csm_contour(wks,t_diff_1h(0:41,:)*360, ares)
 
   ares@tiMainString = "Nonadiabatic heating"
-  plot9(4) = gsn_csm_contour(wks,t_heat_1h(0:41,:)*360, ares)
+  plot9(3) = gsn_csm_contour(wks,t_heat_1h(0:41,:)*360, ares)
 
   ares@tiMainString = "PBL"
-  plot9(5) = gsn_csm_contour(wks,t_pbl_1h(0:41,:)*360, ares)
+  plot9(4) = gsn_csm_contour(wks,t_pbl_1h(0:41,:)*360, ares)
 
   ares@tiMainString = "Cu"
-  plot9(6) = gsn_csm_contour(wks,t_cu_1h(0:41,:)*360, ares)
+  plot9(5) = gsn_csm_contour(wks,t_cu_1h(0:41,:)*360, ares)
 
-  ares@tiMainString = "Radiation "
-  plot9(7) = gsn_csm_contour(wks,t_ra_1h(0:41,:)*360, ares)
+  ;ares@tiMainString = "Radiation "
+  ;plot9(7) = gsn_csm_contour(wks,t_ra_1h(0:41,:)*360, ares)
 
   gres = True
-  gres@tiMainString = "theta Budget Term"
-  gsn_panel(wks, plot9, (/3,3/), gres)
+  gres@tiMainString = "theta Budget Term 1 hour"
+  gsn_panel(wks, plot9, (/2,3/), gres)
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Draw RHS & Actual change ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
   plot3 = new(3,graphic)
 
   ares@tmYLMode    = "Explicit"
-  ares@tmYLValues  = (/0, 11,24,36,40/)
-  ares@tmYLLabels  = (/0.5,5,10,15,17/)
+  ares@tmYLValues  = (/1,14,21,26,30/)
+  ares@tmYLLabels  = (/5,10,13,15,17/)
 
   ares@cnLevelSelectionMode = "ExplicitLevels"   ; set explicit contour levels
   ;res@cnLevelSpacingF = 0.2
