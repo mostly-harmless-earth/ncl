@@ -10,9 +10,7 @@ begin
   ;a = addfile("/user_home/jyyin/dta/wrfout_d02_2000-04-04_00:00:00","r")
   ;f = addfile ("/user_home/jyyin/dta/sim3/wrfout_d01_2000-03-03_00:00:00", "r")
     
-    f = addfile("/user_home/jyyin/dta/sim9/wrfout_d02_2000-09-02_12:00:00","r")
     files = systemfunc("ls ./sim9/wrfout_d02_*")
-      
     a = addfiles(files, "r")
     ListSetType(a, "cat")
 
@@ -25,11 +23,11 @@ begin
     ;hz     = wrf_user_getvar(f,"z",1)  ;
     
   dims = dimsizes(times)
-  lat2d = f->XLAT(0,:,:)
-  lon2d = f->XLONG(0,:,:)
-  dimll = dimsizes(lat2d)
-  nlat  = dimll(0)
-  mlon  = dimll(1)
+  ;lat2d = f->XLAT(0,:,:)
+  ;lon2d = f->XLONG(0,:,:)
+  ;dimll = dimsizes(lat2d)
+  ;nlat  = dimll(0)
+  ;mlon  = dimll(1)
   m = ispan(1,dims,1)
 
 ; Sea Level Pressure
@@ -54,25 +52,23 @@ begin
   ;printVarSummary(v10)
   ;printVarSummary(p)
   
-  slp1 = wrf_user_getvar(a, "slp", -1)
-  
   do it = 0, dims-1
 
     slp = wrf_user_getvar(a, "slp", it)
     v10 = wrf_user_getvar(a, "V10", it)
 
-    slp2d = new((/nlat,mlon/),float)
-    slp2d = slp(:,:)
-    v2d = new((/nlat,mlon/),float)
-    v2d = v10(:,:)
+    slp2d = new((/221,221/),float)
+    slp2d = slp(10:230,10:230)
+    v2d = new((/221,221/),float)
+    v2d = v10(10:230,10:230)
     dd = dimsizes(v2d)
 
 ; We need to convert 2-D array to 1-D array to find the minima.
     slp1d    = ndtooned(slp2d)
-    smin(it) = local_min(slp, False, 0.0)
+    smin(it) = min(slp2d)
 
     v1d    = ndtooned(v2d)
-    vmax(it) = local_max(v10, False, 0.0)
+    vmax(it) = max(v2d)
 
 ; Convert the index for 1-D array back to the indeces for 2-D array.
     ;minij    = ind_resolve(ind(slp1d.eq.min(slp2d)),dd)
@@ -143,11 +139,7 @@ begin
   
   ;plot3 = gsn_add_polymarker( wks,plot(1), t_c, slp_cho, gres)
   
-  gres@txString = "Sea Level Pressure(Pa) ~C~ Max Wind Speed(m/s)" 
+  gres@gsnCenterString = "Sea Level Pressure(Pa) ~C~ Max Wind Speed(m/s)" 
   gsn_panel(wks, plot, (/1,2/), gres)
-
-  plot2 = gsn_csm_xy(wks,m,slp1(:,120,120),res)
-
-  frame(wks)
 
 end
