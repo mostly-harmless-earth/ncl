@@ -32,31 +32,31 @@ begin
     ;ano_h = addfiles(files, "r")
     ;ListSetType(ano_h, "cat")
 
-    a1 = addfile("/user_home/jyyin/dta/sim9/bud_d1_00/heat.nc","r")
+    a1 = addfile("/user_home/jyyin/dta/sim9/bud_d2_00/heat.nc","r")
     t_heat = a1->t_heat 
 
-    a2 = addfile("/user_home/jyyin/dta/sim9/bud_d1_00/pbl.nc","r")
+    a2 = addfile("/user_home/jyyin/dta/sim9/bud_d1_12/pbl.nc","r")
     t_pbl = a2->t_pbl
 
-    a3 = addfile("/user_home/jyyin/dta/sim9/bud_d1_00/diff.nc","r")
+    a3 = addfile("/user_home/jyyin/dta/sim9/bud_d1_12/diff.nc","r")
     t_diff = a3->t_diff
     
-    a4 = addfile("/user_home/jyyin/dta/sim9/bud_d1_00/adv_v.nc","r")
+    a4 = addfile("/user_home/jyyin/dta/sim9/bud_d1_12/adv_v.nc","r")
     t_adv_v = a4->t_adv_v
 
-    a5 = addfile("/user_home/jyyin/dta/sim9/bud_d1_00/adv_h.nc","r")
+    a5 = addfile("/user_home/jyyin/dta/sim9/bud_d1_12/adv_h.nc","r")
     t_adv_h = a5->t_adv_h
 
-    a6 = addfile("/user_home/jyyin/dta/sim9/bud_d1_00/adv.nc","r")
+    a6 = addfile("/user_home/jyyin/dta/sim9/bud_d1_12/adv.nc","r")
     t_adv = a6->t_adv
     
-    a7 = addfile("/user_home/jyyin/dta/sim9/bud_d1_00/cu.nc","r")
+    a7 = addfile("/user_home/jyyin/dta/sim9/bud_d1_12/cu.nc","r")
     t_cu = a7->t_cu
     
-    a8 = addfile("/user_home/jyyin/dta/sim9/bud_d1_00/ra.nc","r")
+    a8 = addfile("/user_home/jyyin/dta/sim9/bud_d1_12/ra.nc","r")
     t_ra = a8->t_ra
     
-    ano_h = addfile("sim9/tano_d1_00.nc","r")
+    ano_h = addfile("sim9/tano_d1_12.nc","r")
     t_ano = ano_h->ta
 
     t_sum = t_adv_h + t_adv_v + t_heat + t_pbl + t_cu + t_ra + t_diff
@@ -70,23 +70,30 @@ begin
     printVarSummary(t_ano)
     printVarSummary(t_sum)
 
-    wks=gsn_open_wks("pdf","/user_home/jyyin/dta/sim9/budget_d1_2h") 
+    wks=gsn_open_wks("pdf","/user_home/jyyin/dta/sim9/budget_d1_12_6h") 
     gsn_define_colormap(wks,"MPL_coolwarm")  ; Change color map.
-    
-    do it = 0,99,5
 
-    t_sum_1h   = dim_sum_n(t_sum(it:it+19,:,:), 0)
-    t_adv_h_1h = dim_sum_n(t_adv_h(it:it+19,:,:), 0)
-    t_adv_v_1h = dim_sum_n(t_adv_v(it:it+19,:,:), 0)
-    t_adv_1h   = dim_sum_n(t_adv(it:it+19,:,:), 0)
+    ;;; t_sum: 120 X 68 X 150
+    ;;; interval 6min 
+    ;;; 1h: 10 ;;; 2h: 20
 
-    t_heat_1h  = dim_sum_n(t_heat(it:it+19,:,:), 0)
-    t_pbl_1h   = dim_sum_n(t_pbl(it:it+19,:,:), 0)
-    t_cu_1h    = dim_sum_n(t_cu(it:it+19,:,:), 0)
-    t_ra_1h    = dim_sum_n(t_ra(it:it+19,:,:), 0)
-    t_diff_1h  = dim_sum_n(t_diff(it:it+19,:,:), 0)
+    n = 0
+    plots = new(2,graphic)
+  
+    do it = 0,59,60
 
-    t_temp = t_ano(it+20,:,:)-t_ano(it,:,:)
+    t_sum_1h   = dim_sum_n(t_sum(it:it+59,:,:), 0)
+    t_adv_h_1h = dim_sum_n(t_adv_h(it:it+59,:,:), 0)
+    t_adv_v_1h = dim_sum_n(t_adv_v(it:it+59,:,:), 0)
+    t_adv_1h   = dim_sum_n(t_adv(it:it+59,:,:), 0)
+
+    t_heat_1h  = dim_sum_n(t_heat(it:it+59,:,:), 0)
+    t_pbl_1h   = dim_sum_n(t_pbl(it:it+59,:,:), 0)
+    t_cu_1h    = dim_sum_n(t_cu(it:it+59,:,:), 0)
+    t_ra_1h    = dim_sum_n(t_ra(it:it+59,:,:), 0)
+    t_diff_1h  = dim_sum_n(t_diff(it:it+59,:,:), 0)
+
+    t_temp = t_ano(it+60,:,:)-t_ano(it,:,:)
 
   res                     = True
   gres                    = True
@@ -121,8 +128,6 @@ begin
   ;t_ano2=transpose(t_ano(:,0:44,1))
   ;plots = gsn_csm_contour(wks,t_ano2, res)
 
-    plots = new(2,graphic)
-
     res@gsnDraw            = False                   ; don't draw
     res@gsnFrame           = False                   ; don't advance frame
 
@@ -134,15 +139,19 @@ begin
     res@tmYLValues  = (/0, 11,24,36,40/)
     res@tmYLLabels  = (/0.5,5,10,15,17/)
 
-  plots(0) =  gsn_csm_contour(wks,t_ano(it,:,:), res)
-  plots(1) =  gsn_csm_contour(wks,t_ano(it+10,:,:), res)
+    ;res@cnLevelSelectionMode = "ExplicitLevels"   ; set explicit contour levels
+    ;res@cnLevels     = (/-2.2, -1.8,-1.4,-1.0,-0.8,-0.6,-0.4,-0.2, 0.2,0.4,0.6,0.8,1.0,1.2,1.4,1.6,1.8,2.0/)   ; set levels
+    ;res@cnFillColors = (/   10,  15,  20,   25, 30,  40,  50,  60,   0,  70,75, 80, 85, 90, 95,100,105,110,112/)  ; set the colors to be used
 
-  gres = True
-  gsn_panel(wks, plots, (/1,2/), gres)
-
+    res@lbLabelBarOn        = False           ; turn off individual cb's
+ 
+    res@tiMainString = "time = " + (it*6/60+12) + "h"
+    plots(n) =  gsn_csm_contour(wks,t_ano(it,0:41,:), res)
+    n = n+1
+    
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Draw budget term ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-  plot9 = new(3,graphic)
+  plot9 = new(9,graphic)
   
   ares = True
   ares@gsnDraw            = False                   ; don't draw
@@ -175,25 +184,25 @@ begin
   ;plot9(0) = gsn_csm_contour(wks,t_adv_1h(11:41,:)*360, ares)
 
   ares@tiMainString = "Vertical Advection"
-  ;plot9(0) = gsn_csm_contour(wks,t_adv_v_1h(11:41,:)*360, ares)
+  plot9(0) = gsn_csm_contour(wks,t_adv_v_1h(11:41,:)*360, ares)
 
   ares@tiMainString = "Horizontal Advection"
-  ;plot9(1) = gsn_csm_contour(wks,t_adv_h_1h(11:41,:)*360, ares)
+  plot9(1) = gsn_csm_contour(wks,t_adv_h_1h(11:41,:)*360, ares)
 ;
   ares@tiMainString = "Diffusion"
-  ;plot9(2) = gsn_csm_contour(wks,t_diff_1h(11:41,:)*360, ares)
+  plot9(2) = gsn_csm_contour(wks,t_diff_1h(11:41,:)*360, ares)
 
   ares@tiMainString = "Nonadiabatic heating"
-  ;plot9(3) = gsn_csm_contour(wks,t_heat_1h(11:41,:)*360, ares)
+  plot9(3) = gsn_csm_contour(wks,t_heat_1h(11:41,:)*360, ares)
 
   ares@tiMainString = "PBL"
-  ;plot9(4) = gsn_csm_contour(wks,t_pbl_1h(11:41,:)*360, ares)
+  plot9(4) = gsn_csm_contour(wks,t_pbl_1h(11:41,:)*360, ares)
 
   ares@tiMainString = "Cu"
-  ;plot9(5) = gsn_csm_contour(wks,t_cu_1h(11:41,:)*360, ares)
+  plot9(5) = gsn_csm_contour(wks,t_cu_1h(11:41,:)*360, ares)
 
   ;ares@tiMainString = "Radiation "
-  ;plot9(7) = gsn_csm_contour(wks,t_ra_1h(11:41,:)*360, ares)
+  ;plot9(6) = gsn_csm_contour(wks,t_ra_1h(11:41,:)*360, ares)
 
   ;gres = True
   ;gres@tiMainString = "theta Budget Term 1 hour"
@@ -213,22 +222,29 @@ begin
   ;ares@cnFillColors = (/    2,   5,   8,  16,  24,  32,  48,  64,  0,  80, 90,100,110/)  ; set the colors to be used
 
   ares@tiMainString = "Sum of RHS"
-  plot9(0) = gsn_csm_contour(wks,t_sum_1h(11:41,:)*360, ares)
+  plot9(6) = gsn_csm_contour(wks,t_sum_1h(11:41,:)*360, ares)
 
   ares@tiMainString = "Actual change"
-  plot9(1) = gsn_csm_contour(wks,t_temp(11:41,:), ares)
+  plot9(7) = gsn_csm_contour(wks,t_temp(11:41,:), ares)
 
   t_dire = t_sum_1h(11:41,:)*360-t_temp(11:41,:)
 
-  time = it*6/60.
+  time = (it*6/60.)+12
 
-  ares@tiMainString = "diffrence time = " + time + "h"
-  plot9(2) = gsn_csm_contour(wks,t_dire(:,:), ares)
+  ares@tiMainString = "diffrence"
+  plot9(8) = gsn_csm_contour(wks,t_dire(:,:), ares)
 
-  gres@gsnCenterString = "time = " + time + "h"
-  gsn_panel(wks, plot9, (/1,3/), gres)
+  gres@txString = "time = " + time +"h - "+ (time+6) + "h"
+  gsn_panel(wks, plot9, (/3,3/), gres)
 
 end do
+
+  res@tiMainString = "time = " + (time+2) + "h"
+  plots(1) =  gsn_csm_contour(wks,t_ano(119,0:41,:), res)
+  gres_ta = True
+  gres_ta@gsnPanelLabelBar = True
+  gres_ta@txString = "Theta Anomaly"
+  gsn_panel(wks, plots, (/1,2/), gres_ta)
 
 end
 

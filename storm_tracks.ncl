@@ -28,7 +28,7 @@ begin
   ;dimll = dimsizes(lat2d)
   ;nlat  = dimll(0)
   ;mlon  = dimll(1)
-  m = ispan(1,dims,1)
+  m = ispan(1,dims,1)*6/60
 
 ; Sea Level Pressure
   
@@ -91,7 +91,7 @@ begin
 
 
     n = n+1
-    print("time = " + it)
+    print("time = " + times(it))
   end do
   
   ;t_c = (/540,640,780,920,1020,1660,1320,1560,2300/)
@@ -106,14 +106,14 @@ begin
 ; Graphics section
   ;printVarSummary(slp)
 
-  wks=gsn_open_wks("pdf","/user_home/jyyin/dta/sim9/slp-V10") 
+  wks=gsn_open_wks("pdf","/user_home/jyyin/dta/sim9/slp-V10-2") 
   gsn_define_colormap(wks,"MPL_BuGn")  ; Change color map.
 
-  plot = new(2,graphic)
+  plots = new(2,graphic)
   res                     = True
   gres                    = True
-  ;res@gsnDraw            = False                   ; don't draw
-  ;res@gsnFrame           = False                   ; don't advance frame
+  res@gsnDraw            = False                   ; don't draw
+  res@gsnFrame           = False                   ; don't advance frame
   ;res@cnFillOn            = True
   ;res@cnLinesOn           = False
   ;res@cnLineLabelsOn      = False
@@ -123,23 +123,33 @@ begin
   ;res@tmXBValues  = (/0,600,1200,1800,2400,2880/)
   ;res@tmXBLabels   =(/0, 30,  60,  90, 120, 144/)
   
+; resources for "left" variable
+  resL                        = True 
+  resL@xyLineThicknesses      = 2.5                  ; thicker line
+  resL@tiYAxisString =  "Sea Level Pressure (Pa)"
+  resL@tiXAxisString =  "Time (h)" ; axis string
+
+; resources for "right" variable
+  resR                        = True                      
+  resR@xyLineThicknesses      = 2.5                   ; thicker line
+  resR@tiYAxisString = "Max Wind Speed (m/s)" ; axis string
+
+  plot = gsn_csm_xy2(wks,m,smin,vmax,resL,resR)
+  
+  plots(0) = gsn_csm_xy(wks,m,smin,res)
+  plots(1) = gsn_csm_xy(wks,m,vmax,res)
 
 
   gres@gsMarkerIndex = 0
   gres@gsMarkerSizeF = 0.015
   gres@gsMarkerColor = "navy"                 ; color chosen
   gres@gsMarkerThicknessF = 3
-  res@xyLineThicknesses = 2.0
   
-  
-  plot(0) = gsn_csm_xy(wks,m,smin,res)
-  plot(1) = gsn_csm_xy(wks,m,vmax,res)
-
   gres = True
   
   ;plot3 = gsn_add_polymarker( wks,plot(1), t_c, slp_cho, gres)
   
   gres@gsnCenterString = "Sea Level Pressure(Pa) ~C~ Max Wind Speed(m/s)" 
-  gsn_panel(wks, plot, (/1,2/), gres)
+  gsn_panel(wks, plots, (/1,2/), gres)
 
 end
