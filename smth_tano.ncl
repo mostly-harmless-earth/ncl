@@ -10,8 +10,8 @@ begin
   ;a = addfile("/user_home/jyyin/dta/wrfout_d02_2000-04-04_00:00:00","r")
   ;a1 = addfile("/user_home/jyyin/dta/wrfout_d01_2000-04-04_00:00:00","r")
 
-  a = addfile("/user_home/jyyin/dta/sim9/wrfout_d02_2000-09-03_12:00:00","r")
-  aout = addfile("/user_home/jyyin/dta/sim9/wrfout_d01_2000-09-03_12:00:00","r")
+  a = addfile("/user_home/jyyin/dta/sim9/wrfout_d02_2000-09-01_12:00:00","r")
+  aout = addfile("/user_home/jyyin/dta/sim9/wrfout_d01_2000-09-01_12:00:00","r")
   
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
  
@@ -117,8 +117,14 @@ end do
 
       t(iz,:,:)       = wrf_interp_3d_z(tb, z, hei(iz))
       t_out(iz,:,:)   = wrf_interp_3d_z(tb_out, z_out, hei(iz))
-
+      t(iz,:,:)       = smth9(t(iz,:,:), 0.5, -0.25, True) ; light local smoothing
+      t_out(iz,:,:)   = smth9(t_out(iz,:,:), 0.5, -0.25, True)
     end do
+
+;-------------------------------------------------------------------------------------
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Smooth option ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
 
 ;-------------------------------------------------------------------------------------
 ;;;;;;;;;;;;;;;;;;;; interp to pole coordinate ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -150,7 +156,7 @@ do lev = 0,nz-1
     end do
 end do
 
-t_temp = t_poave(:,21:86)
+t_temp = t_poave(:,53:107) ;500-1000km
 t_avg = dim_avg_n(t_temp, 1)
 
 do lev = 0,nz-1
@@ -171,7 +177,7 @@ end do
  t_ano@units = "K"
  t_ano@_FillValue = 9.96921e+36
 
-outfilet = addfile("sim9/tano_d3_12.nc","c")
+outfilet = addfile("sim9/smooth/tano_d1_12.nc","c")
 outfilet->ta = t_ano
 
 end

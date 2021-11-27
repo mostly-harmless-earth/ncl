@@ -28,7 +28,7 @@ begin
   ;dimll = dimsizes(lat2d)
   ;nlat  = dimll(0)
   ;mlon  = dimll(1)
-  m = ispan(1,dims,1)*6/60
+  m = ispan(1,dims,1)*6/60.
 
 ; Sea Level Pressure
   
@@ -91,7 +91,7 @@ begin
 
 
     n = n+1
-    print("time = " + times(it))
+    print("time = " + times(it)+ "/" + it)
   end do
   
   ;t_c = (/540,640,780,920,1020,1660,1320,1560,2300/)
@@ -106,7 +106,7 @@ begin
 ; Graphics section
   ;printVarSummary(slp)
 
-  wks=gsn_open_wks("pdf","/user_home/jyyin/dta/sim9/slp-V10-2") 
+  wks=gsn_open_wks("pdf","/user_home/jyyin/dta/sim9/slp-V10-3d") 
   gsn_define_colormap(wks,"MPL_BuGn")  ; Change color map.
 
   plots = new(2,graphic)
