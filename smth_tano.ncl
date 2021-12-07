@@ -10,8 +10,8 @@ begin
   ;a = addfile("/user_home/jyyin/dta/wrfout_d02_2000-04-04_00:00:00","r")
   ;a1 = addfile("/user_home/jyyin/dta/wrfout_d01_2000-04-04_00:00:00","r")
 
-  a = addfile("/user_home/jyyin/dta/sim9/wrfout_d02_2000-09-01_12:00:00","r")
-  aout = addfile("/user_home/jyyin/dta/sim9/wrfout_d01_2000-09-01_12:00:00","r")
+  a = addfile("/user_home/jyyin/dta/sim9/wrfout_d02_2000-09-01_00:00:00","r")
+  aout = addfile("/user_home/jyyin/dta/sim9/wrfout_d01_2000-09-01_00:00:00","r")
   
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
  
@@ -177,7 +177,7 @@ end do
  t_ano@units = "K"
  t_ano@_FillValue = 9.96921e+36
 
-outfilet = addfile("sim9/smooth/tano_d1_12.nc","c")
+outfilet = addfile("sim9/smooth/tano_d1_00.nc","c")
 outfilet->ta = t_ano
 
 end

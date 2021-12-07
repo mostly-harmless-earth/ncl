@@ -10,7 +10,7 @@ begin
   ;a = addfile("/user_home/jyyin/dta/wrfout_d02_2000-04-04_00:00:00","r")
   ;a1 = addfile("/user_home/jyyin/dta/wrfout_d01_2000-04-04_00:00:00","r")
 
-  a = addfile("/user_home/jyyin/dta/sim9_wrfv3/wrfout_d02_2000-09-01_00:00:00","r")
+  a = addfile("/user_home/jyyin/dta/sim9/wrfout_d02_2000-09-01_12:00:00","r")
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
  
   FirstTime = True
@@ -39,7 +39,7 @@ begin
     latout@units = "km"
     lonout@units=  "km"
   
-  imin = 120
+  imin = 118
   jmin = 120
 
   imin0 = 80
@@ -93,31 +93,19 @@ end do
 
     end do
   end do
-
-  ;wks=gsn_open_wks("X11","/user_home/jyyin/dta/sim9/lat_lon") 
-  ;gsn_define_colormap(wks,"MPL_coolwarm")  ; Change color map.
-
-  ;lat_test = new((/nr*360,2/),"float")
-  ;lat_test(:,0) = lat_p(:)
-  ;lat_test(:,1) = lon_p(:)
-
-  ;res = True
-
-  ;plot = gsn_contour(wks, lat_test, res)
-  ;print("finish plot")
-
-  ;frame(wks)
 ;;-----------------------------------------------------------------------
  
  ta_adv_v = new((/ntimes,nz,nr/),"float")
  ta_adv_h = new((/ntimes,nz,nr/),"float")
- ;ta_adv = new((/ntimes,nz,nr/),"float")
+ ta_adv = new((/ntimes,nz,nr/),"float")
 
  ta_diff  = new((/ntimes,nz,nr/),"float")
  ta_heat  = new((/ntimes,nz,nr/),"float")
  ta_pbl   = new((/ntimes,nz,nr/),"float")
  ta_cu   = new((/ntimes,nz,nr/),"float")
  ta_ra   = new((/ntimes,nz,nr/),"float")
+
+
 
   do it = 1 , ntimes-1 , 1; TIME LOOP
    
@@ -127,18 +115,17 @@ end do
  
     tb_adv_h = wrf_user_getvar(a, "T_TEND_ADV_H", it)
     tb_adv_v = wrf_user_getvar(a, "T_TEND_ADV_V", it)
-    ;tb_adv = wrf_user_getvar(a, "RTHFTEN", it)
+    tb_adv = wrf_user_getvar(a, "RTHFTEN", it)
 
     tb_diff  = wrf_user_getvar(a, "T_TEND_DIFF", it)
     tb_cu    = wrf_user_getvar(a, "RTHCUTEN", it)
     tb_ra    = wrf_user_getvar(a, "RTHRATEN", it)
     tb_pbl   = wrf_user_getvar(a, "RTHBLTEN", it)
     tb_heat  = wrf_user_getvar(a, "H_DIABATIC", it)
-    
-    ;tb_shcu    = wrf_user_getvar(a, "RTHSHTEN", it)
-    mu = wrf_user_getvar(a, "MU", it)
-    mub = wrf_user_getvar(a, "MUB", it)
-    mut = mu+mub
+
+    mut = wrf_user_getvar(a, "MUT", it)
+    ;mub = wrf_user_getvar(a, "MUB", it)
+    ;mut = mu+mub
 
 ;-------------------------------------------------------------------------------------
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; vertical interp & decoupled mass;;;;;;;;;;;;;;;;;;;;;;;
@@ -147,27 +134,35 @@ end do
 
     t_adv_h = tb_adv_h
     t_adv_v = tb_adv_v
-    ;t_adv  = tb_adv
+    t_adv  = tb_adv
 
     t_diff  = tb_diff
     t_heat  = tb_heat
     t_cu    = tb_cu
     t_ra    = tb_ra
     t_pbl   = tb_pbl
-    ;t_shcu    = tb_shcu
-    
+
     do iz = 0, nz-1
 
       t_adv_v(iz,:,:) = wrf_interp_3d_z(tb_adv_v, z, hei(iz))/mut(:,:)
       t_adv_h(iz,:,:) = wrf_interp_3d_z(tb_adv_h, z, hei(iz))/mut(:,:)
-      ;t_adv(iz,:,:)  = wrf_interp_3d_z(tb_adv, z, hei(iz))
+      t_adv(iz,:,:)  = wrf_interp_3d_z(tb_adv, z, hei(iz))
 
       t_diff(iz,:,:)  = wrf_interp_3d_z(tb_diff, z, hei(iz))/mut(:,:)
       t_heat(iz,:,:)  = wrf_interp_3d_z(tb_heat, z, hei(iz))
-      t_pbl(iz,:,:)   = wrf_interp_3d_z(tb_pbl, z, hei(iz))/mut(:,:)
-      t_cu(iz,:,:)    = wrf_interp_3d_z(tb_cu, z, hei(iz))/mut(:,:)
-      t_ra(iz,:,:)    = wrf_interp_3d_z(tb_ra, z, hei(iz))/mut(:,:)
-      ;t_shcu(iz,:,:)    = wrf_interp_3d_z(tb_shcu, z, hei(iz))
+      t_pbl(iz,:,:)   = wrf_interp_3d_z(tb_pbl, z, hei(iz))
+      t_cu(iz,:,:)    = wrf_interp_3d_z(tb_cu, z, hei(iz))
+      t_ra(iz,:,:)    = wrf_interp_3d_z(tb_ra, z, hei(iz))
+
+      t_adv_v(iz,:,:) = smth9(t_adv_v(iz,:,:), 0.5, -0.25, True) ; light local smoothing
+      t_adv_h(iz,:,:) = smth9(t_adv_h(iz,:,:), 0.5, -0.25, True)
+      t_adv(iz,:,:)   = smth9(t_adv(iz,:,:), 0.5, -0.25, True)
+
+      t_diff(iz,:,:)  = smth9(t_diff(iz,:,:), 0.5, -0.25, True)
+      t_heat(iz,:,:)  = smth9(t_heat(iz,:,:), 0.5, -0.25, True)
+      t_pbl(iz,:,:)   = smth9(t_pbl(iz,:,:), 0.5, -0.25, True)
+      t_cu(iz,:,:)    = smth9(t_cu(iz,:,:), 0.5, -0.25, True)
+      t_ra(iz,:,:)    = smth9(t_ra(iz,:,:), 0.5, -0.25, True)
 
     end do
 
@@ -176,22 +171,18 @@ end do
 
  tp_adv_v = new((/nz,nr*360/),"float")
  tp_adv_h = new((/nz,nr*360/),"float")
- ;tp_adv = new((/nz,nr*360/),"float")
+ tp_adv = new((/nz,nr*360/),"float")
  
  tp_diff  = new((/nz,nr*360/),"float")
  tp_heat  = new((/nz,nr*360/),"float")
  tp_pbl   = new((/nz,nr*360/),"float")
  tp_cu   = new((/nz,nr*360/),"float")
- ;tp_shcu   = new((/nz,nr*360/),"float")
  tp_ra   = new((/nz,nr*360/),"float")
-
- ;print(lat_p)
- ;print(lon_p)
 
 
  tp_adv_v = linint2_points(lat,lon,t_adv_v,False,lat_p,lon_p,1)
  tp_adv_h = linint2_points(lat,lon,t_adv_h,False,lat_p,lon_p,1)
- ;tp_adv = linint2_points(lat,lon,t_adv,False,lat_p,lon_p,1)
+ tp_adv = linint2_points(lat,lon,t_adv,False,lat_p,lon_p,1)
 
 
  tp_diff  = linint2_points(lat,lon,t_diff,False,lat_p,lon_p,1)
@@ -199,50 +190,47 @@ end do
  tp_pbl   = linint2_points(lat,lon,t_pbl,False,lat_p,lon_p,1)
  tp_cu    = linint2_points(lat,lon,t_cu,False,lat_p,lon_p,1)
  tp_ra    = linint2_points(lat,lon,t_ra,False,lat_p,lon_p,1)
- ;tp_shcu    = linint2_points(lat,lon,t_shcu,False,lat_p,lon_p,1)
  
 do lev = 0,nz-1
   do i = 0,nr-1
 
       sum_adv_v = 0.0
       sum_adv_h = 0.0
-      ;sum_adv = 0.0
+      sum_adv = 0.0
 
       sum_diff = 0.0
       sum_heat = 0.0
       sum_pbl = 0.0
       sum_cu = 0.0
       sum_ra = 0.0
-      ;sum_shcu = 0.0
 
       do j = 0,359,1
 
          sum_adv_v = sum_adv_v + tp_adv_v(lev,i*360+j)
          sum_adv_h = sum_adv_h + tp_adv_h(lev,i*360+j)
-         ;sum_adv = sum_adv + tp_adv(lev,i*360+j)
+         sum_adv = sum_adv + tp_adv(lev,i*360+j)
 
          sum_diff  = sum_diff  + tp_diff(lev,i*360+j)
          sum_heat  = sum_heat  + tp_heat(lev,i*360+j)
          sum_pbl   = sum_pbl   + tp_pbl(lev,i*360+j)
          sum_cu    = sum_cu    + tp_cu(lev,i*360+j)
          sum_ra    = sum_ra    + tp_ra(lev,i*360+j)
-         ;um_shcu    = sum_shcu    + tp_shcu(lev,i*360+j)
         
       end do
 
       ta_adv_v(it,lev,i) = sum_adv_v/360.0
       ta_adv_h(it,lev,i) = sum_adv_h/360.0
-      ;ta_adv(it,lev,i) = sum_adv/360.0
+      ta_adv(it,lev,i) = sum_adv/360.0
 
       ta_diff(it,lev,i)  = sum_diff/360.0
       ta_heat(it,lev,i)  = sum_heat/360.0
       ta_pbl(it,lev,i)   = sum_pbl/360.0
       ta_cu(it,lev,i)    = sum_cu/360.0
       ta_ra(it,lev,i)    = sum_ra/360.0
-      ;ta_shcu(it,lev,i)    = sum_shcu/360.0
 
     end do
 end do
+delete(t_heat)
 end do
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; output Section ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -289,43 +277,35 @@ end do
  ta_cu@units = "K"
  ta_cu@_FillValue = 9.96921e+36
 
- ;ta_shcu!0 = "time"
- ;ta_shcu!1 = "height"
- ;ta_shcu!2 = "Radial"
- ;ta_shcu@long_name = "cush"
- ;ta_shcu@units = "K"
- ;ta_shcu@_FillValue = 9.96921e+36
+ ta_ra!0 = "time"
+ ta_ra!1 = "height"
+ ta_ra!2 = "Radial"
+ ta_ra@long_name = "pbl"
+ ta_ra@units = "K"
+ ta_ra@_FillValue = 9.96921e+36
 
- ;ta_ra!0 = "time"
- ;ta_ra!1 = "height"
- ;ta_ra!2 = "Radial"
- ;ta_ra@long_name = "pbl"
- ;ta_ra@units = "K"
- ;ta_ra@_FillValue = 9.96921e+36
-
-outfilet = addfile("sim9_wrfv3/bud_d1_00/adv_h.nc","c")
+outfilet = addfile("sim9/smooth/adv_h.nc","c")
 outfilet->t_adv_h = ta_adv_h
 
-outfilet = addfile("sim9_wrfv3/bud_d1_00/adv_v.nc","c")
-;outfilet = addfile("sim9/bud_d3_12/adv.nc","c")
+outfilet = addfile("sim9/smooth/adv_v.nc","c")
 outfilet->t_adv_v = ta_adv_v
 
-outfilet = addfile("sim9_wrfv3/bud_d1_00/diff.nc","c")
+outfilet = addfile("sim9/smooth/adv.nc","c")
+outfilet->t_adv = ta_adv
+
+outfilet = addfile("sim9/smooth/diff.nc","c")
 outfilet->t_diff = ta_diff
 
-outfilet = addfile("sim9_wrfv3/bud_d1_00/heat.nc","c")
+outfilet = addfile("sim9/smooth/heat.nc","c")
 outfilet->t_heat = ta_heat
 
-outfilet = addfile("sim9_wrfv3/bud_d1_00/pbl.nc","c")
+outfilet = addfile("sim9/smooth/pbl.nc","c")
 outfilet->t_pbl = ta_pbl
 
-outfilet = addfile("sim9_wrfv3/bud_d1_00/cu.nc","c")
+outfilet = addfile("sim9/smooth/cu.nc","c")
 outfilet->t_cu = ta_cu
 
-;outfilet = addfile("sim9/bud_d3_12/shcu.nc","c")
-;outfilet->t_shcu = ta_shcu
-
-outfilet = addfile("sim9_wrfv3/bud_d1_00/ra.nc","c")
+outfilet = addfile("sim9/smooth/ra.nc","c")
 outfilet->t_ra = ta_ra
 
 end

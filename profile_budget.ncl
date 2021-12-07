@@ -63,9 +63,6 @@ begin
     ano_h = addfile("sim9/tano_d1_00.nc","r")
     t_ano = ano_h->ta
 
-
-    t_adv_v = t_adv_v*0.98
-    t_adv = t_adv_h + t_adv_v
     t_sum = t_adv_h + t_adv_v + t_heat + t_pbl + t_ra + t_diff
 
     hei = fspan(500, 27500, 68)/1000
@@ -73,12 +70,11 @@ begin
     hei@units = "m"
     r1@units = "km"
     print(hei)
-    print(r1)
 
     printVarSummary(t_ano)
     printVarSummary(t_sum)
 
-    wks=gsn_open_wks("pdf","/user_home/jyyin/dta/sim9/local_7-10h_30min") 
+    wks=gsn_open_wks("pdf","/user_home/jyyin/dta/sim9/profile_7-10h_30min") 
     gsn_define_colormap(wks,"MPL_coolwarm")  ; Change color map.
 
     ;;; t_sum: 120 X 68 X 150
@@ -88,21 +84,20 @@ begin
     n = 0
     plots = new(12,graphic)
   
-    do it = 59,109,10
+    do it = 75,109,5
 
-    t_sum_1h   = dim_sum_n(t_sum(it:it+9,:,:), 0)
-    t_adv_h_1h = dim_sum_n(t_adv_h(it:it+9,:,:), 0)
-    t_adv_v_1h = dim_sum_n(t_adv_v(it:it+9,:,:), 0)
-    t_adv_1h   = dim_sum_n(t_adv(it:it+9,:,:), 0)
+    t_sum_1h   = dim_sum_n(t_sum(it:it+4,:,:), 0)
+    t_adv_h_1h = dim_sum_n(t_adv_h(it:it+4,:,:), 0)
+    t_adv_v_1h = dim_sum_n(t_adv_v(it:it+4,:,:), 0)
+    t_adv_1h   = dim_sum_n(t_adv(it:it+4,:,:), 0)
 
-    t_heat_1h  = dim_sum_n(t_heat(it:it+9,:,:), 0)
-    t_pbl_1h   = dim_sum_n(t_pbl(it:it+9,:,:), 0)
-    t_cu_1h    = dim_sum_n(t_cu(it:it+9,:,:), 0)
-    t_ra_1h    = dim_sum_n(t_ra(it:it+9,:,:), 0)
-    t_diff_1h  = dim_sum_n(t_diff(it:it+9,:,:), 0)
+    t_heat_1h  = dim_sum_n(t_heat(it:it+4,:,:), 0)
+    t_pbl_1h   = dim_sum_n(t_pbl(it:it+4,:,:), 0)
+    t_cu_1h    = dim_sum_n(t_cu(it:it+4,:,:), 0)
+    t_ra_1h    = dim_sum_n(t_ra(it:it+4,:,:), 0)
+    t_diff_1h  = dim_sum_n(t_diff(it:it+4,:,:), 0)
 
-    t_temp = t_ano(it+10,:,:)-t_ano(it,:,:)
-    t_adv_1h = t_adv_h_1h + t_adv_v_1h
+    t_temp = t_ano(it+5,:,:)-t_ano(it,:,:)
 
   res                     = True
   gres                    = True
@@ -124,6 +119,10 @@ begin
   ;res@tiYAxisString           = "height(km)"
   ;res@tiXAxisString           = "times(hr)"
   ;res@tiMainString = "Hovmoller 72-96h (r=0km)"
+
+  ;res@tmYLMode    = "Explicit"
+  ;res@tmYLLabels  = (/5,10,15,20/)
+ ; res@tmYLValues  = (/12,25,38,51/)
 
   ;ti = ispan(0, 479, 1)
   ;res@tmXBMode    = "Explicit"
@@ -150,7 +149,7 @@ begin
 
     res@lbLabelBarOn        = False           ; turn off individual cb's
  
-    res@tiMainString = "time = " + ((it+1)*6/60.) + "h"
+    res@tiMainString = "time = " + (it*6/60.) + "h"
     plots(n) =  gsn_csm_contour(wks,t_ano(it,0:41,:), res)
     n = n+1
     
@@ -174,9 +173,9 @@ begin
   ares@tmXBValues  = (/0, 22, 43, 64, 85/)
   ares@tmXBLabels  = (/0,100,200,300,400/)
 
-  ares@tmYLMode    = "Explicit"
-  ares@tmYLValues  = (/1,3,5,7,10/)
-  ares@tmYLLabels  = (/13,14,15,16,17/)
+  ;ares@tmYLMode    = "Explicit"
+  ;ares@tmYLValues  = (/0,14,21,26,30/)
+  ;ares@tmYLLabels  = (/5,10,13,15,17/)
 
   ares@tiYAxisFontHeightF      = 0.025
   ares@tiXAxisFontHeightF      = 0.025
@@ -196,14 +195,14 @@ begin
   ares@tiMainString = "Horizontal Advection"
   plot9(1) = gsn_csm_contour(wks,t_adv_h_1h(31:41,0:85)*360, ares)
 ;
-  ares@tiMainString = "Total Advection"
-  plot9(2) = gsn_csm_contour(wks,t_adv_1h(31:41,0:85)*360, ares)
+  ares@tiMainString = "Diffusion"
+  plot9(2) = gsn_csm_contour(wks,t_diff_1h(31:41,0:85)*360, ares)
 
   ares@tiMainString = "Nonadiabatic heating"
   plot9(3) = gsn_csm_contour(wks,t_heat_1h(31:41,0:85)*360, ares)
 
-  ares@tiMainString = "PBL + Diffusion"
-  plot9(4) = gsn_csm_contour(wks,(t_pbl_1h(31:41,0:85)+t_diff_1h(31:41,0:85))*360, ares)
+  ares@tiMainString = "PBL"
+  plot9(4) = gsn_csm_contour(wks,t_pbl_1h(31:41,0:85)*360, ares)
 
   ares@tiMainString = "Cu"
   plot9(5) = gsn_csm_contour(wks,t_cu_1h(31:41,0:85)*360, ares)
@@ -236,12 +235,12 @@ begin
 
   t_dire = t_sum_1h(31:41,0:85)*360-t_temp(31:41,0:85)
 
-  time = ((it+1)*6/60.)
+  time = (it*6/60.)
 
   ares@tiMainString = "diffrence"
   plot9(8) = gsn_csm_contour(wks,t_dire(:,:), ares)
 
-  gres@txString = "time = " + time +"h - "+ (time+1) + "h"
+  gres@txString = "time = " + time +"h - "+ (time+0.5) + "h"
   gsn_panel(wks, plot9, (/3,3/), gres)
 
 end do
@@ -251,7 +250,7 @@ end do
   gres_ta = True
   gres_ta@gsnPanelLabelBar = True
   gres_ta@txString = "Theta Anomaly"
-  gsn_panel(wks, plots, (/3,4/), gres_ta)
+  gsn_panel(wks, plots, (/3,3/), gres_ta)
 
 end
 
