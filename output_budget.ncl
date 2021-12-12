@@ -10,7 +10,7 @@ begin
   ;a = addfile("/user_home/jyyin/dta/wrfout_d02_2000-04-04_00:00:00","r")
   ;a1 = addfile("/user_home/jyyin/dta/wrfout_d01_2000-04-04_00:00:00","r")
 
-  a = addfile("/user_home/jyyin/dta/sim9_wrfv3/wrfout_d02_2000-09-01_00:00:00","r")
+  a = addfile("/user_home/jyyin/dta/sim9_v3/wrfout_d02_2000-09-02_00:00:00","r")
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
  
   FirstTime = True
@@ -303,29 +303,29 @@ end do
  ;ta_ra@units = "K"
  ;ta_ra@_FillValue = 9.96921e+36
 
-outfilet = addfile("sim9_wrfv3/bud_d1_00/adv_h.nc","c")
+outfilet = addfile("sim9_v3/bud/adv_h_d2_00.nc","c")
 outfilet->t_adv_h = ta_adv_h
 
-outfilet = addfile("sim9_wrfv3/bud_d1_00/adv_v.nc","c")
+outfilet = addfile("sim9_v3/bud/adv_v_d2_00.nc","c")
 ;outfilet = addfile("sim9/bud_d3_12/adv.nc","c")
 outfilet->t_adv_v = ta_adv_v
 
-outfilet = addfile("sim9_wrfv3/bud_d1_00/diff.nc","c")
+outfilet = addfile("sim9_v3/bud/diff_d2_00.nc","c")
 outfilet->t_diff = ta_diff
 
-outfilet = addfile("sim9_wrfv3/bud_d1_00/heat.nc","c")
+outfilet = addfile("sim9_v3/bud/heat_d2_00.nc","c")
 outfilet->t_heat = ta_heat
 
-outfilet = addfile("sim9_wrfv3/bud_d1_00/pbl.nc","c")
+outfilet = addfile("sim9_v3/bud/pbl_d2_00.nc","c")
 outfilet->t_pbl = ta_pbl
 
-outfilet = addfile("sim9_wrfv3/bud_d1_00/cu.nc","c")
+outfilet = addfile("sim9_v3/bud/cu_d2_00.nc","c")
 outfilet->t_cu = ta_cu
 
 ;outfilet = addfile("sim9/bud_d3_12/shcu.nc","c")
 ;outfilet->t_shcu = ta_shcu
 
-outfilet = addfile("sim9_wrfv3/bud_d1_00/ra.nc","c")
+outfilet = addfile("sim9_v3/bud/ra_d2_00.nc","c")
 outfilet->t_ra = ta_ra
 
 end

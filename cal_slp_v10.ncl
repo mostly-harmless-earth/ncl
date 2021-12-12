@@ -10,7 +10,7 @@ begin
   ;a = addfile("/user_home/jyyin/dta/wrfout_d02_2000-04-04_00:00:00","r")
   ;f = addfile ("/user_home/jyyin/dta/sim3/wrfout_d01_2000-03-03_00:00:00", "r")
     
-    files = systemfunc("ls ./sim9/wrfout_d02_*")
+    files = systemfunc("ls ./sim9_v3/wrfout_d02_*")
     a = addfiles(files, "r")
     ListSetType(a, "cat")
 
@@ -55,7 +55,9 @@ begin
   do it = 0, dims-1
 
     slp = wrf_user_getvar(a, "slp", it)
-    v10 = wrf_user_getvar(a, "V10", it)
+    vv = wrf_user_getvar(a, "V10", it)
+    uu = wrf_user_getvar(a, "U10", it)
+    v10 = sqrt(uu^2+vv^2)
 
     slp2d = new((/221,221/),float)
     slp2d = slp(10:230,10:230)
@@ -106,7 +108,7 @@ begin
 ; Graphics section
   ;printVarSummary(slp)
 
-  wks=gsn_open_wks("pdf","/user_home/jyyin/dta/sim9/slp-V10-3d") 
+  wks=gsn_open_wks("pdf","/user_home/jyyin/dta/sim9_v3/slp-V10-6d") 
   gsn_define_colormap(wks,"MPL_BuGn")  ; Change color map.
 
   plots = new(2,graphic)
@@ -151,5 +153,8 @@ begin
   
   gres@gsnCenterString = "Sea Level Pressure(Pa) ~C~ Max Wind Speed(m/s)" 
   gsn_panel(wks, plots, (/1,2/), gres)
+
+  ;asciiwrite("sim9_v3/slp_min.txt",smin)
+  asciiwrite("sim9_v3/wnd_max.txt",vmax)
 
 end

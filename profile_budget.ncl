@@ -32,35 +32,35 @@ begin
     ;ano_h = addfiles(files, "r")
     ;ListSetType(ano_h, "cat")
 
-    a1 = addfile("/user_home/jyyin/dta/sim9/bud_d1_00/heat.nc","r")
+    a1 = addfile("/user_home/jyyin/dta/sim9_v3/bud_d1_00/heat.nc","r")
     t_heat = a1->t_heat 
 
-    a2 = addfile("/user_home/jyyin/dta/sim9/bud_d1_00/pbl.nc","r")
+    a2 = addfile("/user_home/jyyin/dta/sim9_v3/bud_d1_00/pbl.nc","r")
     t_pbl = a2->t_pbl
 
-    a3 = addfile("/user_home/jyyin/dta/sim9/bud_d1_00/diff.nc","r")
+    a3 = addfile("/user_home/jyyin/dta/sim9_v3/bud_d1_00/diff.nc","r")
     t_diff = a3->t_diff
     
-    a4 = addfile("/user_home/jyyin/dta/sim9/bud_d1_00/adv_v.nc","r")
+    a4 = addfile("/user_home/jyyin/dta/sim9_v3/bud_d1_00/adv_v.nc","r")
     t_adv_v = a4->t_adv_v
 
-    a5 = addfile("/user_home/jyyin/dta/sim9/bud_d1_00/adv_h.nc","r")
+    a5 = addfile("/user_home/jyyin/dta/sim9_v3/bud_d1_00/adv_h.nc","r")
     t_adv_h = a5->t_adv_h
 
-    a6 = addfile("/user_home/jyyin/dta/sim9/bud_d1_00/adv.nc","r")
+    a6 = addfile("/user_home/jyyin/dta/sim9_v3/bud_d1_00/adv.nc","r")
     t_adv = a6->t_adv
     
-    a7 = addfile("/user_home/jyyin/dta/sim9/bud_d1_00/cu.nc","r")
+    a7 = addfile("/user_home/jyyin/dta/sim9_v3/bud_d1_00/cu.nc","r")
     t_cu = a7->t_cu
     
-    a8 = addfile("/user_home/jyyin/dta/sim9/bud_d1_00/ra.nc","r")
+    a8 = addfile("/user_home/jyyin/dta/sim9_v3/bud_d1_00/ra.nc","r")
     t_ra = a8->t_ra
     
-    ;files = systemfunc("ls ./sim9/tano_d2*")
+    ;files = systemfunc("ls ./sim9_v3/tano_d2*")
     ;ano_h = addfiles(files, "r")
     ;ListSetType(ano_h, "cat")
 
-    ano_h = addfile("sim9/tano_d1_00.nc","r")
+    ano_h = addfile("sim9_v3/tano_d1_00.nc","r")
     t_ano = ano_h->ta
 
     t_sum = t_adv_h + t_adv_v + t_heat + t_pbl + t_ra + t_diff
@@ -74,7 +74,7 @@ begin
     printVarSummary(t_ano)
     printVarSummary(t_sum)
 
-    wks=gsn_open_wks("pdf","/user_home/jyyin/dta/sim9/profile_7-10h_30min") 
+    wks=gsn_open_wks("pdf","/user_home/jyyin/dta/sim9_v3/profile_7-10h_30min") 
     gsn_define_colormap(wks,"MPL_coolwarm")  ; Change color map.
 
     ;;; t_sum: 120 X 68 X 150
