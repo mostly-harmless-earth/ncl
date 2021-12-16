@@ -47,8 +47,11 @@ begin
     print(r1)
 
     printVarSummary(t_ano)
+  do iz = 0,67
+    t_ano(iz,:,:) = smth9(t_ano(iz,:,:), 0.5, -0.25, True) 
+  end do
 
-    wks=gsn_open_wks("pdf","/user_home/jyyin/dta/sim9_v3/ta_automatic_line") 
+    wks=gsn_open_wks("pdf","/user_home/jyyin/dta/sim9_v3/ta_100-104") 
     ;gsn_define_colormap(wks,"BlueWhiteOrangeRed")  ; Change color map.
     gsn_define_colormap(wks,"MPL_RdBu")
     gsn_reverse_colormap(wks)
@@ -63,7 +66,7 @@ begin
 
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-do it = 0, nt-1, dt
+do it = 1000, 1040, dt
 
   res                     = True
 
@@ -102,24 +105,19 @@ do it = 0, nt-1, dt
     res@gsnDraw            = False                   ; don't draw
     res@gsnFrame           = False                   ; don't advance frame
 
-    ;res@tmXBMode    = "Explicit"
-    ;res@tmXBValues  = (/0, 22, 43, 64, 85,107,128/)
-    ;res@tmXBLabels  = (/0,100,200,300,400,500,600/)
+    res@tmXBMode    = "Explicit"
+    res@tmXBValues  = (/0, 22, 43, 64, 85,107,128/)
+    res@tmXBLabels  = (/0,100,200,300,400,500,600/)
 
-    ;res@tmYLMode    = "Explicit"
-    ;res@tmYLValues  = (/0, 11,24,36,40/)
-    ;res@tmYLLabels  = (/0.5,5,10,15,17/)
+    res@tmYLMode    = "Explicit"
+    res@tmYLValues  = (/0, 11,24,36,40/)
+    res@tmYLLabels  = (/0.5,5,10,15,17/)
 
-    res@tmXMajorGrid          = True               ; Add white grid lines
-    res@tmXMajorGridLineColor = "gray"
-    res@tmYMajorGrid          = True
-    res@tmYMajorGridLineColor = "gray"
-
-    ;res@cnLevelSelectionMode = "ManualLevels"   ; set explicit contour levels
+    res@cnLevelSelectionMode = "ManualLevels"   ; set explicit contour levels
     ;if (n.le.2) then
-      ;res@cnLevelSpacingF = 0.2
-      ;res@cnMinLevelValF  = -3
-      ;res@cnMaxLevelValF  = 3
+      res@cnLevelSpacingF = 0.2
+      res@cnMinLevelValF  = -3
+      res@cnMaxLevelValF  = 3
     ;else
       ;res@cnLevelSpacingF = 0.2
       ;res@cnMinLevelValF  = -7
@@ -139,21 +137,60 @@ do it = 0, nt-1, dt
 
 end do
   
+ 
   res@cnLevelSelectionMode = "AutomaticLevels"   ; set explicit contour levels
   res@tiMainString = "time = " + (time+1) + "h"
   ;plots(n) =  gsn_csm_contour(wks,t_ano(nt-1,0:41,:), res)
   gres_ta = True
   gres_ta@gsnPanelLabelBar = True
   gres_ta@txString = "Theta Anomaly"
-  gsn_panel(wks, plots(0:23), (/4,6/), gres_ta)
-  gsn_panel(wks, plots(24:47), (/4,6/), gres_ta)
-  gsn_panel(wks, plots(47:71), (/4,6/), gres_ta)
-  gsn_panel(wks, plots(72:95), (/4,6/), gres_ta)
-  gsn_panel(wks, plots(96:119), (/4,6/), gres_ta)
-  gsn_panel(wks, plots(120:143), (/4,6/), gres_ta)
-  gsn_panel(wks, plots(143:167), (/4,6/), gres_ta)
-  gsn_panel(wks, plots(168:191), (/4,6/), gres_ta)
-  gsn_panel(wks, plots(192:215), (/4,6/), gres_ta)
+  gsn_panel(wks, plots(0:8), (/3,3/), gres_ta)
+  ;gsn_panel(wks, plots(24:47), (/4,6/), gres_ta)
+  ;gsn_panel(wks, plots(47:71), (/4,6/), gres_ta)
+  ;gsn_panel(wks, plots(72:95), (/4,6/), gres_ta)
+  ;gsn_panel(wks, plots(96:119), (/4,6/), gres_ta)
+  ;gsn_panel(wks, plots(120:143), (/4,6/), gres_ta)
+  ;gsn_panel(wks, plots(143:167), (/4,6/), gres_ta)
+  ;gsn_panel(wks, plots(168:191), (/4,6/), gres_ta)
+  ;gsn_panel(wks, plots(192:215), (/4,6/), gres_ta)
+
+  t_hov = transpose(t_ano(929:1199,38,:))
+  m = ispan(929,1199,50)
+  
+  hres = True
+  
+  hres@cnLevelSelectionMode = "ManualLevels" 
+  hres@cnLevelSpacingF = 0.3
+  hres@cnMinLevelValF  = -3
+  hres@cnMaxLevelValF  = 3
+
+  hres@tmYLMode    = "Explicit"
+  hres@tmYLValues  = (/22.,  43., 64., 85.,107.,128/)
+  hres@tmYLLabels  = (/100.,200.,300.,400.,500.,600./)
+
+  hres@tmXBMode    = "Explicit"
+  hres@tmXBValues  = m-929
+  hres@tmXBLabels  = m*6/60.
+
+  ;hres@tmXBMode        = "Manual"  
+  ;hres@tmXBTickStartF  = m(0)
+  ;hres@tmXBTickEndF    = m(667)
+  ;res@tmXBTickSpacingF= 5
+
+  hres@cnFillOn            = True
+  hres@cnLinesOn           = False
+  hres@cnLineLabelsOn      = False
+
+  hres@tiMainString   = "Theta hovmoller"
+  hres@tiYAxisString  = "Radius(Km)"
+  hres@tiXAxisString  = "times(h)"
+  hres@gsnLeftString  = " "
+
+  plot = gsn_csm_contour(wks, t_hov, hres)
+
+
+
+
 
 end
 

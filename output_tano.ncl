@@ -150,7 +150,7 @@ do lev = 0,nz-1
     end do
 end do
 
-t_temp = t_poave(:,21:86)
+t_temp = t_poave(:,42:75)
 t_avg = dim_avg_n(t_temp, 1)
 
 do lev = 0,nz-1

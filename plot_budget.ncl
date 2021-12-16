@@ -56,7 +56,7 @@ begin
     ;a8 = addfile("/user_home/jyyin/dta/sim9/bud_d3_12/ra.nc","r")
     ;t_ra = a8->t_ra
     
-    files = systemfunc("ls ./sim9_v3/tano_d5*")
+    files = systemfunc("ls ./sim9_v3/tha/tano_d5_00*")
     ano_h = addfiles(files, "r")
     ListSetType(ano_h, "cat")
 
@@ -75,7 +75,7 @@ begin
     printVarSummary(t_ano)
     printVarSummary(t_sum)
 
-    wks=gsn_open_wks("eps","/user_home/jyyin/dta/sim9_v3/budget_d5") 
+    wks=gsn_open_wks("pdf","/user_home/jyyin/dta/sim9_v3/budget_stg3_gd") 
     gsn_define_colormap(wks,"BlueWhiteOrangeRed")  ; Change color map.
 
     ;;; t_sum: 120 X 68 X 150
@@ -85,9 +85,9 @@ begin
     n = 0
     plots = new(12,graphic)
   
-    do it = 4,1,10
+    do it = 40,41,10
 
-    dt = 59
+    dt = 19
 
     t_sum_1h   = dim_sum_n(t_sum(it:it+dt,:,:), 0)
     t_adv_h_1h = dim_sum_n(t_adv_h(it:it+dt,:,:), 0)
@@ -121,16 +121,21 @@ begin
   ares@cnFillOn            = True
   ares@cnLinesOn           = True
   
-  ;ares@tmXBMode = "Explicit"
-  ;r1 = fspan(0.0,700.0,150)
+  ares@tmXBMode = "Explicit"
+  r1 = fspan(0.0,700.0,150)
   ;print(r1)
   ares@tmXBMode    = "Explicit"
-  ares@tmXBValues  = (/0, 22, 43, 64, 85,107,128/)
-  ares@tmXBLabels  = (/0,100,200,300,400,500,600/)
+  ares@tmXBValues  = (/0, 22, 43, 64, 85/)
+  ares@tmXBLabels  = (/0,100,200,300,400/)
 
   ares@tmYLMode    = "Explicit"
   ares@tmYLValues  = (/0, 11,24,36,40/)
   ares@tmYLLabels  = (/0.5,5,10,15,17/)
+
+  ;ares@tmXMajorGrid          = True               ; Add white grid lines
+  ;ares@tmXMajorGridLineColor = "gray"
+  ;ares@tmYMajorGrid          = True
+  ;ares@tmYMajorGridLineColor = "gray"
 
   ;ares@tmYLMode    = "Explicit"
   ;ares@tmYLValues  = (/0,14,21,26,30/)
@@ -147,9 +152,9 @@ begin
   ares@cnLevelSelectionMode = "AutomaticLevels"
 
   ares@cnLevelSelectionMode = "ManualLevels"   ; set explicit contour levels
-  ares@cnLevelSpacingF = 1.
-  ares@cnMinLevelValF  = -10.
-  ares@cnMaxLevelValF  = 10.
+  ares@cnLevelSpacingF = 0.2
+  ares@cnMinLevelValF  = -8.
+  ares@cnMaxLevelValF  = 8.
 
   ;ares@cnLevelSelectionMode = "ExplicitLevels"   ; set explicit contour levels
   ;ares@cnLevels     = (/-10,-0.8,-0.6,-0.4,-0.2, 0,   2,  4,  6,  8,10/)   ; set levels
@@ -160,8 +165,7 @@ begin
   ;ares@tiMainString = "Total Advection"
   ;plot9(0) = gsn_csm_contour(wks,t_adv_1h(11:41,:)*360, ares)
 
-  
-;
+
   ares@tiMainString = "Cu"
   plot9(6) = gsn_csm_contour(wks,t_cu_1h(0:44,0:85)*360, ares)
 
@@ -179,9 +183,9 @@ begin
   ;ares@cnFillColors = (/ 7, 23,33,59,71,101,149,152,167,183,199,215/)  ; set the colors to be used
 
   ares@cnLevelSelectionMode = "ManualLevels"   ; set explicit contour levels
-  ares@cnLevelSpacingF = 10.
-  ares@cnMinLevelValF  = -200.
-  ares@cnMaxLevelValF  = 200.
+  ares@cnLevelSpacingF = 5.
+  ares@cnMinLevelValF  = -80.
+  ares@cnMaxLevelValF  = 80.
   
   ares@tiMainString = "Horizontal Advection"
   plot9(7) = gsn_csm_contour(wks,t_adv_h_1h(0:44,0:85)*360, ares)
@@ -208,9 +212,9 @@ begin
   ;ares@cnFillColors = (/ 7, 23,33,59,71,101,149,152,167,183,199,215/)  ; set the colors to be used
 
   ares@cnLevelSelectionMode = "ManualLevels"   ; set explicit contour levels
-  ares@cnLevelSpacingF = 0.5
-  ares@cnMinLevelValF  = -3.5
-  ares@cnMaxLevelValF  = 3.5
+  ares@cnLevelSpacingF = 0.2
+  ares@cnMinLevelValF  = -3
+  ares@cnMaxLevelValF  = 3
 
   ares@tiMainString = "Sum of RHS"
   plot9(1) = gsn_csm_contour(wks,t_sum_1h(0:44,0:85)*360, ares)
@@ -221,13 +225,13 @@ begin
   t_dire = t_sum_1h(0:44,0:85)*360-t_temp(0:44,0:85)
 
   ;time = (it*6/60.)+96
-  time = 100
+  time = 100.
   
   ares@tiMainString = "diffrence"
   plot9(2) = gsn_csm_contour(wks,t_dire(:,:), ares)
 
   ;gres@gsnPanelLabelBar = True
-  gres@txString = "time = " + time +"h - "+ (time+3) + "h"
+  gres@txString = "time = " + time +"h - "+ (time+2) + "h"
   gsn_panel(wks, plot9, (/3,3/), gres)
 
 end do
