@@ -9,8 +9,8 @@ begin
   ;a = addfile("/user_home/jyyin/dta/wrfout_d02_2000-04-04_00:00:00","r")
   ;a1 = addfile("/user_home/jyyin/dta/wrfout_d01_2000-04-04_00:00:00","r")
 
-  a = addfile("/user_home/jyyin/dta/sim9_v3/wrfout_d02_2000-09-01_00:00:00","r")
-  aout = addfile("/user_home/jyyin/dta/sim9_v3/wrfout_d01_2000-09-05_12:00:00","r")
+  a = addfile("/user_home/jyyin/dta/sim9_v3/wrfout_d02_2000-09-04_00:00:00","r")
+  a_out = addfile("/user_home/jyyin/dta/sim9_v3/wrfout_d01_2000-09-04_00:00:00","r")
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
  
   FirstTime = True
@@ -26,9 +26,9 @@ begin
 
  t_ano = new((/ntimes,nz,240,240/),"float")
  th = new((/ntimes,nz,240,240/),"float")
- th_out = new((/ntimes,nz,240,240/),"float")
+ th_out = new((/ntimes,nz,160,160/),"float")
 
-    wks=gsn_open_wks("pdf","/user_home/jyyin/dta/sim9_v3/Horizontal_plot") 
+    wks=gsn_open_wks("pdf","/user_home/jyyin/dta/sim9_v3/Horizontal_plot_30") 
     gsn_define_colormap(wks,"MPL_coolwarm")  ; Change color map.
 
     ;;; t_sum: 120 X 68 X 150
@@ -44,7 +44,8 @@ begin
  
     thb  = wrf_user_getvar(a, "th", it)
     thb_out  = wrf_user_getvar(a_out, "th", it)
-    printVarSummary(thb)
+    ;printVarSummary(thb)
+    ;printVarSummary(thb_out)
 
 ;-------------------------------------------------------------------------------------
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; vertical interp & decoupled mass;;;;;;;;;;;;;;;;;;;;;;;
@@ -53,18 +54,18 @@ begin
 
     do iz = 0, nz-1
       th(it,iz,:,:) = wrf_interp_3d_z(thb, z, hei(iz))
-      th_out(it,iz,:,:) = wrf_interp_3d_z(thb_out, z, hei(iz))
+      th_out(it,iz,:,:) = wrf_interp_3d_z(thb_out, z_out, hei(iz))
     end do
 
   end do
 
-    th_avg1 = dim_sum_n(th_out,3)
-    th_avg  = dim_sum_n(th_avg1,2)
+    th_avg1 = dim_avg_n(th_out,3)
+    th_avg  = dim_avg_n(th_avg1,2)
     ;printVarSummary(t_ano)
     ;printVarSummary(th)
     ;printVarSummary(th_avg)
 
-  do it = 1, ntimes-1,1
+  do it = 0, ntimes-1,1
     do iz = 0,nz-1,1
         t_ano(it,iz,:,:) = th(it,iz,:,:)-th_avg(it,iz)
     end do
@@ -119,5 +120,16 @@ begin
       res@tiMainString = "time = " + (it*6/60.) + "h"
       plots =  gsn_csm_contour(wks,t_ano(it,24,60:180,60:180), res)
     end do
+
+    t_ano!0 = "time"
+    t_ano!1 = "height"
+    t_ano!2 = "Radial_sn"
+    t_ano!3 = "Radial_we"
+    t_ano@long_name = "temperature anomaly"
+    t_ano@units = "K"
+    t_ano@_FillValue = 9.96921e+36
+
+outfilet = addfile("sim9_v3/tha/unazi_tano_d4_00.nc","c")
+outfilet->ta = t_ano
     
 end
