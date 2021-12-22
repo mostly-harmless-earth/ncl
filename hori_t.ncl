@@ -9,8 +9,8 @@ begin
   ;a = addfile("/user_home/jyyin/dta/wrfout_d02_2000-04-04_00:00:00","r")
   ;a1 = addfile("/user_home/jyyin/dta/wrfout_d01_2000-04-04_00:00:00","r")
 
-  a = addfile("/user_home/jyyin/dta/sim9_v3/wrfout_d02_2000-09-04_00:00:00","r")
-  a_out = addfile("/user_home/jyyin/dta/sim9_v3/wrfout_d01_2000-09-04_00:00:00","r")
+  a = addfile("/user_home/jyyin/dta/sim9_v3/wrfout_d02_2000-09-05_00:00:00","r")
+  a_out = addfile("/user_home/jyyin/dta/sim9_v3/wrfout_d01_2000-09-05_00:00:00","r")
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
  
   FirstTime = True
@@ -28,7 +28,7 @@ begin
  th = new((/ntimes,nz,240,240/),"float")
  th_out = new((/ntimes,nz,160,160/),"float")
 
-    wks=gsn_open_wks("pdf","/user_home/jyyin/dta/sim9_v3/Horizontal_plot_30") 
+    wks=gsn_open_wks("pdf","/user_home/jyyin/dta/sim9_v3/horizontal_plot_30") 
     gsn_define_colormap(wks,"MPL_coolwarm")  ; Change color map.
 
     ;;; t_sum: 120 X 68 X 150
@@ -116,7 +116,6 @@ begin
     ;res@lbLabelBarOn        = False           ; turn off individual cb's
  
     do it = 0, ntimes-1,10
-
       res@tiMainString = "time = " + (it*6/60.) + "h"
       plots =  gsn_csm_contour(wks,t_ano(it,24,60:180,60:180), res)
     end do
@@ -129,7 +128,7 @@ begin
     t_ano@units = "K"
     t_ano@_FillValue = 9.96921e+36
 
-outfilet = addfile("sim9_v3/tha/unazi_tano_d4_00.nc","c")
+outfilet = addfile("sim9_v3/tha/unazi_tano_d5_00.nc","c")
 outfilet->ta = t_ano
     
 end

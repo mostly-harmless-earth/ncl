@@ -115,16 +115,21 @@ do it = 0, nt-1, dt
     res@tmYMajorGrid          = True
     res@tmYMajorGridLineColor = "gray"
 
-    ;res@cnLevelSelectionMode = "ManualLevels"   ; set explicit contour levels
-    ;if (n.le.2) then
-      ;res@cnLevelSpacingF = 0.2
-      ;res@cnMinLevelValF  = -3
-      ;res@cnMaxLevelValF  = 3
-    ;else
-      ;res@cnLevelSpacingF = 0.2
-      ;res@cnMinLevelValF  = -7
-      ;res@cnMaxLevelValF  = 7
-    ;end if
+    res@cnLevelSelectionMode = "ManualLevels"   ; set explicit contour levels
+    if (it.le.262) then
+        res@cnLevelSpacingF = 0.2
+        res@cnMinLevelValF  = -3
+        res@cnMaxLevelValF  = 3
+      else if (it.le.926) then
+        res@cnLevelSpacingF = 0.5
+        res@cnMinLevelValF  = -7
+        res@cnMaxLevelValF  = 7
+      else
+          res@cnLevelSpacingF = 1
+          res@cnMinLevelValF  = -10
+          res@cnMaxLevelValF  = 10       
+      end if
+    end if
 
     ;res@cnLevelSelectionMode = "ExplicitLevels"   ; set explicit contour levels
     ;res@cnLevels     = (/-2.2,-1.0,-0.8,-0.6,-0.4,-0.2,0.2,  1, 2, 3, 4, 5, 6,  7,  8,  9/)   ; set levels
