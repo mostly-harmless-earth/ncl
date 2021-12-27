@@ -6,7 +6,7 @@ begin
 ;---Open file; substitute your own WRF output file here
 
     ;files = systemfunc("ls ./sim8/wrfout_d02_*")
-    a = addfile("/user_home/jyyin/dta/sim9/wrfout_d02_2000-09-01_00:00:00.nc","r")
+    a = addfile("/user_home/jyyin/dta/sim9_v3/wrfout_d02_2000-09-01_12:00:00.nc","r")
     ;ano_h = addfile("sim9/tano_d1_00.nc","r")
     
     
@@ -22,7 +22,8 @@ begin
     ;t_pbl   = wrf_user_getvar(a, "te_temf", -1);
     ;p   = wrf_user_getvar(a, "p", 2)
     th = wrf_user_getvar(a,"th",-1)
-    ;t = wrf_user_getvar(f, "T", -1)
+    z = wrf_user_getvar(a, "z", -1)
+    hei = wrf_user_getvar(a, "height", -1)
 
     ;printVarSummary(t_ano)
     ;hei = fspan(500, 27500, 68)
@@ -46,7 +47,8 @@ begin
     ;t_adv_h = a->T_TEND_ADV_H
     ;t_adv_v = a->T_TEND_ADV_V
 
-    printVarSummary(th)
+    printVarSummary(z)
+    printVarSummary(hei)
 
     ;differ1 = t_adv_h - t_adv_h1
     ;differ2 = t_adv_h - t_adv_h2
@@ -96,8 +98,13 @@ begin
     ;print(c3)
     ;print(c4)
 
+    zzz1 = z(50,:,10,10)
+    zzz2 = z(50,:,100,100)
+    zzz3 = z(50,:,120,120)
 
-    
+    print(zzz1)
+    print(zzz2)
+    print(zzz3)
 
 ; Look at your data
     ;printVarSummary(p)
@@ -118,8 +125,8 @@ begin
 
 
 
-    ;wks = gsn_open_wks("pdf","sim9/t_adv_00")
-    ;gsn_define_colormap(wks, "MPL_coolwarm")
+    wks = gsn_open_wks("pdf","sim9_v3/height")
+    gsn_define_colormap(wks, "MPL_coolwarm")
 
     res = True
     ;res@tmXBMode    = "Explicit"
@@ -131,15 +138,12 @@ begin
     ;res@tmYLLabels  = (/0.5,5,10,15,17/)
     ;res@cnFillOn = True
 
-    ;do it = 0, 119, 5
+    do it = 0, 119, 10
 
-    ;res@tiMainString = "time = "+it
-
-    ;plot = gsn_csm_contour(wks, t_adv_h(2,65,:,:), res)
-    ;plot = gsn_csm_contour(wks, t_adv_v(2,65,:,:), res)
-    ;plot = gsn_csm_contour(wks, differ2(30,:,120,:), res)
-    ;plot = gsn_csm_contour(wks, differ3(30,:,120,:), res)
-    ;plot = gsn_csm_contour(wks, t_adv_v(30,:,120,:), res)
-    ;end do
+    plot = gsn_csm_contour(wks, z(it,:,10,:)-z(it,:,100,:), res)
+    plot = gsn_csm_contour(wks, z(it,:,100,:)-hei(it,:,100,:), res)
+    plot = gsn_csm_contour(wks, hei(it,:,120,:), res)
+    
+    end do
 
 end
