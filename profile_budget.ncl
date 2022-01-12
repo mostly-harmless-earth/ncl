@@ -32,25 +32,25 @@ begin
     ;ano_h = addfiles(files, "r")
     ;ListSetType(ano_h, "cat")
 
-    a1 = addfile("/user_home/jyyin/dta/sim9_v3/bud/heat_d3_00.nc","r")
+    a1 = addfile("/user_home/jyyin/dta/sim9_v3/bud/heat_d1_00.nc","r")
     t_heat = a1->t_heat 
 
-    a2 = addfile("/user_home/jyyin/dta/sim9_v3/bud/pbl_d3_00.nc","r")
+    a2 = addfile("/user_home/jyyin/dta/sim9_v3/bud/pbl_d1_00.nc","r")
     t_pbl = a2->t_pbl
 
-    a3 = addfile("/user_home/jyyin/dta/sim9_v3/bud/diff_d3_00.nc","r")
+    a3 = addfile("/user_home/jyyin/dta/sim9_v3/bud/diff_d1_00.nc","r")
     t_diff = a3->t_diff
     
-    a4 = addfile("/user_home/jyyin/dta/sim9_v3/bud/adv_v_d3_00.nc","r")
+    a4 = addfile("/user_home/jyyin/dta/sim9_v3/bud/adv_v_d1_00.nc","r")
     t_adv_v = a4->t_adv_v
 
-    a5 = addfile("/user_home/jyyin/dta/sim9_v3/bud/adv_h_d3_00.nc","r")
+    a5 = addfile("/user_home/jyyin/dta/sim9_v3/bud/adv_h_d1_00.nc","r")
     t_adv_h = a5->t_adv_h
 
     ;a6 = addfile("/user_home/jyyin/dta/sim9_v3/bud/adv_d1_00.nc","r")
     ;t_adv = a6->t_adv
     
-    a7 = addfile("/user_home/jyyin/dta/sim9_v3/bud/cu_d3_00.nc","r")
+    a7 = addfile("/user_home/jyyin/dta/sim9_v3/bud/cu_d1_00.nc","r")
     t_cu = a7->t_cu
     
     ;a8 = addfile("/user_home/jyyin/dta/sim9_v3/bud_d1_00/ra.nc","r")
@@ -60,7 +60,7 @@ begin
     ;ano_h = addfiles(files, "r")
     ;ListSetType(ano_h, "cat")
 
-    ano_h = addfile("sim9_v3/tha/tano_d3_00.nc","r")
+    ano_h = addfile("sim9_v3/tha/tano_d1_00.nc","r")
     t_ano = ano_h->ta
 
     t_sum = t_adv_h + t_adv_v + t_heat + t_pbl + t_diff + t_cu
@@ -75,7 +75,7 @@ begin
     printVarSummary(t_ano)
     printVarSummary(t_sum)
 
-    wks=gsn_open_wks("pdf","/user_home/jyyin/dta/sim9_v3/profile_100-104h") 
+    wks=gsn_open_wks("pdf","/user_home/jyyin/dta/sim9_v3/profile_test") 
     gsn_define_colormap(wks,"amwg")  ; Change color map.
 
     ;;; t_sum: 120 X 68 X 150
@@ -85,10 +85,14 @@ begin
     n = 0
     plots = new(12,graphic)
   
-    it = 40
+    it = 45
     dt = 19
 
-    t_sum_1h   = dim_sum_n(t_sum(it:it+dt,:,:), 0)
+    t_sum_1h  = dim_sum_n(t_sum(it:it+dt,:,:), 0)
+    t_sum_1h  = runave_n(t_sum_1h, 5, 0, 1)
+    ;
+    ;
+    
     t_adv_h_1h = dim_sum_n(t_adv_h(it:it+dt,:,:), 0)
     t_adv_v_1h = dim_sum_n(t_adv_v(it:it+dt,:,:), 0)
     t_adv_1h   = dim_sum_n(t_adv(it:it+dt,:,:), 0)

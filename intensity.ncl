@@ -10,24 +10,26 @@ begin
   ;a = addfile("","r")
   ;f = addfile ("", "r")
 
-  smin = asciiread("sim9_v3/slp_min.txt",(1200),"float")
-  vmax = asciiread("sim9_v3/wnd_max.txt",(1200),"float")
+  smin = asciiread("sim_lev90/slp_min90.txt",(61),"float")
+  vmax = asciiread("sim_lev90/wnd_max90.txt",(61),"float")
     
   dims = dimsizes(smin)
-  m = ispan(0,dims-1,1)*6/60.
-  m1 = ispan(0,dims-61,1)
-  v_change_1h = new(dims-10, "float")
+  print(dims)
+  m = ispan(0,dims-1,1)*2
+  m1 = ispan(0,dims-7,1)*2
+  v_change_1h = new(dims-6, "float")
 
   ;print(m)
 
-do i = 0, dims-61
-  v_change_1h(i) = vmax(i+60)-vmax(i)
-  if (v_change_1h(i).ge.3.8175) then
-    print("time = " + i*6/60.)
-  end if
-end do
+;do i = 0, dims-7
+  ;v_change_1h(i) = vmax(i+6)-vmax(i)
+  ;if (v_change_1h(i).ge.3.8175) then
+    ;print("time = " + i*2 )
+    ;print("tt = " + i )
+  ;end if
+;end do
   
-  v_change_1h = runave(v_change_1h, 3, 0)
+  ;v_change_1h = runave(v_change_1h, 3, 0)
   ;t_c = (/540,640,780,920,1020,1660,1320,1560,2300/)
   ;slp_cho = new(9, float)
 
@@ -40,7 +42,7 @@ end do
 ; Graphics section
   ;printVarSummary(slp)
 
-  wks=gsn_open_wks("pdf","/user_home/jyyin/dta/sim9_v3/slp-V10") 
+  wks=gsn_open_wks("pdf","/user_home/jyyin/dta/sim_lev100/slp-V10-90s") 
   gsn_define_colormap(wks,"MPL_BuGn")  ; Change color map.
 
   plots = new(2,graphic)
@@ -64,7 +66,7 @@ end do
   resL@xyLineThicknesses      = 2.5 
   resL@xyLineColor      = "Blue3"
 
-  resL@gsnXRefLine    = (/m(262),m(929)/); four X reference lines 
+  resL@gsnXRefLine    = (/m(11),m(30)/); four X reference lines 
   resL@gsnXRefLineThicknessF = 3.   
   ;resL@gsnXRefLineColor = "blue"
 
@@ -79,7 +81,7 @@ end do
 
   plot = gsn_csm_xy2(wks,m,smin,vmax,resL,resR)
 
-  ;res@gsnXRefLine    = m(262)     ; four X reference lines 
+  res@gsnXRefLine    = m(11)     ; four X reference lines 
   ;res@gsnXRefLineThicknesses = 4.   
   ;res@gsnXRefLineColors = "blue"
 

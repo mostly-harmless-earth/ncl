@@ -10,7 +10,7 @@ begin
   ;a = addfile("/user_home/jyyin/dta/sim9_v3/wrfout_d02_2000-09-01_12:00:00","r")
   ;a1 = addfile("/user_home/jyyin/dta/wrfout_d01_2000-04-04_00:00:00","r")
 
-  files = systemfunc("ls ./sim9_v3/wrfout_d02_*")   
+  files = systemfunc("ls /user_home/jyyin/software/WRFV3/test/em_tropical_cyclone/wrfout_d01_*")   
   a = addfiles(files, "r")
   ListSetType(a, "cat")
 
@@ -19,16 +19,19 @@ begin
   FirstTime = True
   times  = wrf_user_getvar(a,"times",-1)   ; get times in the file
   ntimes = dimsizes(times)          ; number of times in the file
+
+  nx = 300
+  ny = 300
  
-  mdims = new((/ntimes,68,240,240/), integer)
+  mdims = new((/ntimes,68,nx,ny/), integer)
   nd = dimsizes(mdims)
   FirstTime = True
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;----------------------------- Find the TC Center ----------------------
 
-    lat = ispan( 0, 1434, 6)
-    lon = ispan( 0, 1434, 6)
+    lat = ispan( 0, 5382, 18)
+    lon = ispan( 0, 5382, 18)
 
     ;latout = ispan( 0, 2864, 18)
     ;lonout = ispan( 0, 2864, 18)
@@ -42,17 +45,17 @@ begin
     ;latout@units = "km"
     ;lonout@units=  "km"
   
-  imin = 120
-  jmin = 120
+  imin = 150
+  jmin = 150
 
   ;imin0 = 80
   ;jmin0 = 80
 
 ;;;;;;;;;;;;;;;;;;;;; Generate the pole coordinate ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-  nr = 150
-  nz = 68  ; Sigma levels
-  r = fspan(0.0,700.0,nr)
+  nr = 250
+  nz = 100  ; Sigma levels
+  r = fspan(0.0,2500.0,nr)
   ro = fspan(0.0, 1400.0, nr)
   ;print(r)
   r@units = "km"
@@ -113,7 +116,7 @@ end do
 ;-------------------------------------------------------------------------------------
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; vertical interp ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-    hei = fspan(500, 27500, 68)
+    hei = fspan(500, 27500, 100)
     uu = u
     vv = v
     ww = w
@@ -190,13 +193,13 @@ end do
  w_ave@units = "m/s"
  w_ave@_FillValue = 9.96921e+36
  
-outfilet = addfile("sim9_v3/radial_wind.nc","c")
+outfilet = addfile("sim_lev100/radial_wind.nc","c")
 outfilet->wrad = rai_ave
 
-outfilet = addfile("sim9_v3/tangential_wind.nc","c")            
+outfilet = addfile("sim_lev100/tangential_wind.nc","c")            
 outfilet->wtan = tan_ave
 
-outfilet = addfile("sim9_v3/vertical_wind.nc","c")            
+outfilet = addfile("sim_lev100/vertical_wind.nc","c")            
 outfilet->ww = w_ave
 
 

@@ -6,7 +6,7 @@ begin
 ;---Open file; substitute your own WRF output file here
 
     ;files = systemfunc("ls ./sim8/wrfout_d02_*")
-    a = addfile("/user_home/jyyin/dta/sim9_v3/wrfout_d02_2000-09-01_12:00:00.nc","r")
+    a = addfile("/user_home/jyyin/software/WRFV3/test/em_tropical_cyclone/wrfout_d01_2000-02-01_00:00:00","r")
     ;ano_h = addfile("sim9/tano_d1_00.nc","r")
     
     
@@ -17,11 +17,11 @@ begin
     ;t_ano = ano_h->ta
 ;--Read variables
 
-    ;times = wrf_user_getvar(f2,"times",-1)  ; get all time values on file
+    times = wrf_user_getvar(a,"times",-1)  ; get all time values on file
     ;tb    =   ; calculate pressure across all time, levels
     ;t_pbl   = wrf_user_getvar(a, "te_temf", -1);
     ;p   = wrf_user_getvar(a, "p", 2)
-    th = wrf_user_getvar(a,"th",-1)
+    ;th = wrf_user_getvar(a,"th",-1)
     z = wrf_user_getvar(a, "z", -1)
     hei = wrf_user_getvar(a, "height", -1)
 
@@ -49,6 +49,7 @@ begin
 
     printVarSummary(z)
     printVarSummary(hei)
+    print(times)
 
     ;differ1 = t_adv_h - t_adv_h1
     ;differ2 = t_adv_h - t_adv_h2
@@ -98,9 +99,9 @@ begin
     ;print(c3)
     ;print(c4)
 
-    zzz1 = z(50,:,10,10)
-    zzz2 = z(50,:,100,100)
-    zzz3 = z(50,:,120,120)
+    zzz1 = z(2,:,10,10)
+    zzz2 = z(2,:,150,150)
+    zzz3 = z(2,:,150,150)
 
     print(zzz1)
     print(zzz2)
@@ -125,7 +126,7 @@ begin
 
 
 
-    wks = gsn_open_wks("pdf","sim9_v3/height")
+    wks = gsn_open_wks("pdf","sim_lev90/height")
     gsn_define_colormap(wks, "MPL_coolwarm")
 
     res = True

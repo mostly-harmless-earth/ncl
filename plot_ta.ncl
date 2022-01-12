@@ -33,22 +33,23 @@ begin
     ;ListSetType(ano_h, "cat")
 
 
-    files = systemfunc("ls ./sim9_v3/tha/tano_*")
-    ano_h = addfiles(files, "r")
-    ListSetType(ano_h, "cat")
+   files = systemfunc("ls ./sim_lev100/tha/tano_*")
+   ano_h = addfiles(files, "r")
+  ListSetType(ano_h, "cat")
 
-    ;ano_h = addfile("sim9_wrfv3/tano_d1_00.nc","r")
+    ;ano_h = addfile("/user_home/jyyin/dta/sim_lev100/tha/tano_d2_lev100.nc","r")
     t_ano = ano_h[:]->ta
 
-    hei = fspan(500, 27500, 68)/1000
-    r1 = fspan(0.0,700.0,150)
+    hei = fspan(500, 27500, 100)/1000
+    r1 = fspan(0.0,2500.0,250)
     hei@units = "m"
     r1@units = "km"
     print(r1)
+    print(hei)
 
     printVarSummary(t_ano)
 
-    wks=gsn_open_wks("pdf","/user_home/jyyin/dta/sim9_v3/ta_automatic_line") 
+    wks=gsn_open_wks("pdf","/user_home/jyyin/dta/sim_lev100/ta") 
     ;gsn_define_colormap(wks,"BlueWhiteOrangeRed")  ; Change color map.
     gsn_define_colormap(wks,"MPL_RdBu")
     gsn_reverse_colormap(wks)
@@ -57,9 +58,9 @@ begin
 
     n = 0
     
-    nt = 120*9
-    plots = new(nt/5,graphic)
-    dt = 5 ;;;30min
+    nt = 36
+    plots = new(nt,graphic)
+    dt = 1 ;;;2h
 
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -106,9 +107,17 @@ do it = 0, nt-1, dt
     ;res@tmXBValues  = (/0, 22, 43, 64, 85,107,128/)
     ;res@tmXBLabels  = (/0,100,200,300,400,500,600/)
 
+    res@tmXBMode    = "Explicit"
+    res@tmXBValues  = (/0, 10, 20, 30, 40,50,60/)
+    res@tmXBLabels  = (/0,100,200,300,400,500,600/)
+
     ;res@tmYLMode    = "Explicit"
     ;res@tmYLValues  = (/0, 11,24,36,40/)
     ;res@tmYLLabels  = (/0.5,5,10,15,17/)
+
+    res@tmYLMode    = "Explicit"
+    res@tmYLValues  = (/0, 17,35,53,60/)
+    res@tmYLLabels  = (/0.5,5,10,15,17/)
 
     res@tmXMajorGrid          = True               ; Add white grid lines
     res@tmXMajorGridLineColor = "gray"
@@ -116,18 +125,18 @@ do it = 0, nt-1, dt
     res@tmYMajorGridLineColor = "gray"
 
     res@cnLevelSelectionMode = "ManualLevels"   ; set explicit contour levels
-    if (it.le.262) then
+    if (it.le.11) then
         res@cnLevelSpacingF = 0.2
         res@cnMinLevelValF  = -3
         res@cnMaxLevelValF  = 3
-      else if (it.le.926) then
+      else if (it.le.22) then
         res@cnLevelSpacingF = 0.5
         res@cnMinLevelValF  = -7
         res@cnMaxLevelValF  = 7
       else
-          res@cnLevelSpacingF = 1
-          res@cnMinLevelValF  = -10
-          res@cnMaxLevelValF  = 10       
+          res@cnLevelSpacingF = 0.8
+          res@cnMinLevelValF  = -12
+          res@cnMaxLevelValF  = 12       
       end if
     end if
 
@@ -137,28 +146,28 @@ do it = 0, nt-1, dt
 
     res@lbLabelBarOn        = False           ; turn off individual cb's
     
-    time = it*6/60.
-    res@tiMainString = "time = " + time + "h"
-    plots(n) =  gsn_csm_contour(wks,t_ano(it,0:41,:), res)
+    ;time = it*6/60.
+    res@tiMainString = "time = " + (it*2) + "h"
+    plots(n) =  gsn_csm_contour(wks,t_ano(it,0:60,0:60), res)
     n = n+1
 
 end do
   
   res@cnLevelSelectionMode = "AutomaticLevels"   ; set explicit contour levels
-  res@tiMainString = "time = " + (time+1) + "h"
+  res@tiMainString = "time = " + (it*2+2) + "h"
   ;plots(n) =  gsn_csm_contour(wks,t_ano(nt-1,0:41,:), res)
   gres_ta = True
   gres_ta@gsnPanelLabelBar = True
   gres_ta@txString = "Theta Anomaly"
-  gsn_panel(wks, plots(0:23), (/4,6/), gres_ta)
-  gsn_panel(wks, plots(24:47), (/4,6/), gres_ta)
-  gsn_panel(wks, plots(47:71), (/4,6/), gres_ta)
-  gsn_panel(wks, plots(72:95), (/4,6/), gres_ta)
-  gsn_panel(wks, plots(96:119), (/4,6/), gres_ta)
-  gsn_panel(wks, plots(120:143), (/4,6/), gres_ta)
-  gsn_panel(wks, plots(143:167), (/4,6/), gres_ta)
-  gsn_panel(wks, plots(168:191), (/4,6/), gres_ta)
-  gsn_panel(wks, plots(192:215), (/4,6/), gres_ta)
+  gsn_panel(wks, plots(0:11), (/3,4/), gres_ta)
+  gsn_panel(wks, plots(12:23), (/3,4/), gres_ta)
+  gsn_panel(wks, plots(23:35), (/3,4/), gres_ta)
+  ;gsn_panel(wks, plots(72:95), (/4,6/), gres_ta)
+  ;gsn_panel(wks, plots(96:119), (/4,6/), gres_ta)
+  ;gsn_panel(wks, plots(120:143), (/4,6/), gres_ta)
+  ;gsn_panel(wks, plots(143:167), (/4,6/), gres_ta)
+  ;gsn_panel(wks, plots(168:191), (/4,6/), gres_ta)
+  ;gsn_panel(wks, plots(192:215), (/4,6/), gres_ta)
 
 end
 
