@@ -9,33 +9,39 @@ begin
   ;a = addfile("/user_home/jyyin/dta/wrfout_d02_2000-04-04_00:00:00","r")
   ;a1 = addfile("/user_home/jyyin/dta/wrfout_d01_2000-04-04_00:00:00","r")
 
-  a = addfile("/user_home/jyyin/dta/sim9_v3/wrfout_d02_2000-09-05_00:00:00","r")
-  a_out = addfile("/user_home/jyyin/dta/sim9_v3/wrfout_d01_2000-09-05_00:00:00","r")
+  a = addfile("/user_home/jyyin/dta/sim_lev100/wrfout_d03_2000-02-01_06:00:00","r")
+  a_out = addfile("/user_home/jyyin/dta/sim_lev100/wrfout_d02_2000-02-01_06:00:00","r")
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
  
   FirstTime = True
   times  = wrf_user_getvar(a,"times",-1)   ; get times in the file
   ntimes = dimsizes(times)          ; number of times in the file
  
-  mdims = new((/480,ntimes,240,240/), integer)
+  mdims = new((/ntimes,240,240/), integer)
   nd = dimsizes(mdims)
   FirstTime = True
 
    nr = 150
-   nz = 68  ; Sigma levels
+   nz = 100  ; Sigma levels
 
- t_ano = new((/ntimes,nz,240,240/),"float")
- th = new((/ntimes,nz,240,240/),"float")
- th_out = new((/ntimes,nz,160,160/),"float")
+   nx = 420
+   ny = 420
 
-    wks=gsn_open_wks("pdf","/user_home/jyyin/dta/sim9_v3/horizontal_plot_30") 
+   nxo = 240
+   nyo = 240
+
+ t_ano = new((/ntimes,nz,nx,ny/),"float")
+ th = new((/ntimes,nz,nx,ny/),"float")
+ th_out = new((/ntimes,nz,nxo,nyo/),"float")
+
+    wks=gsn_open_wks("pdf","/user_home/jyyin/dta/sim_lev100/horizontal_plot_30") 
     gsn_define_colormap(wks,"MPL_coolwarm")  ; Change color map.
 
     ;;; t_sum: 120 X 68 X 150
     ;;; interval 6min 
     ;;; 1h: 10 ;;; 2h: 20
 
-  do it = 0, ntimes-1 , 1; TIME LOOP
+  do it = 6, 9 , 1; TIME LOOP
    
     print("Working on time: " + it )
 
@@ -44,13 +50,13 @@ begin
  
     thb  = wrf_user_getvar(a, "th", it)
     thb_out  = wrf_user_getvar(a_out, "th", it)
-    ;printVarSummary(thb)
+    printVarSummary(thb)
     ;printVarSummary(thb_out)
 
 ;-------------------------------------------------------------------------------------
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; vertical interp & decoupled mass;;;;;;;;;;;;;;;;;;;;;;;
 
-    hei = fspan(500, 27500, 68)
+    hei = fspan(500, 27500, 100)
 
     do iz = 0, nz-1
       th(it,iz,:,:) = wrf_interp_3d_z(thb, z, hei(iz))
@@ -114,10 +120,10 @@ begin
     ;res@cnFillColors = (/  10,  15,  20,  30,  40,  60,  0, 70,75,80,85,90,95,100,105,110,112/)  ; set the colors to be used
 
     ;res@lbLabelBarOn        = False           ; turn off individual cb's
- 
-    do it = 0, ntimes-1,10
-      res@tiMainString = "time = " + (it*6/60.) + "h"
-      plots =  gsn_csm_contour(wks,t_ano(it,24,60:180,60:180), res)
+    t_ano2 = dim_avg_n(t_ano(:,46:48,:,:),1)
+    do it = 6, 9,1
+      ;res@tiMainString = "time = " + (it*6/60.) + "h"
+      plots =  gsn_csm_contour(wks,t_ano2(it,:,:), res)
     end do
 
     t_ano!0 = "time"
@@ -128,7 +134,7 @@ begin
     t_ano@units = "K"
     t_ano@_FillValue = 9.96921e+36
 
-outfilet = addfile("sim9_v3/tha/unazi_tano_d5_00.nc","c")
-outfilet->ta = t_ano
+;outfilet = addfile("sim_lev100/tha/unazi_tano_d5_00.nc","c")
+;outfilet->ta = t_ano
     
 end

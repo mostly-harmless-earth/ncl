@@ -32,42 +32,43 @@ begin
     ;ano_h = addfiles(files, "r")
     ;ListSetType(ano_h, "cat")
 
-    a1 = addfile("/user_home/jyyin/dta/sim9_v3/bud/heat_d5_00.nc","r")
+    a1 = addfile("/user_home/jyyin/dta/sim_lev100/bud/heat_d1_06.nc","r")
     t_heat = a1->t_heat 
 
-    a2 = addfile("/user_home/jyyin/dta/sim9_v3/bud/pbl_d5_00.nc","r")
+    a2 = addfile("/user_home/jyyin/dta/sim_lev100/bud/pbl_d1_06.nc","r")
     t_pbl = a2->t_pbl
 
-    a3 = addfile("/user_home/jyyin/dta/sim9_v3/bud/diff_d5_00.nc","r")
+    a3 = addfile("/user_home/jyyin/dta/sim_lev100/bud/diff3_d1_06.nc","r")
     t_diff = a3->t_diff
     
-    a4 = addfile("/user_home/jyyin/dta/sim9_v3/bud/adv_v_d5_00.nc","r")
+    a4 = addfile("/user_home/jyyin/dta/sim_lev100/bud/adv_v_d1_06.nc","r")
     t_adv_v = a4->t_adv_v
 
-    a5 = addfile("/user_home/jyyin/dta/sim9_v3/bud/adv_h_d5_00.nc","r")
+    a5 = addfile("/user_home/jyyin/dta/sim_lev100/bud/adv_h_d1_06.nc","r")
     t_adv_h = a5->t_adv_h
 
     ;a6 = addfile("/user_home/jyyin/dta/sim9/bud_d3_12/adv.nc","r")
     ;t_adv = a6->t_adv
     
-    a7 = addfile("/user_home/jyyin/dta/sim9_v3/bud/cu_d5_00.nc","r")
+    a7 = addfile("/user_home/jyyin/dta/sim_lev100/bud/cu_d1_06.nc","r")
     t_cu = a7->t_cu
     
     ;a8 = addfile("/user_home/jyyin/dta/sim9/bud_d3_12/ra.nc","r")
     ;t_ra = a8->t_ra
     
-    files = systemfunc("ls ./sim9_v3/tha/tano_d5_00*")
+    files = systemfunc("ls ./sim_lev100/tha/tano_d1*")
     ano_h = addfiles(files, "r")
     ListSetType(ano_h, "cat")
 
-    ;ano_h = addfile("sim9_v3/tano_d1_00.nc","r")
+    ;ano_h = addfile("sim_lev100/tano_d1_00.nc","r")
     t_ano = ano_h[:]->ta
 
     t_sum = t_adv_h + t_adv_v + t_heat + t_pbl + t_diff + t_cu
     t_adv = t_adv_h + t_adv_v
 
-    hei = fspan(500, 27500, 68)/1000
-    r1 = fspan(0.0,700.0,150)
+    hei = fspan(500, 27500, 100)/1000
+    nr = 100
+    r1 = fspan(0.0,400.0,nr)
     hei@units = "m"
     r1@units = "km"
     print(r1)
@@ -75,19 +76,19 @@ begin
     printVarSummary(t_ano)
     printVarSummary(t_sum)
 
-    wks=gsn_open_wks("pdf","/user_home/jyyin/dta/sim9_v3/budget_stg3_gd") 
+    wks=gsn_open_wks("pdf","/user_home/jyyin/dta/sim_lev100/budget_test") 
     gsn_define_colormap(wks,"BlueWhiteOrangeRed")  ; Change color map.
 
     ;;; t_sum: 120 X 68 X 150
-    ;;; interval 6min 
-    ;;; 1h: 10 ;;; 2h: 20
+    ;;; interval 10min 
+    ;;; 1h: 6 ;;; 2h: 12
 
     n = 0
     plots = new(12,graphic)
   
-    do it = 40,41,10
+    do it = 1,1,10
 
-    dt = 19
+    dt = 11
 
     t_sum_1h   = dim_sum_n(t_sum(it:it+dt,:,:), 0)
     t_adv_h_1h = dim_sum_n(t_adv_h(it:it+dt,:,:), 0)
@@ -121,16 +122,16 @@ begin
   ares@cnFillOn            = True
   ares@cnLinesOn           = True
   
-  ares@tmXBMode = "Explicit"
-  r1 = fspan(0.0,700.0,150)
+  ;ares@tmXBMode = "Explicit"
+  ;r1 = fspan(0.0,700.0,150)
   ;print(r1)
-  ares@tmXBMode    = "Explicit"
-  ares@tmXBValues  = (/0, 22, 43, 64, 85/)
-  ares@tmXBLabels  = (/0,100,200,300,400/)
+  ;ares@tmXBMode    = "Explicit"
+  ;ares@tmXBValues  = (/0, 22, 43, 64, 85/)
+  ;ares@tmXBLabels  = (/0,100,200,300,400/)
 
-  ares@tmYLMode    = "Explicit"
-  ares@tmYLValues  = (/0, 11,24,36,40/)
-  ares@tmYLLabels  = (/0.5,5,10,15,17/)
+  ;ares@tmYLMode    = "Explicit"
+  ;ares@tmYLValues  = (/0, 11,24,36,40/)
+  ;ares@tmYLLabels  = (/0.5,5,10,15,17/)
 
   ;ares@tmXMajorGrid          = True               ; Add white grid lines
   ;ares@tmXMajorGridLineColor = "gray"
@@ -149,12 +150,12 @@ begin
   ares@gsnStringFontHeightF    = 0.025
   ares@cnLinesOn               = False
 
-  ares@cnLevelSelectionMode = "AutomaticLevels"
+  ;ares@cnLevelSelectionMode = "AutomaticLevels"
 
-  ares@cnLevelSelectionMode = "ManualLevels"   ; set explicit contour levels
-  ares@cnLevelSpacingF = 0.2
-  ares@cnMinLevelValF  = -8.
-  ares@cnMaxLevelValF  = 8.
+  ;ares@cnLevelSelectionMode = "ManualLevels"   ; set explicit contour levels
+  ;ares@cnLevelSpacingF = 0.2
+  ;ares@cnMinLevelValF  = -8.
+  ;ares@cnMaxLevelValF  = 8.
 
   ;ares@cnLevelSelectionMode = "ExplicitLevels"   ; set explicit contour levels
   ;ares@cnLevels     = (/-10,-0.8,-0.6,-0.4,-0.2, 0,   2,  4,  6,  8,10/)   ; set levels
@@ -163,37 +164,37 @@ begin
   ;ares@lbLabelBarOn        = False           ; turn off individual cb's
   ;ares@lbOrientation        = "Vertical"
   ;ares@tiMainString = "Total Advection"
-  ;plot9(0) = gsn_csm_contour(wks,t_adv_1h(11:41,:)*360, ares)
+  ;plot9(0) = gsn_csm_contour(wks,t_adv_1h(11:41,:)*600, ares)
 
 
   ares@tiMainString = "Cu"
-  plot9(6) = gsn_csm_contour(wks,t_cu_1h(0:44,0:85)*360, ares)
+  plot9(6) = gsn_csm_contour(wks,t_cu_1h(40:62,5:99)*600, ares)
 
   ares@tiMainString = "Nonadiabatic heating"
-  plot9(4) = gsn_csm_contour(wks,t_heat_1h(0:44,0:85)*360, ares)
+  plot9(4) = gsn_csm_contour(wks,t_heat_1h(40:62,5:99)*600, ares)
 
   ares@tiMainString = "PBL+diff"
-  plot9(5) = gsn_csm_contour(wks,(t_pbl_1h(0:44,0:85)+t_diff_1h(0:44,0:85))*360, ares)
+  plot9(5) = gsn_csm_contour(wks,(t_pbl_1h(40:62,5:99)+t_diff_1h(40:62,5:99))*600, ares)
   
   ares@tiMainString = "ADV"
-  plot9(3) = gsn_csm_contour(wks,t_adv_1h(0:44,0:85)*360, ares)
+  plot9(3) = gsn_csm_contour(wks,t_adv_1h(40:62,5:99)*600, ares)
   
   ;ares@cnLevelSelectionMode = "ExplicitLevels"   ; set explicit contour levels
   ;ares@cnLevels     = (/-100,-80,-60,-40,-20, 0,   20,  40,  60,  80,100/)   ; set levels
   ;ares@cnFillColors = (/ 7, 23,33,59,71,101,149,152,167,183,199,215/)  ; set the colors to be used
 
-  ares@cnLevelSelectionMode = "ManualLevels"   ; set explicit contour levels
+  ;ares@cnLevelSelectionMode = "ManualLevels"   ; set explicit contour levels
   ares@cnLevelSpacingF = 5.
   ares@cnMinLevelValF  = -80.
   ares@cnMaxLevelValF  = 80.
   
   ares@tiMainString = "Horizontal Advection"
-  plot9(7) = gsn_csm_contour(wks,t_adv_h_1h(0:44,0:85)*360, ares)
+  plot9(7) = gsn_csm_contour(wks,t_adv_h_1h(40:62,5:99)*600, ares)
   ;ares@tiMainString = "Radiation "
-  ;plot9(6) = gsn_csm_contour(wks,t_ra_1h(11:41,:)*360, ares)
+  ;plot9(6) = gsn_csm_contour(wks,t_ra_1h(11:41,:)*600, ares)
   
   ares@tiMainString = "Vertical Advection"
-  plot9(8) = gsn_csm_contour(wks,t_adv_v_1h(0:44,0:85)*360, ares)
+  plot9(8) = gsn_csm_contour(wks,t_adv_v_1h(40:62,5:99)*600, ares)
   
   ;gres = True
   ;gres@tiMainString = "theta Budget Term 1 hour"
@@ -212,26 +213,26 @@ begin
   ;ares@cnFillColors = (/ 7, 23,33,59,71,101,149,152,167,183,199,215/)  ; set the colors to be used
 
   ares@cnLevelSelectionMode = "ManualLevels"   ; set explicit contour levels
-  ares@cnLevelSpacingF = 0.2
-  ares@cnMinLevelValF  = -3
-  ares@cnMaxLevelValF  = 3
+  ares@cnLevelSpacingF = 0.05
+  ares@cnMinLevelValF  = -1
+  ares@cnMaxLevelValF  = 1
 
   ares@tiMainString = "Sum of RHS"
-  plot9(1) = gsn_csm_contour(wks,t_sum_1h(0:44,0:85)*360, ares)
+  plot9(1) = gsn_csm_contour(wks,t_sum_1h(40:62,5:99)*600, ares)
 
   ares@tiMainString = "Actual change"
-  plot9(0) = gsn_csm_contour(wks,t_temp(0:44,0:85), ares)
+  plot9(0) = gsn_csm_contour(wks,t_temp(40:62,5:99), ares)
 
-  t_dire = t_sum_1h(0:44,0:85)*360-t_temp(0:44,0:85)
+  t_dire = t_sum_1h(40:62,5:99)*600-t_temp(40:62,5:99)
 
   ;time = (it*6/60.)+96
-  time = 100.
+  ;time = 100.
   
   ares@tiMainString = "diffrence"
   plot9(2) = gsn_csm_contour(wks,t_dire(:,:), ares)
 
   ;gres@gsnPanelLabelBar = True
-  gres@txString = "time = " + time +"h - "+ (time+2) + "h"
+  ;gres@txString = "time = " + time +"h - "+ (time+2) + "h"
   gsn_panel(wks, plot9, (/3,3/), gres)
 
 end do

@@ -10,8 +10,8 @@ begin
   ;a = addfile("/user_home/jyyin/dta/wrfout_d02_2000-04-04_00:00:00","r")
   ;a1 = addfile("/user_home/jyyin/dta/wrfout_d01_2000-04-04_00:00:00","r")
 
-  a = addfile("/user_home/jyyin/dta/sim_lev100/wrfout_d01_2000-09-03_00:00:00","r")
-  ;aout = addfile("/user_home/jyyin/dta/sim9_v3/wrfout_d01_2000-09-05_12:00:00","r")
+  a = addfile("/user_home/jyyin/dta/sim_lev100/wrfout_d03_2000-02-01_06:00:00","r")
+  aout = addfile("/user_home/jyyin/dta/sim_lev100/wrfout_d02_2000-02-01_06:00:00","r")
   
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
  
@@ -19,21 +19,21 @@ begin
   times  = wrf_user_getvar(a,"times",-1)   ; get times in the file
   
   ntimes = dimsizes(times)          ; number of times in the file
-  nx = 300
-  ny = 300
+  nx = 420
+  ny = 420
  
-  mdims = new((/480,ntimes,nx,ny/), integer)
+  mdims = new((/ntimes,nx,ny/), integer)
   nd = dimsizes(mdims)
   FirstTime = True
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;----------------------------- Find the TC Center ----------------------
 
-    lat = ispan( 0, 5382, 18)
-    lon = ispan( 0, 5382, 18)
+    lat = ispan( 0, 838, 2)       ;;;grid = 420
+    lon = ispan( 0, 838, 2)      ;;;domain = 840 km
 
-    latout = ispan( 0, 2864, 18)
-    lonout = ispan( 0, 2864, 18)
+    latout = ispan( 0, 1434, 6)  ;;; grid = 240 
+    lonout = ispan( 0, 1434, 6)  ;;; domain 1440 km
     
     nx = dimsizes(lat)
     nxo = dimsizes(latout)
@@ -44,17 +44,17 @@ begin
     latout@units = "km"
     lonout@units=  "km"
   
-  imin = 150
-  jmin = 150
+  imin = 209
+  jmin = 209
 
-  imin0 = 80
-  jmin0 = 80
+  imin0 = 119
+  jmin0 = 119
 
 ;;;;;;;;;;;;;;;;;;;;; Generate the pole coordinate ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-  nr = 250
-  r = fspan(0.0,2500.0,nr)
-  ro = fspan(0.0, 1400.0, nr)
+  nr = 100
+  r = fspan(0.0,400.0,nr)
+  ro = fspan(0.0, 700, nr)
   ;print(r)
   r@units = "km"
   ro@units = "km"
@@ -105,24 +105,24 @@ end do
 
   do it = 0 , ntimes-1 , 1; TIME LOOP
    
-    print("Working on time: " + it )
+    print("Working on time: " + times(it) )
 
     tb = wrf_user_getvar(a, "th", it)
     z = wrf_user_getvar(a, "z", it)
-    ;tb_out   = wrf_user_getvar(aout, "th", it)
-    ;z_out   = wrf_user_getvar(aout, "z", it)
+    tb_out   = wrf_user_getvar(aout, "th", it)
+    z_out   = wrf_user_getvar(aout, "z", it)
 
 ;-------------------------------------------------------------------------------------
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; vertical interp & decoupled mass;;;;;;;;;;;;;;;;;;;;;;;
 
 
     t       = tb
-    ;t_out   = tb_out
+    t_out   = tb_out
 
     do iz = 0, nz-1
 
       t(iz,:,:)       = wrf_interp_3d_z(tb, z, hei(iz))
-      ;t_out(iz,:,:)   = wrf_interp_3d_z(tb_out, z_out, hei(iz))
+      t_out(iz,:,:)   = wrf_interp_3d_z(tb_out, z_out, hei(iz))
 
     end do
 
@@ -130,33 +130,33 @@ end do
 ;;;;;;;;;;;;;;;;;;;; interp to pole coordinate ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
  tp     = new((/nz,nr*360/),"float")
- ;tp_out = new((/nz,nr*360/),"float")
+ tp_out = new((/nz,nr*360/),"float")
 
  t_pave   = new((/nz,nr/),"float")
- ;t_poave  = new((/nz,nr/),"float")
+ t_poave  = new((/nz,nr/),"float")
 
  t_p      = linint2_points(lat,lon,t,False,lat_p,lon_p,1)
- ;t_pout   = linint2_points(latout,lonout,t_out,False,lat_po,lon_po,1)
+ t_pout   = linint2_points(latout,lonout,t_out,False,lat_po,lon_po,1)
 
 do lev = 0,nz-1
   do i = 0,nr-1
       sum_te = 0.0
-      ;sum_tout = 0.0
+      sum_tout = 0.0
 
       do j = 0,359,1
         
          sum_te    = sum_te    + t_p(lev,i*360+j)
-         ;sum_tout  = sum_tout  + t_pout(lev,i*360+j)
+         sum_tout  = sum_tout  + t_pout(lev,i*360+j)
 
       end do
 
       t_pave(lev,i)= sum_te/360.0
-      ;t_poave(lev,i)= sum_tout/360.0
+      t_poave(lev,i)= sum_tout/360.0
 
     end do
 end do
 
-t_temp = t_pave(:,50:60)
+t_temp = t_poave(:,70:96)    ;;; ro = fspan(0.0, 700, 100) ;;; 500-680km : 
 t_avg = dim_avg_n(t_temp, 1)
 
 do lev = 0,nz-1
@@ -177,7 +177,7 @@ end do
  t_ano@units = "K"
  t_ano@_FillValue = 9.96921e+36
 
-outfilet = addfile("sim_lev100/tha/tano_d3_lev100.nc","c")
+outfilet = addfile("sim_lev100/tha/tano_d1_lev100.nc","c")
 outfilet->ta = t_ano
 
 end

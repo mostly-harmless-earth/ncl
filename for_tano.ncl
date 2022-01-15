@@ -2,7 +2,8 @@ load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_code.ncl"
 load "$NCARG_ROOT/lib/ncarg/nclscripts/wrf/WRFUserARW.ncl"
 load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl"
    
-external CAL "/user_home/jyyin/dta/radheight_fix.so"              
+external CAL "/user_home/jyyin/dta/radheight_fix.so"   
+external CAL "/user_home/jyyin/dta/outradheight_fix.so"              
 
 begin    
 
@@ -11,8 +12,8 @@ begin
   ;a = addfile("/user_home/jyyin/dta/wrfout_d02_2000-04-04_00:00:00","r")
   ;a1 = addfile("/user_home/jyyin/dta/wrfout_d01_2000-04-04_00:00:00","r")
 
-  a = addfile("/user_home/jyyin/dta/sim9_v3/wrfout_d02_2000-09-01_00:00:00","r")
-  aout = addfile("/user_home/jyyin/dta/sim9_v3/wrfout_d01_2000-09-01_00:00:00","r")
+  a = addfile("/user_home/jyyin/dta/sim_lev100/wrfout_d03_2000-02-01_06:00:00","r")
+  aout = addfile("/user_home/jyyin/dta/sim_lev100/wrfout_d02_2000-02-01_06:00:00","r")
   
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
  
@@ -20,30 +21,30 @@ begin
   times  = wrf_user_getvar(a,"times",-1)   ; get times in the file
   ntimes = dimsizes(times)          ; number of times in the file
 
-  nx = 240
-  ny = 240
+  nx = 420
+  ny = 420
 
-  nxo = 160
-  nyo = 160
+  nxo = 240
+  nyo = 240
  
-  mdims = new((/480,ntimes,nx,ny/), integer)
+  mdims = new((/ntimes,nx,ny/), integer)
   nd = dimsizes(mdims)
   FirstTime = True
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;----------------------------- Find the TC Center ----------------------
 
-  imin = 119
-  jmin = 120
+  imin = 210
+  jmin = 210
 
-  imin0 = 80
-  jmin0 = 80
+  imin0 = 120
+  jmin0 = 120
 
 ;;;;;;;;;;;;;;;;;;;;; Generate the pole coordinate ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-  nr = 120  ;;; 120 * 6 = 720 Km
-  nz = 68   ; Sigma levels
-  r = fspan(0.0,700.0,nr)
+  nr = 100  ;;; 100 * 6 = 600 Km
+  nz = 100   ; Sigma levels
+  r = fspan(0.0,500.0,nr)
   ro = fspan(0.0, 1400.0, nr)
   print(r)
   r@units = "km"
@@ -53,7 +54,7 @@ begin
  
  t_ano    = new((/ntimes,nz,nr/),"float")
 
-  do it = 5 , 10 , 1; TIME LOOP
+  do it = 0 , 0 , 1; TIME LOOP
    
     print("Working on time: " + it )
 
@@ -65,7 +66,8 @@ begin
 ;-------------------------------------------------------------------------------------
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; vertical interp & decoupled mass;;;;;;;;;;;;;;;;;;;;;;;
 
-    hei = fspan(500, 27500, 68)
+    hei = fspan(500, 27500, 100)
+    print(hei)
     t       = tb
     t_out   = tb_out
 
@@ -109,14 +111,14 @@ begin
     t_poave := t_poave(lev|:,rad|:)
     
  
-t_temp = t_pave(:,83:119)
+t_temp = t_poave(:,:)
 t_avg = dim_avg_n(t_temp, 1)
 print(t_avg)
 
 do lev = 0,nz-1
   do i = 0,nr-1
 
-    t_ano(it,lev,i) = t_pave(lev,i)-t_avg(lev)
+    t_ano(it,lev,i) = t_poave(lev,i)-t_avg(lev)
    
     end do
 end do
@@ -137,10 +139,10 @@ end do
  ;t_ano@units = "K"
  ;t_ano@_FillValue = 9.96921e+36
 
-;outfilet = addfile("sim9_v3/tha/tano_d5_12.nc","c")
+;outfilet = addfile("sim_lev100/tha/tano_d5_12.nc","c")
 ;outfilet->ta = t_ano
 
-    wks=gsn_open_wks("pdf","/user_home/jyyin/dta/sim9_v3/test_for_d1") 
+    wks=gsn_open_wks("pdf","/user_home/jyyin/dta/sim_lev100/test_for_d1") 
     ;gsn_define_colormap(wks,"BlueWhiteOrangeRed")  ; Change color map.
     gsn_define_colormap(wks,"MPL_RdBu")
     gsn_reverse_colormap(wks)
@@ -151,7 +153,7 @@ end do
     ;res@cnLineLabelsOn      = False
     res@lbLabelBarOn        = True
     ;print(t_pave(0,40,:))
-    plot = gsn_contour(wks, t_ano(5,0:41,:), res)
+    plot = gsn_contour(wks, t_ano(0,0:60,:), res)
     ;plot = gsn_contour(wks, t_pave(0:41,:), res)
 
 end
