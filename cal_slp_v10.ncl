@@ -7,7 +7,7 @@ load "$NCARG_ROOT/lib/ncarg/nclscripts/wrf/WRFUserARW.ncl"
 
 begin
 
-  a = addfile("/user_home/jyyin/software/WRFV3/test/em_tropical_cyclone/wrfout_d01_2000-02-01_00:00:00","r")
+  a = addfile("/share/home/kkchu/yin/sim_lev100/wrfout_d03_*","r")
   ;f = addfile ("/user_home/jyyin/dta/sim3/wrfout_d01_2000-03-03_00:00:00", "r")
     
     ;files = systemfunc("ls /user_home/jyyin/software/WRFV3/test/em_tropical_cyclone/wrfout_d01_*")
@@ -60,10 +60,10 @@ begin
     uu = wrf_user_getvar(a, "U10", it)
     v10 = sqrt(uu^2+vv^2)
 
-    slp2d = new((/281,281/),float)
-    slp2d = slp(10:290,10:290)
-    v2d = new((/281,281/),float)
-    v2d = v10(10:290,10:290)
+    slp2d = new((/380,380/),float)
+    slp2d = slp(20:400,20:400)
+    v2d = new((/380,380/),float)
+    v2d = v10(20:400,20:400)
     dd = dimsizes(v2d)
 
 ; We need to convert 2-D array to 1-D array to find the minima.
@@ -109,7 +109,7 @@ begin
 ; Graphics section
   ;printVarSummary(slp)
 
-  wks=gsn_open_wks("pdf","/user_home/jyyin/dta/sim_lev100/slp-V10-90s") 
+  wks=gsn_open_wks("pdf","/user_home/jyyin/dta/sim_lev100/slp-V10") 
   gsn_define_colormap(wks,"MPL_BuGn")  ; Change color map.
 
   plots = new(2,graphic)
@@ -155,7 +155,7 @@ begin
   gres@gsnCenterString = "Sea Level Pressure(Pa) ~C~ Max Wind Speed(m/s)" 
   gsn_panel(wks, plots, (/1,2/), gres)
 
-  asciiwrite("sim_lev90/slp_min90.txt",smin)
-  asciiwrite("sim_lev90/wnd_max90.txt",vmax)
+  asciiwrite("sim_lev100/slp_min.txt",smin)
+  asciiwrite("sim_lev100/wnd_max.txt",vmax)
 
 end
