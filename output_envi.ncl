@@ -13,33 +13,23 @@ begin
   ;a = addfile("/user_home/jyyin/dta/sim_lev100/wrfout_d03_2000-02-01_06:00:00","r")
   ;aout = addfile("/user_home/jyyin/dta/sim_lev100/wrfout_d02_2000-02-01_06:00:00","r")
 
-  nn = (/"100","106","112","118","200","206","212","218",\
+      nn = (/"100","106","112","118","200","206","212","218",\
           "300","306","312","318","400","406","412","418",\
           "500","506","512","518"/)
 
-  din = dimsizes(nn)
+      din = dimsizes(nn)
 
- do in = 15, din-1, 1 
+ do in = 5, din-1, 1 
 
   print(in)
     
-  ;tb = at[:]->th
-  ;printVarSummary(tb)
-  ;z = az[:]->z
-  ;printVarSummary(z)
-  
-  at = addfile("sim_lev100/theta/theta0"+nn(in)+".nc", "r")
-  az = addfile("sim_lev100/height/z0"+nn(in)+".nc", "r")
-  
-  outfilet = addfile("sim_lev100/envi0"+nn(in)+".nc","r")
-  t_avg = outfilet->te  
+    ;files = systemfunc("ls ./sim_lev100/d02_theta/theta0"+nn(in)+"*")
+    
+    ;ListSetType(at, "cat")
 
-  printVarSummary(t_avg)
-
-  tb = at->th
-  ;printVarSummary(tb_out)
-  z = az->z
-  ;printVarSummary(z_out)
+    ;files = systemfunc("ls ./sim_lev100/d02_height/z0"+nn(in)+"*")
+    ;az = addfiles(files, "r")
+    ;ListSetType(az, "cat")
 
     ;p1     = wrf_user_getvar(f,"p",-1)
     ;t1     = wrf_user_getvar(f,"tk",-1)  ;
@@ -53,6 +43,14 @@ begin
   ;printVarSummary(tb)
   ;z = az[:]->z
   ;printVarSummary(z)
+  
+  at = addfile("sim_lev100/d02_theta/theta0"+nn(in)+".nc", "r")
+  az = addfile("sim_lev100/d02_height/z0"+nn(in)+".nc", "r")
+
+  tb_out = at->th
+  ;printVarSummary(tb_out)
+  z_out = az->z
+  ;printVarSummary(z_out)
 
   ;tb = wrf_user_getvar(a, "th", it)
   ;z = wrf_user_getvar(a, "z", it)
@@ -64,7 +62,7 @@ begin
  
   FirstTime = True
   
-  ndims = dimsizes(tb)
+  ndims = dimsizes(tb_out)
   ntimes = ndims(0)          ; number of times in the file
   nx = 420
   ny = 420
@@ -152,17 +150,19 @@ end do
   end do
 ;;-----------------------------------------------------------------------
  
- t_ano    = new((/ntimes,nz,nr/),"float")
+  t_ano  = new((/ntimes,nz,nr/),"float")
+  t_avg  = new((/ntimes,nz,nr/),"float")
  print(ntimes)
 
-  do it = 0 , ntimes-1 , 1; TIME LOOP
+  do it = 0 , 1 , 1; TIME LOOP
    
     print("Working on time: " + it )
 ;-------------------------------------------------------------------------------------
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; vertical interp & decoupled mass;;;;;;;;;;;;;;;;;;;;;;;
 
 
-    t = new((/nz,nx,ny/),"float")
+    t_out = new((/nz,nxo,nyo/),"float")
+    ;t_out   = tb_out
 
     do iz = 0, nz-1
 
@@ -185,8 +185,8 @@ end do
 
 do lev = 0,nz-1
   do i = 0,nr-1
-      sum_te = 0.0
-      ;sum_tout = 0.0
+      ;sum_te = 0.0
+      sum_tout = 0.0
 
       do j = 0,359,1
         
@@ -201,43 +201,40 @@ do lev = 0,nz-1
     end do
 end do
 
+;t_temp = t_poave(:,143:194)    ;;; ro = fspan(0.0, 700, 200) ;;; 500-680km : 
+t_avg(it,:,:) = t_pave(:,:)
 
-do lev = 0,nz-1
-  do i = 0,nr-1
+;do lev = 0,nz-1
+  ;do i = 0,nr-1
 
-    t_ano(it,lev,i) = t_pave(lev,i)-t_avg(it,lev)
+    ;t_ano(it,lev,i) = t_pave(lev,i)-t_avg(lev)
    
-    end do
-end do
+    ;end do
+;end do
 
 end do
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; output Section ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
    
- t_ano!0 = "time"
- t_ano!1 = "height"
- t_ano!2 = "Radial"
- t_ano@long_name = "temperature anomaly"
- t_ano@units = "K"
- t_ano@_FillValue = 9.96921e+36
-
  ;t_avg!0 = "time"
- ;t_avg!1 = "height"
- ;t_avg@long_name = "temperature anomaly"
- ;t_avg@units = "K"
- ;t_avg@_FillValue = 9.96921e+36
+ ;t_ano!1 = "height"
+ ;t_ano!2 = "Radial"
+ ;t_ano@long_name = "temperature anomaly"
+ ;t_ano@units = "K"
+ ;t_ano@_FillValue = 9.96921e+36
 
-  outfilet = addfile("sim_lev100/tha/tano"+nn(in)+".nc","c")
-  outfilet->ta = t_ano
+ t_avg!0 = "time"
+ t_avg!1 = "height"
+ t_avg!2 = "Radial"
+ t_avg@long_name = "temperature anomaly"
+ t_avg@units = "K"
+ t_avg@_FillValue = 9.96921e+36
 
-  delete(outfilet)
-  delete(at)
-  delete(az)
-  
-  delete(tb)
-  delete(z)
+outfilet = addfile("sim_lev100/envi_base0"+nn(in)+".nc","c")
+outfilet->te = t_avg
+
+delete(az)
+delete(at)
 
 end do
-
-
 
 end

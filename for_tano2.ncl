@@ -17,13 +17,13 @@ begin
 
   din = dimsizes(nn)
 
-do in = 0, din-1, 1
+do in = 10, din-1, 1 
 
   at = addfile("sim_lev100/theta/theta0"+nn(in)+".nc", "r")
   az = addfile("sim_lev100/height/z0"+nn(in)+".nc", "r")
   
-  outfilet = addfile("sim_lev100/ev/for_ev"+nn(in)+".nc","r")
-  t_avg = outfilet->ta  
+  outfilet = addfile("sim_lev100/ev/envi0"+nn(in)+".nc","r")
+  t_avg = outfilet->te  
 
   printVarSummary(t_avg)
 
@@ -57,7 +57,7 @@ do in = 0, din-1, 1
   nr = 200  ;;; 200 * 2 = 400 Km
   nz = 100   ; Sigma levels
   r = fspan(0.0,400.0,nr)
-  ;print(r)
+  print(r)
   r@units = "km"
 
 ;;-----------------------------------------------------------------------
@@ -72,7 +72,7 @@ do in = 0, din-1, 1
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; vertical interp & decoupled mass;;;;;;;;;;;;;;;;;;;;;;;
 
     hei = fspan(500, 27500, 100)
-    ;print(hei)
+    print(hei)
     t       = new((/nz,nx,ny/), "float")
 
     do iz = 0, nz-1
@@ -91,19 +91,18 @@ do in = 0, din-1, 1
 
     CAL::radheight(nz, nr, imin, jmin, t, nx, ny, t_pave)
     
-    ;printVarSummary(t_pave)
-    ;print(t_pave(40,:))
+    printVarSummary(t_pave)
+    print(t_pave(40,:))
 
     t_pave!0 = "rad"
     t_pave!1 = "lev"
 
     t_pave := t_pave(lev|:,rad|:)
 
-do lev = 0,90
+do lev = 0,nz-1
   do i = 0,nr-1
 
-    t_ano(it,lev,i) = t_pave(lev,i)
-    ;-t_avg(it,lev)
+    t_ano(it,lev,i) = t_pave(lev,i)-t_avg(it,lev)
    
     end do
 end do
@@ -121,8 +120,8 @@ end do
  t_ano@units = "K"
  t_ano@_FillValue = 9.96921e+36
 
-outfilet = addfile("sim_lev100/tha/for_t"+nn(in)+".nc","c")
-outfilet->ta = t_ano(:,0:90,:)
+outfilet = addfile("sim_lev100/tha/for_tano"+nn(in)+".nc","c")
+outfilet->ta = t_ano(0,0:90,:)
 
     wks=gsn_open_wks("pdf","/user_home/jyyin/dta/sim_lev100/test_for"+nn(in)) 
     ;gsn_define_colormap(wks,"BlueWhiteOrangeRed")  ; Change color map.

@@ -10,9 +10,8 @@ begin
   ;a = addfile("/user_home/jyyin/dta/wrfout_d02_2000-04-04_00:00:00","r")
   ;a1 = addfile("/user_home/jyyin/dta/wrfout_d01_2000-04-04_00:00:00","r")
 
-  a = addfile("/user_home/jyyin/dta/sim6_budget/wrfout_d02_2000-06-06_00:00:00","r")
-
-  aout = addfile("/user_home/jyyin/dta/sim6_budget/wrfout_d01_2000-06-06_00:00:00","r")
+  a = addfile("/share/home/kkchu/yin/budget_test/test_scr/wrfout_d02_2000-09-01_00:00:00","r")
+  aout = addfile("/share/home/kkchu/yin/budget_test/wrfout_d01_2000-09-01_00:00:00","r")
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
  
   FirstTime = True
@@ -46,8 +45,6 @@ begin
 
   imin0 = 80
   jmin0 = 80
-
-
 ;;;;;;;;;;;;;;;;;;;;; Generate the pole coordinate ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
   nr = 150
@@ -76,8 +73,6 @@ begin
          dyo(i,j)= ro(i)*sin(alfa(j))
     end do
 end do
-
-
 ;------------------- calculate the lat/lon of the pole coordinate ---------------
 
 
@@ -104,9 +99,8 @@ end do
  ta_diff  = new((/ntimes,nz,nr/),"float")
  ta_heat  = new((/ntimes,nz,nr/),"float")
  ta_pbl   = new((/ntimes,nz,nr/),"float")
- tb_heat  = new((/68,240,240/),"float")
 
-  do it = 0 , ntimes-1 , 1; TIME LOOP
+  do it = 1 , 3 , 1; TIME LOOP
    
     print("Working on time: " + it )
 
@@ -118,12 +112,10 @@ end do
     tb_adv_h = wrf_user_getvar(a, "T_TEND_ADV_H", it)
     tb_adv_v = wrf_user_getvar(a, "T_TEND_ADV_V", it)
     tb_diff  = wrf_user_getvar(a, "T_TEND_DIFF", it)
-    tb_cu    = wrf_user_getvar(a, "RTHCUTEN", it)
-    tb_ra    = wrf_user_getvar(a, "RTHRATEN", it)
+    tb_heat    = wrf_user_getvar(a, "H_DIABATIC", it) 
     tb_pbl   = wrf_user_getvar(a, "RTHBLTEN", it)
 
-    tb_heat = tb_cu + tb_ra
-
+    mut  = wrf_user_getvar(a, "MUT", it)
 ;-------------------------------------------------------------------------------------
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; vertical interp ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -147,9 +139,13 @@ end do
       t_diff(iz,:,:)  = wrf_interp_3d_z(tb_diff, z, hei(iz))
       t_heat(iz,:,:)  = wrf_interp_3d_z(tb_heat, z, hei(iz))
       t_pbl(iz,:,:)   = wrf_interp_3d_z(tb_pbl, z, hei(iz))
-     
-    end do
 
+      t_adv_v(iz,:,:) = t_adv_v(iz,:,:)/mut(:,:)
+      t_adv_h(iz,:,:) = t_adv_h(iz,:,:)/mut(:,:)
+      t_diff(iz,:,:)  = t_diff(iz,:,:)/mut(:,:)
+
+    end do
+    printVarSummary(t)
 ;-------------------------------------------------------------------------------------
 ;;;;;;;;;;;;;;;;;;;; interp to pole coordinate ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -227,21 +223,21 @@ end do
  t_ano!0 = "time"
  t_ano!1 = "height"
  t_ano!2 = "Radial"
- t_ano@long_name = "temperature"
+ t_ano@long_name = "theta anomaly"
  t_ano@units = "K"
  t_ano@_FillValue = 9.96921e+36
 
  ta_adv_v!0 = "time"
  ta_adv_v!1 = "height"
  ta_adv_v!2 = "Radial"
- ta_adv_v@long_name = "temperature"
+ ta_adv_v@long_name = "Vertical advection"
  ta_adv_v@units = "K"
  ta_adv_v@_FillValue = 9.96921e+36
 
  ta_adv_h!0 = "time"
  ta_adv_h!1 = "height"
  ta_adv_h!2 = "Radial"
- ta_adv_h@long_name = "temperature"
+ ta_adv_h@long_name = "Horizontal advection"
  ta_adv_h@units = "K"
  ta_adv_h@_FillValue = 9.96921e+36
 
@@ -249,14 +245,14 @@ end do
  ta_diff!0 = "time"
  ta_diff!1 = "height"
  ta_diff!2 = "Radial"
- ta_diff@long_name = "temperature"
+ ta_diff@long_name = "diffusion"
  ta_diff@units = "K"
  ta_diff@_FillValue = 9.96921e+36
  
  ta_heat!0 = "time"
  ta_heat!1 = "height"
  ta_heat!2 = "Radial"
- ta_heat@long_name = "temperature"
+ ta_heat@long_name = "Nondiabatic heating"
  ta_heat@units = "K"
  ta_heat@_FillValue = 9.96921e+36
 
@@ -267,22 +263,22 @@ end do
  ta_pbl@units = "K"
  ta_pbl@_FillValue = 9.96921e+36
 
-outfilet = addfile("sim6_budget/tano_azi_interp06.nc","c")
+outfilet = addfile("result_test/tano_azi.nc","c")
 outfilet->ta = t_ano
 
-outfilet = addfile("sim6_budget/t_adv_h06.nc","c")
+outfilet = addfile("result_test//adv_h.nc","c")
 outfilet->t_adv_h = ta_adv_h
 
-outfilet = addfile("sim6_budget/t_adv_v06.nc","c")
+outfilet = addfile("result_test/adv_v.nc","c")
 outfilet->t_adv_v = ta_adv_v
 
-outfilet = addfile("sim6_budget/t_diff06.nc","c")
+outfilet = addfile("result_test/diff.nc","c")
 outfilet->t_diff = ta_diff
 
-outfilet = addfile("sim6_budget/t_heat06.nc","c")
+outfilet = addfile("result_test/heat.nc","c")
 outfilet->t_heat = ta_heat
 
-outfilet = addfile("sim6_budget/t_pbl06.nc","c")
+outfilet = addfile("result_test/pbl.nc","c")
 outfilet->t_pbl = ta_pbl
 
 

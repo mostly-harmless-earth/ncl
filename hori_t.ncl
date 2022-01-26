@@ -1,7 +1,9 @@
 load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_code.ncl"
 load "$NCARG_ROOT/lib/ncarg/nclscripts/wrf/WRFUserARW.ncl"
 load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl"
-     
+   
+external CAL "/user_home/jyyin/dta/radheight_fix.so"                
+
 begin    
 
 ; The WRF ARW input file.  
@@ -9,132 +11,149 @@ begin
   ;a = addfile("/user_home/jyyin/dta/wrfout_d02_2000-04-04_00:00:00","r")
   ;a1 = addfile("/user_home/jyyin/dta/wrfout_d01_2000-04-04_00:00:00","r")
 
-  a = addfile("/user_home/jyyin/dta/sim_lev100/wrfout_d03_2000-02-01_06:00:00","r")
-  a_out = addfile("/user_home/jyyin/dta/sim_lev100/wrfout_d02_2000-02-01_06:00:00","r")
+  nn = (/"100","106","112","118","200","206","212","218",\
+          "300","306","312","318","400","406","412","418",\
+          "500","506","512","518"/)
+
+  nn1 = (/"1_00","1_06","1_12","1_18","2_00","2_06","2_12","2_18",\
+          "3_00","3_06","3_12","3_18","4_00","4_06","4_12","4_18",\
+          "5_00","5_06","5_12","5_18"/)
+
+
+  din = dimsizes(nn)
+
+do in = 0, din-1, 1 
+
+  at = addfile("sim_lev100/theta/theta0"+nn(in)+".nc", "r")
+
+  au = addfile("sim_lev100/wind/u_0"+nn1(in)+".nc", "r")
+  av = addfile("sim_lev100/wind/v_0"+nn1(in)+".nc", "r")
+  aw = addfile("sim_lev100/wind/w_0"+nn1(in)+".nc", "r")
+  
+  az = addfile("sim_lev100/height/z0"+nn(in)+".nc", "r")
+  
+  outfilet = addfile("sim_lev100/ev/envi0"+nn(in)+".nc","r")
+  t_avg = outfilet->te  
+
+  printVarSummary(t_avg)
+
+  ub = au->ua
+  vb = av->va
+  wb = aw->wa
+
+  tb = at->th
+  ;printVarSummary(tb_out)
+  z = az->z
+  ;printVarSummary(z_out)
+
+  print("doc = " + nn1(in))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
  
   FirstTime = True
-  times  = wrf_user_getvar(a,"times",-1)   ; get times in the file
-  ntimes = dimsizes(times)          ; number of times in the file
+  rms = dimsizes(tb)
+  ntimes = rms(0)          ; number of times in the file
+
+  nx = rms(2)
+  ny = rms(3)
  
-  mdims = new((/ntimes,240,240/), integer)
+  mdims = new((/ntimes,nx,ny/), integer)
   nd = dimsizes(mdims)
   FirstTime = True
 
-   nr = 150
-   nz = 100  ; Sigma levels
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;----------------------------- Find the TC Center ----------------------
 
-   nx = 420
-   ny = 420
+  imin = 210
+  jmin = 210
 
-   nxo = 240
-   nyo = 240
+;;;;;;;;;;;;;;;;;;;;; Generate the pole coordinate ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
- t_ano = new((/ntimes,nz,nx,ny/),"float")
- th = new((/ntimes,nz,nx,ny/),"float")
- th_out = new((/ntimes,nz,nxo,nyo/),"float")
+  nr = 200  ;;; 200 * 2 = 400 Km
+  nz = 100   ; Sigma levels
+  r = fspan(0.0,400.0,nr)
+  r@units = "km"
 
-    wks=gsn_open_wks("pdf","/user_home/jyyin/dta/sim_lev100/horizontal_plot_30") 
-    gsn_define_colormap(wks,"MPL_coolwarm")  ; Change color map.
+;;-----------------------------------------------------------------------
+ 
+ t_ano    = new((/ntimes,nz,nx,ny/),"float")
+ 
+ uu = t_ano
+ vv = t_ano
+ ww = t_ano
 
-    ;;; t_sum: 120 X 68 X 150
-    ;;; interval 6min 
-    ;;; 1h: 10 ;;; 2h: 20
-
-  do it = 6, 9 , 1; TIME LOOP
+  do it = 0 , ntimes-1 , 6; TIME LOOP
    
     print("Working on time: " + it )
-
-    z = wrf_user_getvar(a, "z", it)
-    z_out = wrf_user_getvar(a_out, "z", it)
- 
-    thb  = wrf_user_getvar(a, "th", it)
-    thb_out  = wrf_user_getvar(a_out, "th", it)
-    printVarSummary(thb)
-    ;printVarSummary(thb_out)
 
 ;-------------------------------------------------------------------------------------
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; vertical interp & decoupled mass;;;;;;;;;;;;;;;;;;;;;;;
 
     hei = fspan(500, 27500, 100)
+    t       = new((/nz,nx,ny/), "float")
 
     do iz = 0, nz-1
-      th(it,iz,:,:) = wrf_interp_3d_z(thb, z, hei(iz))
-      th_out(it,iz,:,:) = wrf_interp_3d_z(thb_out, z_out, hei(iz))
+
+      t(iz,:,:)       = wrf_interp_3d_z(tb(it,:,:,:), z(it,:,:,:), hei(iz))
+      uu(it,iz,:,:)      = wrf_interp_3d_z(ub(it,:,:,:), z(it,:,:,:), hei(iz))
+      vv(it,iz,:,:)      = wrf_interp_3d_z(vb(it,:,:,:), z(it,:,:,:), hei(iz))
+      ww(it,iz,:,:)      = wrf_interp_3d_z(wb(it,:,:,:), z(it,:,:,:), hei(iz))
+
     end do
 
-  end do
+do lev = 0,nz-1
+  do i = 0,ny-1
+    do j = 0,ny-1
 
-    th_avg1 = dim_avg_n(th_out,3)
-    th_avg  = dim_avg_n(th_avg1,2)
-    ;printVarSummary(t_ano)
-    ;printVarSummary(th)
-    ;printVarSummary(th_avg)
-
-  do it = 0, ntimes-1,1
-    do iz = 0,nz-1,1
-        t_ano(it,iz,:,:) = th(it,iz,:,:)-th_avg(it,iz)
-    end do
-  end do 
-
-
-  res                     = True
-  gres                    = True
-  
-  res@gsnDraw            = True                   ; don't draw
-  res@gsnFrame           = True                   ; don't advance frame
-  res@cnFillOn            = True
-  res@cnLinesOn           = True
-  res@cnLineLabelsOn      = False
-  ;res@cnLineThicknesses   = 1.5
-  ;gres@gsMarkerIndex = 0
-  ;gres@gsMarkerSizeF    = 0.015
-  ;gres@gsMarkerColor       = "navy"                 ; color chosen
-  ;gres@gsMarkerThicknessF = 3
-  ;res@xyLineThicknesses = 2.0
-  ;res@tiMainString = "Sea Level Pressure ~c~ Max Wind Speed"
-  
-  
-  ;res@tiYAxisString           = "height(km)"
-  ;res@tiXAxisString           = "times(hr)"
-  ;res@tiMainString = "Hovmoller 72-96h (r=0km)"
-
-  ;ti = ispan(0, 479, 1)
-  ;res@tmXBMode    = "Explicit"
-  ;res@tmXBValues  = ti(::40)
-  ;res@tmXBLabels   = ti(::40)*3/60+72
-  
-  ;t_ano2=transpose(t_ano(:,0:44,1))
-  ;plots = gsn_csm_contour(wks,t_ano2, res)
-
-    ;res@tmXBMode    = "Explicit"
-    ;res@tmXBValues  = (/0, 22, 43, 64, 85,107,128/)
-    ;res@tmXBLabels  = (/0,100,200,300,400,500,600/)
-
-    ;res@tmYLMode    = "Explicit"
-    ;res@tmYLValues  = (/0, 11,24,36,40/)
-    ;res@tmYLLabels  = (/0.5,5,10,15,17/)
-
-    ;res@cnLevelSelectionMode = "ExplicitLevels"   ; set explicit contour levels
-    ;res@cnLevels     = (/-2.2,-1.8,-1.4,-1.0,-0.6,-0.2,0.2,  1, 2, 3, 4, 5, 6,  7,  8,  9/)   ; set levels
-    ;res@cnFillColors = (/  10,  15,  20,  30,  40,  60,  0, 70,75,80,85,90,95,100,105,110,112/)  ; set the colors to be used
-
-    ;res@lbLabelBarOn        = False           ; turn off individual cb's
-    t_ano2 = dim_avg_n(t_ano(:,46:48,:,:),1)
-    do it = 6, 9,1
-      ;res@tiMainString = "time = " + (it*6/60.) + "h"
-      plots =  gsn_csm_contour(wks,t_ano2(it,:,:), res)
-    end do
-
-    t_ano!0 = "time"
-    t_ano!1 = "height"
-    t_ano!2 = "Radial_sn"
-    t_ano!3 = "Radial_we"
-    t_ano@long_name = "temperature anomaly"
-    t_ano@units = "K"
-    t_ano@_FillValue = 9.96921e+36
-
-;outfilet = addfile("sim_lev100/tha/unazi_tano_d5_00.nc","c")
-;outfilet->ta = t_ano
+        t_ano(it,lev,i,j) = t(lev,i,j)-t_avg(it,lev)
     
+    end do
+  end do
+end do
+
+delete(t)
+
+end do
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; output Section ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+   
+ t_ano!0 = "time"
+ t_ano!1 = "height"
+ t_ano!2 = "Radial"
+ t_ano@long_name = "temperature anomaly"
+ t_ano@units = "K"
+ t_ano@_FillValue = 9.96921e+36
+
+    copy_VarMeta(t_ano, uu)
+    copy_VarMeta(t_ano, vv)
+    copy_VarMeta(t_ano, ww)
+
+outfilet = addfile("sim_lev100/hori/hori_tano"+nn(in)+".nc","c")
+outfilet->ta = t_ano(:,0:75,:,:)
+
+outfilet = addfile("sim_lev100/hori/hori_u"+nn(in)+".nc","c")
+outfilet->ua = uu(:,0:75,:,:)
+
+outfilet = addfile("sim_lev100/hori/hori_v"+nn(in)+".nc","c")
+outfilet->va = vv(:,0:75,:,:)
+
+outfilet = addfile("sim_lev100/hori/hori_w"+nn(in)+".nc","c")
+outfilet->wa = ww(:,0:75,:,:)
+
+print("finish output : " + it )
+    
+    delete(t_ano)
+    delete(t_avg)
+
+    delete(uu)
+    delete(vv)
+    delete(ww)
+    
+    delete(ub)
+    delete(vb)
+    delete(wb)
+    
+    delete(at)
+    delete(az)
+
+end do
+
 end

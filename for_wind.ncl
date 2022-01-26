@@ -13,22 +13,25 @@ begin
 
   nn = (/"100","106","112","118","200","206","212","218",\
           "300","306","312","318","400","406","412","418",\
-          "500","506","512","518"/)
+          "500","506","512","518","6_00","6_06","6_12","6_18"/)
 
   din = dimsizes(nn)
 
-do in = 0, din-1, 1
+  wks=gsn_open_wks("pdf","/user_home/jyyin/dta/sim_lev100/test_for_d5") 
 
-  at = addfile("sim_lev100/theta/theta0"+nn(in)+".nc", "r")
+do in = 0, din-1, 1 
+
+  au = addfile("sim_lev100/wind/u_0"+nn(in)+".nc", "r")
+  av = addfile("sim_lev100/wind/v_0"+nn(in)+".nc", "r")
+  aw = addfile("sim_lev100/wind/w_0"+nn(in)+".nc", "r")
+
   az = addfile("sim_lev100/height/z0"+nn(in)+".nc", "r")
   
-  outfilet = addfile("sim_lev100/ev/for_ev"+nn(in)+".nc","r")
-  t_avg = outfilet->ta  
-
-  printVarSummary(t_avg)
-
-  tb = at->th
-  ;printVarSummary(tb_out)
+  u = au->ua
+  v = av->va
+  w = aw->wa
+  printVarSummary(ua)
+  
   z = az->z
   ;printVarSummary(z_out)
 
@@ -39,8 +42,8 @@ do in = 0, din-1, 1
   rms = dimsizes(tb)
   ntimes = rms(0)          ; number of times in the file
 
-  nx = rms(2)
-  ny = rms(3)
+  nx = 420
+  ny = 420
  
   mdims = new((/ntimes,nx,ny/), integer)
   nd = dimsizes(mdims)
@@ -59,10 +62,15 @@ do in = 0, din-1, 1
   r = fspan(0.0,400.0,nr)
   ;print(r)
   r@units = "km"
+  ;ro@units = "km"
 
 ;;-----------------------------------------------------------------------
- 
- t_ano    = new((/ntimes,nz,nr/),"float")
+  
+  hei = fspan(100, 27500, 100)
+  
+  rai_ave  = new((/ntimes,nz,nr/),"float")
+  tan_ave  = new((/ntimes,nz,nr/),"float")
+  w_ave = new((/ntimes,nz,nr/),"float")
 
   do it = 0 , ntimes-1 , 6; TIME LOOP
    
@@ -71,15 +79,21 @@ do in = 0, din-1, 1
 ;-------------------------------------------------------------------------------------
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; vertical interp & decoupled mass;;;;;;;;;;;;;;;;;;;;;;;
 
-    hei = fspan(500, 27500, 100)
+    
     ;print(hei)
-    t       = new((/nz,nx,ny/), "float")
+    uu = new((/nz,nx,ny/), float)
+    vv = uu
+    ww = uu
 
     do iz = 0, nz-1
 
-      t(iz,:,:)       = wrf_interp_3d_z(tb(it,:,:,:), z(it,:,:,:), hei(iz))
+      uu(iz,:,:) = wrf_interp_3d_z(u(it,:,:,:), z(it,:,:,:), hei(iz))
+      vv(iz,:,:) = wrf_interp_3d_z(v(it,:,:,:), z(it,:,:,:), hei(iz))
+      ww(iz,:,:) = wrf_interp_3d_z(w(it,:,:,:), z(it,:,:,:), hei(iz))
 
     end do
+
+    t_pave = new((/nr,nz/),"float")
 
     t!0 = "lev"
     t!1 = "ns"
@@ -87,44 +101,26 @@ do in = 0, din-1, 1
 
     t := t(ns|:,ew|:,lev|:)
 
-    t_pave = new((/nr,nz/),"float")
+    
 
     CAL::radheight(nz, nr, imin, jmin, t, nx, ny, t_pave)
     
     ;printVarSummary(t_pave)
-    ;print(t_pave(40,:))
+    print(t_pave(40,:))
 
     t_pave!0 = "rad"
     t_pave!1 = "lev"
 
     t_pave := t_pave(lev|:,rad|:)
 
-do lev = 0,90
+do lev = 0,nz-1
   do i = 0,nr-1
 
-    t_ano(it,lev,i) = t_pave(lev,i)
-    ;-t_avg(it,lev)
+    t_ano(it,lev,i) = t_pave(lev,i)-t_avg(it,lev)
    
     end do
 end do
 
-delete(t)
-delete(t_pave)
-
-end do
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; output Section ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-   
- t_ano!0 = "time"
- t_ano!1 = "height"
- t_ano!2 = "Radial"
- t_ano@long_name = "temperature anomaly"
- t_ano@units = "K"
- t_ano@_FillValue = 9.96921e+36
-
-outfilet = addfile("sim_lev100/tha/for_t"+nn(in)+".nc","c")
-outfilet->ta = t_ano(:,0:90,:)
-
-    wks=gsn_open_wks("pdf","/user_home/jyyin/dta/sim_lev100/test_for"+nn(in)) 
     ;gsn_define_colormap(wks,"BlueWhiteOrangeRed")  ; Change color map.
     gsn_define_colormap(wks,"MPL_RdBu")
     gsn_reverse_colormap(wks)
@@ -135,13 +131,34 @@ outfilet->ta = t_ano(:,0:90,:)
     ;res@cnLineLabelsOn      = False
     res@lbLabelBarOn        = True
     ;print(t_pave(0,40,:))
-    plot = gsn_contour(wks, t_ano(0,0:65,:), res)
-    ;plot = gsn_contour(wks, t_pave(0:41,:), res)
+    plot = gsn_contour(wks, t_ano(0,2:62,:), res)
+    plot = gsn_contour(wks, t_pave(2:62,0:99), res)
 
-    delete(t_ano)
-    delete(t_avg)
-    delete(at)
-    delete(az)
+    outfilet = addfile("sim_lev100/base0"+nn(in)+".nc","c")
+    outfilet->te = t_pave
+
+    outfilet = addfile("sim_lev100/ano0"+nn(in)+".nc","c")
+    outfilet->ta = t_ano(:,2:62,:)
+
+
+delete(t)
+delete(t_pave)
+end do
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; output Section ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+   
+ ;t_ano!0 = "time"
+ ;t_ano!1 = "height"
+ ;t_ano!2 = "Radial"
+ ;t_ano@long_name = "temperature anomaly"
+ ;t_ano@units = "K"
+ ;t_ano@_FillValue = 9.96921e+36
+
+;outfilet = addfile("sim_lev100/tha/tano_d5_12.nc","c")
+;outfilet->ta = t_ano
+delete(at)
+delete(az)
+delete(z)
+delete(tb)
 
 end do
 

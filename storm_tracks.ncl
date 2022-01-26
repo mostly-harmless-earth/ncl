@@ -7,31 +7,28 @@ load "$NCARG_ROOT/lib/ncarg/nclscripts/wrf/WRFUserARW.ncl"
 
 begin
 
-  ;a = addfile("/share/home/kkchu/yin/sim_lev100/wrfout_d03_*","r")
+  ;a = addfile("/user_home/jyyin/dta/wrfout_d02_2000-04-04_00:00:00","r")
   ;f = addfile ("/user_home/jyyin/dta/sim3/wrfout_d01_2000-03-03_00:00:00", "r")
     
-    files = systemfunc("ls ./sim_lev100/slp/slp*")
-    as = addfiles(files, "r")
-    ListSetType(as, "cat")
-
-    files = systemfunc("ls ./sim_lev100/wind10/wnd*")
-    aw = addfiles(files, "r")
-    ListSetType(aw, "cat")
+    files = systemfunc("ls ./sim9/wrfout_d02_*")
+    a = addfiles(files, "r")
+    ListSetType(a, "cat")
 
     ;p1     = wrf_user_getvar(f,"p",-1)
     ;t1     = wrf_user_getvar(f,"tk",-1)  ;
 
-    ;times = wrf_user_getvar(a, "times", -1) ; get all time values on file
+    times = wrf_user_getvar(a, "times", -1) ; get all time values on file
     ;p     = wrf_user_getvar(a,"p",-1)  ; calculate pressure across all time, levels
     ;t     = wrf_user_getvar(a,"tk",-1) ;
     ;hz     = wrf_user_getvar(f,"z",1)  ;
     
-  slp = as[:]->slp
-  printVarSummary(slp)
-  v10 = aw[:]->wnd
-  
-  dims = dimsizes(slp)
-  m = ispan(1,dims(0),1)*10/60.
+  dims = dimsizes(times)
+  ;lat2d = f->XLAT(0,:,:)
+  ;lon2d = f->XLONG(0,:,:)
+  ;dimll = dimsizes(lat2d)
+  ;nlat  = dimll(0)
+  ;mlon  = dimll(1)
+  m = ispan(1,dims,1)*6/60.
 
 ; Sea Level Pressure
   
@@ -41,11 +38,11 @@ begin
 
 ;find typhoon center
 ; Array for track
-  time = new(dims(0),string)
+  time = new(dims,string)
   ;imin = new(dims,integer)
   ;jmin = new(dims,integer)
-  smin = new(dims(0),float)
-  vmax = new(dims(0),float)
+  smin = new(dims,float)
+  vmax = new(dims,float)
   
   ;cordi = new((/dims,2/),integer)
   ;p_min = new((/dims,68/),float)
@@ -55,13 +52,15 @@ begin
   ;printVarSummary(v10)
   ;printVarSummary(p)
   
-  do it = 0, dims(0)-1
+  do it = 0, dims-1
 
-    
-    slp2d = new((/381,381/),float)
-    slp2d = slp(it,20:400,20:400)
-    v2d = new((/381,381/),float)
-    v2d = v10(it,20:400,20:400)
+    slp = wrf_user_getvar(a, "slp", it)
+    v10 = wrf_user_getvar(a, "V10", it)
+
+    slp2d = new((/221,221/),float)
+    slp2d = slp(10:230,10:230)
+    v2d = new((/221,221/),float)
+    v2d = v10(10:230,10:230)
     dd = dimsizes(v2d)
 
 ; We need to convert 2-D array to 1-D array to find the minima.
@@ -92,7 +91,7 @@ begin
 
 
     n = n+1
-    print("time = " + it)
+    print("time = " + times(it)+ "/" + it)
   end do
   
   ;t_c = (/540,640,780,920,1020,1660,1320,1560,2300/)
@@ -107,7 +106,7 @@ begin
 ; Graphics section
   ;printVarSummary(slp)
 
-  wks=gsn_open_wks("pdf","sim_lev100/slp-V10") 
+  wks=gsn_open_wks("pdf","/user_home/jyyin/dta/sim9/slp-V10-3d") 
   gsn_define_colormap(wks,"MPL_BuGn")  ; Change color map.
 
   plots = new(2,graphic)
@@ -152,8 +151,5 @@ begin
   
   gres@gsnCenterString = "Sea Level Pressure(Pa) ~C~ Max Wind Speed(m/s)" 
   gsn_panel(wks, plots, (/1,2/), gres)
-
-  asciiwrite("sim_lev100/slp_min.txt",smin)
-  asciiwrite("sim_lev100/wnd_max.txt",vmax)
 
 end

@@ -10,11 +10,11 @@ begin
   ;a = addfile("","r")
   ;f = addfile ("", "r")
 
-  smin = asciiread("sim9_v3/slp_min.txt",(1200),"float")
-  vmax = asciiread("sim9_v3/wnd_max.txt",(1200),"float")
+  smin = asciiread("sim_lev100/slp_min.txt",(720),"float")
+  vmax = asciiread("sim_lev100/wnd_max.txt",(720),"float")
     
   
-  files = systemfunc("ls ./sim9_v3/tha/tano_d*")
+  files = systemfunc("ls ./sim_lev100/tha/for_tano*")
   ano_h = addfiles(files, "r")
   ListSetType(ano_h, "cat")
   
@@ -26,37 +26,38 @@ begin
 
   dims = dimsizes(smin)
 
-  t_temp1 = dim_avg_n(t_ano(:,:,1:18), 2)
-  t_temp2 = dim_avg_n(t_ano(:,:,18:60), 2)
-  t_temp3 = dim_avg_n(t_ano(:,:,1:60), 2)
+  t_temp1 = dim_avg_n(t_ano(:,:,1:40), 2)
+  t_temp2 = dim_avg_n(t_ano(:,:,40:120), 2)
+  t_temp3 = dim_avg_n(t_ano(:,:,1:120), 2)
 
 
-  time = ispan(0, 1199, 1)*6./60.
+  time = ispan(0, 719, 1)*10/60.
+
 
   t_index = new((/10,dims/),float)
 
-  t_index(0,:) = dim_avg_n(t_temp1(:,31:33),1) ;;;;;;;;; 13 - 13.7 km
-  t_index(1,:) = dim_avg_n(t_temp1(:,34:36),1) ;;;;;;;;; 13.7 - 14.6 km
-  t_index(2,:) = dim_avg_n(t_temp1(:,37:39),1) ;;;;;;;;; 14.6 - 15.4 km
+  t_index(0,:) = dim_avg_n(t_temp1(:,46:49),1) ;;;;;;;;; 13 - 13.7 km
+  t_index(1,:) = dim_avg_n(t_temp1(:,49:52),1) ;;;;;;;;; 13.7 - 14.6 km
+  t_index(2,:) = dim_avg_n(t_temp1(:,52:55),1) ;;;;;;;;; 14.6 - 15.4 km
 
-  t_index(3,:) = dim_avg_n(t_temp2(:,31:33),1) ;;;;;;;;; 13 - 13.7 km
-  t_index(4,:) = dim_avg_n(t_temp2(:,34:36),1) ;;;;;;;;; 13.7 - 14.6 km
-  t_index(5,:) = dim_avg_n(t_temp2(:,37:39),1) ;;;;;;;;; 14.6 - 15.4 km
+  t_index(3,:) = dim_avg_n(t_temp2(:,46:49),1) ;;;;;;;;; 13 - 13.7 km
+  t_index(4,:) = dim_avg_n(t_temp2(:,49:52),1) ;;;;;;;;; 13.7 - 14.6 km
+  t_index(5,:) = dim_avg_n(t_temp2(:,52:55),1) ;;;;;;;;; 14.6 - 15.4 km
 
-  t_index(6,:) = dim_avg_n(t_temp3(:,31:39),1) ;;;;;;;;; 15 - 16.2 km
-  t_index(7,:) = dim_avg_n(t_temp1(:,22:30),1)
+  t_index(6,:) = dim_avg_n(t_temp3(:,46:55),1) ;;;;;;;;; 15 - 16.2 km
+  t_index(7,:) = dim_avg_n(t_temp1(:,20:30),1)
 
   ;t_index(7,:) = t_index(0,:) + t_index(1,:)+ t_index(2,:)+ t_index(3,:) + t_index(4,:) + t_index(5,:)
   
   t_index(8,:) = smin
   t_index(9,:) = vmax
   
-  hei = fspan(500, 27500, 68)
-  r1 = fspan(0.0,700.0,150)
+  hei = fspan(500, 27500, 100)
+  r1 = fspan(0.0,400.0,200)
   print(hei)
   print(r1)
 
-  wks=gsn_open_wks("pdf","/user_home/jyyin/dta/sim9_v3/corr-test") 
+  wks=gsn_open_wks("pdf","sim_lev100/corr-test") 
   gsn_define_colormap(wks,"amwg")  ; Change color map.
 
   res                     = True
@@ -79,6 +80,12 @@ begin
   resL                        = res
   resR                        = True  
 
+  ;resL@xyMonoMarker = True
+  ;resL@xyMarkLineMode  = "Markers"
+  ;resL@xyMarker         =  16                     ; choose type of marker  
+  ;resL@xyMarkerColors     = (/3,9,15/)                     ; Marker color
+  ;resL@xyMarkerSizeF     = 0.005                 ; Marker size (default 0.01)
+
   resL@xyLineThicknesses      = 2.5 
   resL@xyLineColors       = (/3,9,15/) ; colors chosen
   resL@xyDashPatterns   = 0.      ; make all lines solid
@@ -95,9 +102,9 @@ begin
   resL@pmLegendHeightF        = 0.12                ; height of legend.
   resL@lgPerimOn              = False               ; turn off box around
   resL@lgLabelFontHeightF     = .018                 ; label font height
-  resL@xyExplicitLegendLabels = (/" 13 - 14 km"," 14 - 15.2 km"," 15.2 - 16.2 km"/)         ; create explicit labels
+  resL@xyExplicitLegendLabels = (/" 13 - 13.8 km"," 13.8 - 14.6 km"," 14.9 - 15.5 km"/)         ; create explicit labels
 
-  resL@gsnXRefLine = 26.1; four X reference lines 
+  resL@gsnXRefLine = time(164); four X reference lines 
   resL@gsnXRefLineThicknessF = 1.2 
   resL@xyLineThicknessF = 2.5
 
@@ -116,26 +123,26 @@ begin
 
   plots = new(4,graphic)
   
-  resL@tiMainString =  "Radius = 0 - 90 km"
+  resL@tiMainString =  "Radius = 0 - 80 km"
   resL@tiMainFontHeightF = 0.022
 
-  resL@xyLineColors       = (/7,8,9/)
-  plots(0) = gsn_csm_xy2(wks,time,t_index(0:2,:),t_index(8,:),resL,resR)
+  resL@xyLineColors      = (/7,8,9/)
+  plots(0) = gsn_csm_xy2(wks,time(::6),t_index(0:2,::6),t_index(8,::6),resL,resR)
 
-  resL@tiMainString =  "Radius = 90 - 280 km"
-  resL@xyLineColors       = (/11,12,13/)
-  plots(1) = gsn_csm_xy2(wks,time,t_index(3:5,:),t_index(8,:),resL,resR)
+  resL@tiMainString =  "Radius = 80 - 240 km"
+  resL@xyLineColors      = (/11,12,13/)
+  plots(1) = gsn_csm_xy2(wks,time(::6),t_index(3:5,::6),t_index(8,::6),resL,resR)
 
-  resL@tiMainString =  "Radius = 0 - 280 km height = 13 - 16 km"
+  resL@tiMainString =  "Radius = 0 - 240 km height = 13 - 15.5 km"
   resL@pmLegendDisplayMode    = "NoCreate"            ; turn on legend
   resL@xyLineColors       = (/4,15,1/) ; colors chosen
   resL@tiXAxisString =  "Time (h)" ; axis string
-  plots(3) = gsn_csm_xy2(wks,time,t_index(6,:),t_index(8,:),resL,resR)
+  plots(3) = gsn_csm_xy2(wks,time(::6),t_index(6,::6),t_index(8,::6),resL,resR)
 
-  resL@tiMainString =  "Radius = 0 - 90 km height = 9 - 12 km"
+  resL@tiMainString =  "Radius = 0 - 80 km height = 5 - 10 km"
   resL@xyLineColors       = (/15,4,1/) ; colors chosen
   resL@tiXAxisString =  "Time (h)" ; axis string
-  plots(2) = gsn_csm_xy2(wks,time,t_index(7,:),t_index(8,:),resL,resR)
+  plots(2) = gsn_csm_xy2(wks,time(::6),t_index(7,::6),t_index(8,::6),resL,resR)
 
   gres = True
   ;gres@txString = "time = " + time +"h - "+ (time+2) + "h"

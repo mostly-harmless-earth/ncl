@@ -10,14 +10,53 @@ begin
   ;a = addfile("/user_home/jyyin/dta/wrfout_d02_2000-04-04_00:00:00","r")
   ;a1 = addfile("/user_home/jyyin/dta/wrfout_d01_2000-04-04_00:00:00","r")
 
-  a = addfile("/user_home/jyyin/dta/sim_lev100/wrfout_d03_2000-02-01_06:00:00","r")
+    nn = (/"1_00","1_06","1_12","1_18","2_00","2_06","2_12","2_18",\
+          "3_00","3_06","3_12","3_18","4_00","4_06","4_12","4_18",\
+          "5_00","5_06","5_12","5_18"/)
+    in = 17
+    
+    dim = dimsizes(nn)
+
+    outfilet = addfile("sim_lev100/budget_or/adv_h_0"+nn(in)+".nc","r")
+    tb_adv_h = outfilet->T_TEND_ADV_H
+
+    outfilet = addfile("sim_lev100/budget_or/adv_v_0"+nn(in)+".nc","r")
+    tb_adv_v = outfilet->T_TEND_ADV_V
+    
+    outfilet = addfile("sim_lev100/budget_or/diff_0"+nn(in)+".nc","r")
+    tb_diff1 = outfilet->T_TEND_DIFF
+    
+    outfilet = addfile("sim_lev100/budget_or/diff3_0"+nn(in)+".nc","r")
+    tb_diff3 = outfilet->T_TEND_DIFF3
+
+    
+    outfilet = addfile("sim_lev100/budget_or/pbl_0"+nn(in)+".nc","r")
+    tb_pbl = outfilet->RTHBLTEN 
+    
+    outfilet = addfile("sim_lev100/budget_or/heat_0"+nn(in)+".nc","r")
+    tb_heat = outfilet->H_DIABATIC 
+
+    outfilet = addfile("sim_lev100/budget_or/mut_0"+nn(in)+".nc","r")
+    mut = outfilet->MUT
+
+    outfilet = addfile("sim_lev100/height/z0312.nc","r")
+    z = outfilet->z  
+
+    printVarSummary(tb_adv_h)
+    printVarSummary(z)
+    printVarSummary(mut)
+
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
  
   FirstTime = True
-  times  = wrf_user_getvar(a,"times",-1)   ; get times in the file
-  ntimes = dimsizes(times)          ; number of times in the file
+  ndimen = dimsizes(tb_adv_h)  
+  ntimes = ndimen(0)        ; number of times in the file
+  print(ntimes)
  
-  mdims = new((/ntimes,240,240/), integer)
+  nx = 420
+  ny = nx
+  
+  mdims = new((/ntimes,420,420/), integer)
   nd = dimsizes(mdims)
   FirstTime = True
 
@@ -27,27 +66,23 @@ begin
     lat = ispan( 0, 838, 2)       ;;;grid = 420
     lon = ispan( 0, 838, 2)      ;;;domain = 840 km
 
-    latout = ispan( 0, 1434, 6)  ;;; grid = 240 
-    lonout = ispan( 0, 1434, 6)  ;;; domain 1440 km
+    ;latout = ispan( 0, 1434, 6)  ;;; grid = 240 
+    ;lonout = ispan( 0, 1434, 6)  ;;; domain 1440 km
     
-    nx = dimsizes(lat)
-    nxo = dimsizes(latout)
-    ;print(nxo)
-
     lat@units = "km"
     lon@units=  "km"
-    latout@units = "km"
-    lonout@units=  "km"
+    ;latout@units = "km"
+    ;lonout@units=  "km"
   
-  imin = 209
-  jmin = 209
+  imin = 210
+  jmin = 210
 
-  imin0 = 119
-  jmin0 = 119
+  ;imin0 = 119
+  ;jmin0 = 119
 
 ;;;;;;;;;;;;;;;;;;;;; Generate the pole coordinate ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-  nr = 100
+  nr = 200
   r = fspan(0.0,400.0,nr)
   ro = fspan(0.0, 700, nr)
   ;print(r)
@@ -65,15 +100,11 @@ begin
 
   dx = new((/nr,360/),"float")
   dy = new((/nr,360/),"float")
-  dxo = dx
-  dyo = dy
 
  do i = 0,nr-1,1
     do j = 0,359,1
          dx(i,j)= r(i)*cos(alfa(j))
          dy(i,j)= r(i)*sin(alfa(j))
-         dxo(i,j)= ro(i)*cos(alfa(j))
-         dyo(i,j)= ro(i)*sin(alfa(j))
     end do
 end do
 
@@ -81,16 +112,12 @@ end do
 
   lat_p = new(nr*360,"float")
   lon_p = new(nr*360,"float")
-  lat_po = lat_p
-  lon_po = lon_p
 
   do i = 0, nr-1, 1
     do j = 0, 359, 1
 
       lat_p(i*360+j) = lat(imin) + dx(i,j)
       lon_p(i*360+j) = lon(jmin) + dy(i,j)
-      lat_po(i*360+j) = latout(imin0) + dxo(i,j)
-      lon_po(i*360+j) = lonout(jmin0) + dyo(i,j)
 
     end do
   end do
@@ -122,57 +149,45 @@ end do
  ta_cu   = new((/ntimes,nz,nr/),"float")
  ta_ra   = new((/ntimes,nz,nr/),"float")
 
-  do it = 0 , ntimes-1 , 1; TIME LOOP
+  do it = 10 , ntimes-1 , 1; TIME LOOP
    
-    print("Working on time: " + times(it)  )
-
-    z = wrf_user_getvar(a, "z", it)
- 
-    tb_adv_h = wrf_user_getvar(a, "T_TEND_ADV_H", it)
-    tb_adv_v = wrf_user_getvar(a, "T_TEND_ADV_V", it)
-    ;tb_adv = wrf_user_getvar(a, "RTHFTEN", it)
-
-    tb_diff1  = wrf_user_getvar(a, "T_TEND_DIFF", it)
-    tb_diff3  = wrf_user_getvar(a, "T_TEND_DIFF3", it)
-
-    tb_cu    = wrf_user_getvar(a, "RTHCUTEN", it)
-    tb_ra    = wrf_user_getvar(a, "RTHRATEN", it)
-    tb_pbl   = wrf_user_getvar(a, "RTHBLTEN", it)
-    tb_heat  = wrf_user_getvar(a, "H_DIABATIC", it)
-    
-    ;tb_shcu    = wrf_user_getvar(a, "RTHSHTEN", it)
-    mu = wrf_user_getvar(a, "MU", it)
-    mub = wrf_user_getvar(a, "MUB", it)
-    mut = mu+mub
+    print("Working on time: " + it )
 
 ;-------------------------------------------------------------------------------------
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; vertical interp & decoupled mass;;;;;;;;;;;;;;;;;;;;;;;
 
-    hei = fspan(100, 27000, 100)
+    hei = fspan(500, 27000, 100)
 
-    t_adv_h = tb_adv_h
-    t_adv_v = tb_adv_v
+    t_adv_h = new((/nz,nx,ny/), "float")
+    t_adv_v = t_adv_h
 
-    t_diff1  = tb_diff1
-    t_diff3  = tb_diff3
+    t_diff1  = t_adv_h
+    t_diff3  = t_adv_h
 
-    t_heat  = tb_heat
-    t_cu    = tb_cu
-    t_ra    = tb_ra
-    t_pbl   = tb_pbl
+    t_heat  = t_adv_h
+    
+    ;t_cu    = tb_adv_h
+    ;t_ra    = tb_adv_h
+    
+    t_pbl   = t_adv_h
     
     do iz = 0, nz-1
 
-      t_adv_v(iz,:,:) = wrf_interp_3d_z(tb_adv_v, z, hei(iz))/mut(:,:)
-      t_adv_h(iz,:,:) = wrf_interp_3d_z(tb_adv_h, z, hei(iz))/mut(:,:)
+      t_adv_v(iz,:,:) = wrf_interp_3d_z(tb_adv_v(it,:,:,:), z(it,:,:,:), hei(iz))
+      t_adv_h(iz,:,:) = wrf_interp_3d_z(tb_adv_h(it,:,:,:), z(it,:,:,:), hei(iz))
+      t_diff1(iz,:,:)  = wrf_interp_3d_z(tb_diff1(it,:,:,:), z(it,:,:,:), hei(iz))
+      t_diff3(iz,:,:)  = wrf_interp_3d_z(tb_diff3(it,:,:,:), z(it,:,:,:), hei(iz))
 
-      t_diff1(iz,:,:)  = wrf_interp_3d_z(tb_diff1, z, hei(iz))/mut(:,:)
-      t_diff3(iz,:,:)  = wrf_interp_3d_z(tb_diff3, z, hei(iz))/mut(:,:)
+      t_heat(iz,:,:)  = wrf_interp_3d_z(tb_heat(it,:,:,:), z(it,:,:,:), hei(iz))
+      t_pbl(iz,:,:)   = wrf_interp_3d_z(tb_pbl(it,:,:,:), z(it,:,:,:), hei(iz))
+      ;t_cu(iz,:,:)    = wrf_interp_3d_z(tb_cu(it,:,:,:), z(it,:,:,:), hei(iz))/mut(:,:)
+      ;t_ra(iz,:,:)    = wrf_interp_3d_z(tb_ra(it,:,:,:), z(it,:,:,:), hei(iz))/mut(:,:)
 
-      t_heat(iz,:,:)  = wrf_interp_3d_z(tb_heat, z, hei(iz))
-      t_pbl(iz,:,:)   = wrf_interp_3d_z(tb_pbl, z, hei(iz))/mut(:,:)
-      t_cu(iz,:,:)    = wrf_interp_3d_z(tb_cu, z, hei(iz))/mut(:,:)
-      t_ra(iz,:,:)    = wrf_interp_3d_z(tb_ra, z, hei(iz))/mut(:,:)
+      t_adv_v(iz,:,:) = t_adv_v(iz,:,:)/mut(it,:,:)
+      t_adv_h(iz,:,:) = t_adv_h(iz,:,:)/mut(it,:,:)
+      t_diff1(iz,:,:) = t_diff1(iz,:,:)/mut(it,:,:)
+      t_diff3(iz,:,:) = t_diff3(iz,:,:)/mut(it,:,:)
+      t_pbl(iz,:,:) = t_pbl(iz,:,:)/mut(it,:,:)
 
     end do
 
@@ -188,8 +203,8 @@ end do
  
  tp_heat  = new((/nz,nr*360/),"float")
  tp_pbl   = new((/nz,nr*360/),"float")
- tp_cu   = new((/nz,nr*360/),"float")
- tp_ra   = new((/nz,nr*360/),"float")
+ ;tp_cu   = new((/nz,nr*360/),"float")
+ ;tp_ra   = new((/nz,nr*360/),"float")
 
 
  tp_adv_v = linint2_points(lat,lon,t_adv_v,False,lat_p,lon_p,1)
@@ -201,8 +216,8 @@ end do
 
  tp_heat  = linint2_points(lat,lon,t_heat,False,lat_p,lon_p,1)
  tp_pbl   = linint2_points(lat,lon,t_pbl,False,lat_p,lon_p,1)
- tp_cu    = linint2_points(lat,lon,t_cu,False,lat_p,lon_p,1)
- tp_ra    = linint2_points(lat,lon,t_ra,False,lat_p,lon_p,1)
+ ;tp_cu    = linint2_points(lat,lon,t_cu,False,lat_p,lon_p,1)
+ ;tp_ra    = linint2_points(lat,lon,t_ra,False,lat_p,lon_p,1)
  
 do lev = 0,nz-1
   do i = 0,nr-1
@@ -231,8 +246,8 @@ do lev = 0,nz-1
 
          sum_heat  = sum_heat  + tp_heat(lev,i*360+j)
          sum_pbl   = sum_pbl   + tp_pbl(lev,i*360+j)
-         sum_cu    = sum_cu    + tp_cu(lev,i*360+j)
-         sum_ra    = sum_ra    + tp_ra(lev,i*360+j)
+         ;sum_cu    = sum_cu    + tp_cu(lev,i*360+j)
+         ;sum_ra    = sum_ra    + tp_ra(lev,i*360+j)
         
       end do
 
@@ -244,8 +259,8 @@ do lev = 0,nz-1
 
       ta_heat(it,lev,i)  = sum_heat/360.0
       ta_pbl(it,lev,i)   = sum_pbl/360.0
-      ta_cu(it,lev,i)    = sum_cu/360.0
-      ta_ra(it,lev,i)    = sum_ra/360.0
+      ;ta_cu(it,lev,i)    = sum_cu/360.0
+      ;ta_ra(it,lev,i)    = sum_ra/360.0
 
     end do
 end do
@@ -297,12 +312,12 @@ end do
  ta_pbl@units = "K"
  ta_pbl@_FillValue = 9.96921e+36
 
- ta_cu!0 = "time"
- ta_cu!1 = "height"
- ta_cu!2 = "Radial"
- ta_cu@long_name = "cu"
- ta_cu@units = "K"
- ta_cu@_FillValue = 9.96921e+36
+ ;ta_cu!0 = "time"
+ ;ta_cu!1 = "height"
+ ;ta_cu!2 = "Radial"
+ ;ta_cu@long_name = "cu"
+ ;ta_cu@units = "K"
+ ;ta_cu@_FillValue = 9.96921e+36
 
  ;ta_shcu!0 = "time"
  ;ta_shcu!1 = "height"
@@ -318,29 +333,24 @@ end do
  ;ta_ra@units = "K"
  ;ta_ra@_FillValue = 9.96921e+36
 
-outfilet = addfile("sim_lev100/bud/adv_h_d1_06.nc","c")
+outfilet = addfile("sim_lev100/bud/azi_adv_h_0"+nn(in)+".nc","c")
 outfilet->t_adv_h = ta_adv_h
 
-outfilet = addfile("sim_lev100/bud/adv_v_d1_06.nc","c")
+outfilet = addfile("sim_lev100/bud/azi_adv_v_0"+nn(in)+".nc","c")
 ;outfilet = addfile("sim9/bud_d1_06/adv.nc","c")
 outfilet->t_adv_v = ta_adv_v
 
-outfilet = addfile("sim_lev100/bud/diff1_d1_06.nc","c")
+outfilet = addfile("sim_lev100/bud/azi_diff_0"+nn(in)+".nc","c")
 outfilet->t_diff = ta_diff1
-outfilet = addfile("sim_lev100/bud/diff3_d1_06.nc","c")
+
+outfilet = addfile("sim_lev100/bud/azi_diff3_0"+nn(in)+".nc","c")
 outfilet->t_diff = ta_diff3
 
-outfilet = addfile("sim_lev100/bud/heat_d1_06.nc","c")
+outfilet = addfile("sim_lev100/bud/azi_heat_0"+nn(in)+".nc","c")
 outfilet->t_heat = ta_heat
 
-outfilet = addfile("sim_lev100/bud/pbl_d1_06.nc","c")
+outfilet = addfile("sim_lev100/bud/azi_pbl_0"+nn(in)+".nc","c")
 outfilet->t_pbl = ta_pbl
 
-outfilet = addfile("sim_lev100/bud/cu_d1_06.nc","c")
-outfilet->t_cu = ta_cu
-
-
-outfilet = addfile("sim_lev100/bud/ra_d1_06.nc","c")
-outfilet->t_ra = ta_ra
 
 end

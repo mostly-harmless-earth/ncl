@@ -9,7 +9,7 @@ begin
 ; The WRF ARW input file.  
 ; This needs to have a ".nc" appended, so just do it.
   
-  files = systemfunc("ls ./sim9_v3/tha/tano_*")
+  files = systemfunc("ls ./sim_lev100/tha/tano*")
   ano_h = addfiles(files, "r")
   ListSetType(ano_h, "cat")
 
@@ -27,10 +27,10 @@ begin
   ;t_ano = runave_n(t_ano, 3, 0, 1)
   ;t_ano = runave_n(t_ano, 3, 0, 2)
 
-  do it = 0, dimst(0)-1,5
+  do it = 0, dimst(0)-1, 3
 
-    dims = dimsizes(t_ano(it,1:46,1:107))
-    x1d = ndtooned(t_ano(it,1:46,1:107))      ; convert 2D array to 1D for use in maxind
+    dims = dimsizes(t_ano(it,1:61,1:180))
+    x1d = ndtooned(t_ano(it,1:61,1:180))      ; convert 2D array to 1D for use in maxind
     
     ta_max(it) = min(x1d)
     inds = ind_resolve(minind(x1d), dims)    ; convert 1D array back to 2D 
@@ -43,13 +43,13 @@ begin
 
   end do
 
-  time = ispan(0, dimst(0)-1, 1)*6/60.
-  hei = fspan(500, 27500, 68)
-  r1 = fspan(0.0,700.0,150)
+  time = ispan(0, dimst(0)-1, 1)*10/60.
+  hei = fspan(100, 27500, 100)
+  r1 = fspan(0.0,400.0,200)
   print(hei)
   print(r1)
 
-  wks = gsn_open_wks("pdf","sim9_v3/max_tlc")
+  wks = gsn_open_wks("pdf","sim_lev100/max_tlc")
   gsn_define_colormap(wks, "MPL_RdBu")
   gsn_reverse_colormap(wks)
 
@@ -84,18 +84,18 @@ begin
 
   plots(0) = gsn_csm_xy(wks, time, ta_max, res)
 
-  res@tmYLMode    = "Explicit"
-  res@tmYLValues  = (/11,24,31,36,40,45/)
-  res@tmYLLabels  = (/5,10,13,15,17,19/)
+    res@tmYLMode    = "Explicit"
+    res@tmYLValues  = (/0, 17,35,53,61/)
+    res@tmYLLabels  = (/0.5,5,10,15,17/)
   res@xyMarkerColor     = 12                    ; Marker color
 
   res@tiYAxisString =  " Height (Km)" ; axis string
 
   plots(1) = gsn_csm_xy(wks, time ,ilat, res)
   
-  res@tmYLMode    = "Explicit"
-  res@tmYLValues  = (/0, 22, 43, 64, 85,107/)
-  res@tmYLLabels  = (/0,100,200,300,400,500/) 
+   res@tmYLMode    = "Explicit"
+    res@tmYLValues  = (/40, 80, 120,160,199/)
+    res@tmYLLabels  = (/80, 160,240,320,400/)
   res@xyMarkerColor     = 15                    ; Marker color
 
   res@tiYAxisString =  " Radius (Km)" ; axis string

@@ -32,26 +32,29 @@ begin
     ;ano_h = addfiles(files, "r")
     ;ListSetType(ano_h, "cat")
 
-    a1 = addfile("/user_home/jyyin/dta/sim9_v3/bud/heat_d1_00.nc","r")
+    a1 = addfile("sim_lev100/bud/for_heat_01_12.nc","r")
     t_heat = a1->t_heat 
 
-    a2 = addfile("/user_home/jyyin/dta/sim9_v3/bud/pbl_d1_00.nc","r")
+    a2 = addfile("sim_lev100/bud/for_pbl_01_12.nc","r")
     t_pbl = a2->t_pbl
 
-    a3 = addfile("/user_home/jyyin/dta/sim9_v3/bud/diff_d1_00.nc","r")
+    a3 = addfile("sim_lev100/bud/for_diff_01_12.nc","r")
     t_diff = a3->t_diff
+
+    a3 = addfile("sim_lev100/bud/for_diff3_01_12.nc","r")
+    t_diff3 = a3->t_diff
     
-    a4 = addfile("/user_home/jyyin/dta/sim9_v3/bud/adv_v_d1_00.nc","r")
+    a4 = addfile("sim_lev100/bud/for_adv_v_01_12.nc","r")
     t_adv_v = a4->t_adv_v
 
-    a5 = addfile("/user_home/jyyin/dta/sim9_v3/bud/adv_h_d1_00.nc","r")
+    a5 = addfile("sim_lev100/bud/for_adv_h_01_12.nc","r")
     t_adv_h = a5->t_adv_h
 
     ;a6 = addfile("/user_home/jyyin/dta/sim9_v3/bud/adv_d1_00.nc","r")
     ;t_adv = a6->t_adv
     
-    a7 = addfile("/user_home/jyyin/dta/sim9_v3/bud/cu_d1_00.nc","r")
-    t_cu = a7->t_cu
+    ;a7 = addfile("/user_home/jyyin/dta/sim9_v3/bud/cu_d1_00.nc","r")
+   ; t_cu = a7->t_cu
     
     ;a8 = addfile("/user_home/jyyin/dta/sim9_v3/bud_d1_00/ra.nc","r")
     ;t_ra = a8->t_ra
@@ -60,78 +63,81 @@ begin
     ;ano_h = addfiles(files, "r")
     ;ListSetType(ano_h, "cat")
 
-    ano_h = addfile("sim9_v3/tha/tano_d1_00.nc","r")
+    ano_h = addfile("sim_lev100/tha/for_t112.nc","r")
     t_ano = ano_h->ta
 
-    t_sum = t_adv_h + t_adv_v + t_heat + t_pbl + t_diff + t_cu
+    t_sum = t_adv_h + t_adv_v + t_heat + t_pbl + t_diff + t_diff3
     t_adv = t_adv_h + t_adv_v
 
-    hei = fspan(500, 27500, 68)/1000
-    r1 = fspan(0.0,700.0,150)
+    hei = fspan(500, 27500, 100)/1000
+    r1 = fspan(0.0,400.0,200)
     hei@units = "m"
     r1@units = "km"
-    print(r1)
 
+    dims = dimsizes(t_ano)
     printVarSummary(t_ano)
-    printVarSummary(t_sum)
 
-    wks=gsn_open_wks("pdf","/user_home/jyyin/dta/sim9_v3/profile_test") 
+    wks=gsn_open_wks("pdf","sim_lev100/profile_bud_d112") 
     gsn_define_colormap(wks,"amwg")  ; Change color map.
 
     ;;; t_sum: 120 X 68 X 150
     ;;; interval 6min 
     ;;; 1h: 10 ;;; 2h: 20
 
+    it = 0
+  
+
+    do it = 0,dims(0)-13,12
+
     n = 0
     plots = new(12,graphic)
   
-    it = 45
-    dt = 19
+    dt = 11
 
     t_sum_1h  = dim_sum_n(t_sum(it:it+dt,:,:), 0)
     t_sum_1h  = runave_n(t_sum_1h, 5, 0, 1)
-    ;
-    ;
-    
+    t_sum_1h  = runave_n(t_sum_1h, 5, 0, 0)
+
     t_adv_h_1h = dim_sum_n(t_adv_h(it:it+dt,:,:), 0)
     t_adv_v_1h = dim_sum_n(t_adv_v(it:it+dt,:,:), 0)
     t_adv_1h   = dim_sum_n(t_adv(it:it+dt,:,:), 0)
 
     t_heat_1h  = dim_sum_n(t_heat(it:it+dt,:,:), 0)
     t_pbl_1h   = dim_sum_n(t_pbl(it:it+dt,:,:), 0)
-    t_cu_1h    = dim_sum_n(t_cu(it:it+dt,:,:), 0)
+    ;t_cu_1h    = dim_sum_n(t_cu(it:it+dt,:,:), 0)
     ;t_ra_1h    = dim_sum_n(t_ra(it:it+dt,:,:), 0)
     t_diff_1h  = dim_sum_n(t_diff(it:it+dt,:,:), 0)
 
     t_adv_1h = t_adv_h_1h + t_adv_v_1h
 
-    pt_sum_1h   = dim_avg_n(t_sum_1h(31:34,0:85),0)
-    pt_adv_h_1h = dim_avg_n(t_adv_h_1h(31:34,0:85),0)
-    pt_adv_v_1h = dim_avg_n(t_adv_v_1h(31:34,0:85),0)
-    pt_adv_1h   = dim_avg_n(t_adv_1h(31:34,0:85),0)
+    pt_sum_1h   = dim_avg_n(t_sum_1h(46:49,0:199),0)
+    pt_adv_h_1h = dim_avg_n(t_adv_h_1h(46:49,0:199),0)
+    pt_adv_v_1h = dim_avg_n(t_adv_v_1h(46:49,0:199),0)
+    pt_adv_1h   = dim_avg_n(t_adv_1h(46:49,0:199),0)
 
-    pt_heat_1h  = dim_avg_n(t_heat_1h(31:34,0:85),0)
-    pt_pbl_1h   = dim_avg_n(t_pbl_1h(31:34,0:85),0)
-    pt_cu_1h    = dim_avg_n(t_cu_1h(31:34,0:85),0)
-    pt_diff_1h  = dim_avg_n(t_diff_1h(31:34,0:85),0)
+    pt_heat_1h  = dim_avg_n(t_heat_1h(46:49,0:199),0)
+    pt_pbl_1h   = dim_avg_n(t_pbl_1h(46:49,0:199),0)
+    ;pt_cu_1h    = dim_avg_n(t_cu_1h(46:49,0:199),0)
+    pt_diff_1h  = dim_avg_n(t_diff_1h(46:49,0:199),0)
 
-    printVarSummary(pt_cu_1h)
+    ;printVarSummary(pt_cu_1h)
 
     t_temp1 = t_ano(it+dt+1,:,:)-t_ano(it,:,:)
-    t_temp  = dim_avg_n(t_temp1(31:34,0:85),0)
+    t_temp  = dim_avg_n(t_temp1(46:49,0:199),0)
 
-    pt = new((/9,86/),float)
+    pt = new((/9,200/),float)
+    nmin = 10*60
 
-    pt(0,:) = pt_adv_h_1h*360
-    pt(1,:) = pt_adv_v_1h*360
-    pt(2,:) = pt_adv_1h*360
+    pt(0,:) = pt_adv_h_1h*nmin
+    pt(1,:) = pt_adv_v_1h*nmin
+    pt(2,:) = pt_adv_1h*nmin
 
-    pt(3,:) = pt_heat_1h*360
-    pt(4,:) = pt_cu_1h*360
-    pt(5,:) = pt_pbl_1h*360
-    pt(6,:) = pt_diff_1h*360
+    pt(3,:) = pt_heat_1h*nmin
+    pt(4,:) = 0.
+    pt(5,:) = pt_pbl_1h*nmin
+    pt(6,:) = pt_diff_1h*nmin
 
-    pt(7,:) = pt_sum_1h*360
+    pt(7,:) = pt_sum_1h*nmin
     pt(8,:) = t_temp
 
     ;t_temp(:,:) = smth9(t_temp(:,:), 0.5, -0.25, True)
@@ -142,13 +148,13 @@ begin
   plot2 = new(2,graphic)
   
   ares = True
-  ;ares@gsnDraw            = False                   ; don't draw
-  ;ares@gsnFrame           = False                   ; don't advance frame
+  ares@gsnDraw            = False                   ; don't draw
+  ares@gsnFrame           = False                   ; don't advance frame
 
   ares@tiXAxisString           = "Radius(km)"
   ares@tiYAxisString           = "Theta (K)"
  
-  r1 = fspan(0.0,700.0,150)
+  r1 = fspan(0.0,400.0,200)
   ;print(r1)
   
   ;ares@tmXBMode    = "Explicit"
@@ -185,13 +191,13 @@ begin
   ares@gsnStringFontHeightF    = 0.025
 
   
-  time = (it*6/60.)+96
+  time = (it*10/60.)+12
   ;ares@tiMainString = "time = " + (time+0.5) + "h"
 
-  plot2(0) = gsn_csm_xy(wks, r1(0:85), pt(0:6,:), ares)
+  plot2(0) = gsn_csm_xy(wks, r1(0:199), pt(0:6,:), ares)
 
   ares@pmLegendParallelPosF   = .85                  ; move units right
-  ares@pmLegendOrthogonalPosF = -0.4              ; move units down
+  ares@pmLegendOrthogonalPosF = -0.8              ; move units down
   ares@pmLegendWidthF         = 0.15                ; Change width and
   ares@pmLegendHeightF        = 0.15                ; height of legend.
   ares@lgPerimOn              = False               ; turn off box around
@@ -206,13 +212,15 @@ begin
   ;ares@trYMinF          = -3           ; Set min/max of left Y axis
   ;ares@trYMaxF          = 3
 
-  plot2(1) = gsn_csm_xy(wks, r1(0:85), pt(7:8,:), ares)
+  plot2(1) = gsn_csm_xy(wks, r1(0:199), pt(7:8,:), ares)
 
   ;ares@tiMainString = "diffrence"
   ;plot9(8) = gsn_csm_y(wks,r1,t_dire, ares)
 
   gres@txString = "time = " + time +"h - "+ (time+2) + "h"
   gsn_panel(wks, plot2, (/2,1/), gres)
+
+end do
 
   
   ;overlay(plot9(0), plot9(1))

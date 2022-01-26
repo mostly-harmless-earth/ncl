@@ -19,13 +19,13 @@ begin
 
 do in = 0, din-1, 1
 
-  at = addfile("sim_lev100/theta/theta0"+nn(in)+".nc", "r")
-  az = addfile("sim_lev100/height/z0"+nn(in)+".nc", "r")
+  at = addfile("sim_lev100/d02_theta/theta0"+nn(in)+".nc", "r")
+  az = addfile("sim_lev100/d02_height/z0"+nn(in)+".nc", "r")
   
-  outfilet = addfile("sim_lev100/ev/for_ev"+nn(in)+".nc","r")
-  t_avg = outfilet->ta  
+  ;outfilet = addfile("sim_lev100/ev/envi0"+nn(in)+".nc","r")
+  ;t_avg = outfilet->te  
 
-  printVarSummary(t_avg)
+  ;printVarSummary(t_avg)
 
   tb = at->th
   ;printVarSummary(tb_out)
@@ -49,19 +49,20 @@ do in = 0, din-1, 1
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;----------------------------- Find the TC Center ----------------------
 
-  imin = 210
-  jmin = 210
+  imin = nx/2
+  jmin = ny/2
 
 ;;;;;;;;;;;;;;;;;;;;; Generate the pole coordinate ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-  nr = 200  ;;; 200 * 2 = 400 Km
+  nr = 120  ;;; 120 * 6 = 720 Km
   nz = 100   ; Sigma levels
-  r = fspan(0.0,400.0,nr)
+  r = fspan(0.0, 720.0,nr)
   ;print(r)
   r@units = "km"
 
 ;;-----------------------------------------------------------------------
  
+ t_avg    = new((/ntimes,nz/),"float")
  t_ano    = new((/ntimes,nz,nr/),"float")
 
   do it = 0 , ntimes-1 , 6; TIME LOOP
@@ -98,15 +99,17 @@ do in = 0, din-1, 1
     t_pave!1 = "lev"
 
     t_pave := t_pave(lev|:,rad|:)
+    t_avg(it,:) = dim_avg_n(t_pave(:,82:112), 1)  ;;;r = fspan(0.0, 720.0,nr) 500-680km
 
-do lev = 0,90
+do lev = 0, 90
   do i = 0,nr-1
 
-    t_ano(it,lev,i) = t_pave(lev,i)
-    ;-t_avg(it,lev)
+    t_ano(it,lev,i) = t_pave(lev,i)-t_avg(it,lev)
    
     end do
+
 end do
+ 
 
 delete(t)
 delete(t_pave)
@@ -114,6 +117,15 @@ delete(t_pave)
 end do
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; output Section ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
    
+ t_avg!0 = "time"
+ t_avg!1 = "height"
+ t_avg@long_name = "temperature anomaly"
+ t_avg@units = "K"
+ t_avg@_FillValue = 9.96921e+36
+
+outfilet = addfile("sim_lev100/ev/for_ev"+nn(in)+".nc","c")
+outfilet->ta = t_avg(:,0:90)
+
  t_ano!0 = "time"
  t_ano!1 = "height"
  t_ano!2 = "Radial"
@@ -121,25 +133,25 @@ end do
  t_ano@units = "K"
  t_ano@_FillValue = 9.96921e+36
 
-outfilet = addfile("sim_lev100/tha/for_t"+nn(in)+".nc","c")
+outfilet = addfile("sim_lev100/d02_tha/for_d02_tano"+nn(in)+".nc","c")
 outfilet->ta = t_ano(:,0:90,:)
 
-    wks=gsn_open_wks("pdf","/user_home/jyyin/dta/sim_lev100/test_for"+nn(in)) 
+    ;wks=gsn_open_wks("pdf","/user_home/jyyin/dta/sim_lev100/test_for_ev"+nn(in)) 
     ;gsn_define_colormap(wks,"BlueWhiteOrangeRed")  ; Change color map.
-    gsn_define_colormap(wks,"MPL_RdBu")
-    gsn_reverse_colormap(wks)
+    ;gsn_define_colormap(wks,"MPL_RdBu")
+    ;gsn_reverse_colormap(wks)
 
-    res  = True
-    res@cnFillOn            = True
-    res@cnLinesOn           = False
+    ;res  = True
+    ;res@cnFillOn            = True
+    ;res@cnLinesOn           = False
     ;res@cnLineLabelsOn      = False
-    res@lbLabelBarOn        = True
+    ;res@lbLabelBarOn        = True
     ;print(t_pave(0,40,:))
-    plot = gsn_contour(wks, t_ano(0,0:65,:), res)
+    ;plot = gsn_contour(wks, t_avg(0,0:65), res)
     ;plot = gsn_contour(wks, t_pave(0:41,:), res)
 
-    delete(t_ano)
     delete(t_avg)
+    delete(t_ano)
     delete(at)
     delete(az)
 

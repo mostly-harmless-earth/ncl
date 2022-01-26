@@ -50,7 +50,7 @@ begin
     
     ;hei = fspan(500, 27500, 100)/1000
 
-    wks=gsn_open_wks("pdf","sim_lev100/ta-grid") 
+    wks=gsn_open_wks("pdf","sim_lev100/t-change-6h") 
     ;gsn_define_colormap(wks,"BlueWhiteOrangeRed")  ; Change color map.
     gsn_define_colormap(wks,"MPL_RdBu")
     gsn_reverse_colormap(wks)
@@ -71,7 +71,7 @@ begin
 
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-do it = 0, dim(0)-1, 36
+do it = 36, dim(0)-1, 36
 
   res                     = True
 
@@ -132,20 +132,20 @@ do it = 0, dim(0)-1, 36
     res@tmYMajorGridLineColor = "gray"
 
     res@cnLevelSelectionMode = "ManualLevels"   ; set explicit contour levels
-    if (it.le.164) then
-        res@cnLevelSpacingF = 0.5
-        res@cnMinLevelValF  = -4.
-        res@cnMaxLevelValF  = 4.
-      else if (it.le.430) then
-        res@cnLevelSpacingF = 0.8
-        res@cnMinLevelValF  = -6.
-        res@cnMaxLevelValF  = 6.
-      else
-          res@cnLevelSpacingF = 1.2
-          res@cnMinLevelValF  = -12
-          res@cnMaxLevelValF  = 12       
-      end if
-    end if
+    ;if (it.le.164) then
+        res@cnLevelSpacingF = 0.05
+        res@cnMinLevelValF  = -2.5
+        res@cnMaxLevelValF  = 2.5
+      ;else if (it.le.430) then
+       ; res@cnLevelSpacingF = 0.8
+        ;res@cnMinLevelValF  = -6.
+       ; res@cnMaxLevelValF  = 6.
+     ; else
+         ; res@cnLevelSpacingF = 1.2
+        ;  res@cnMinLevelValF  = -12
+        ;  res@cnMaxLevelValF  = 12       
+     ; end if
+   ; end if
 
     ;res@cnLevelSelectionMode = "ExplicitLevels"   ; set explicit contour levels
     ;res@cnLevels     = (/-2.2,-1.0,-0.8,-0.6,-0.4,-0.2,0.2,  1, 2, 3, 4, 5, 6,  7,  8,  9/)   ; set levels
@@ -156,7 +156,7 @@ do it = 0, dim(0)-1, 36
     ;time = it*6/60.
     res@tiMainString = "time = " + (it*10)/60./24. + " day"+" = " + (it*10)/60. + " h"
     ;plots =  gsn_csm_contour(wks,t_ano_for(it,0:61,0:25)-t_ano_for(it-72,0:61,0:25), res)
-    plots(n) =  gsn_csm_contour(wks,t_ano_for(it,0:62,0:199), res)
+    plots(n) =  gsn_csm_contour(wks,t_ano_for(it,0:62,0:199)-t_ano_for(it-36,0:62,0:199), res)
     n = n+1
 
 end do
@@ -167,11 +167,11 @@ end do
   gres_ta = True
   gres_ta@gsnPanelLabelBar = True
   gres_ta@txString = "Theta Anomaly"
-  gsn_panel(wks, plots(0:3), (/1,4/), gres_ta)
-  gsn_panel(wks, plots(4:7), (/1,4/), gres_ta)
-  gsn_panel(wks, plots(8:11), (/1,4/), gres_ta)
-  gsn_panel(wks, plots(12:15), (/1,4/), gres_ta)
-  gsn_panel(wks, plots(16:19), (/1,4/), gres_ta)
+  gsn_panel(wks, plots(0:11), (/3,4/), gres_ta)
+  gsn_panel(wks, plots(12:23), (/3,4/), gres_ta)
+  gsn_panel(wks, plots(24:35), (/3,4/), gres_ta)
+  gsn_panel(wks, plots(36:47), (/3,4/), gres_ta)
+  gsn_panel(wks, plots(48:59), (/3,4/), gres_ta)
   ;gsn_panel(wks, plots(120:143), (/4,6/), gres_ta)
   ;gsn_panel(wks, plots(143:167), (/4,6/), gres_ta)
   ;gsn_panel(wks, plots(168:191), (/4,6/), gres_ta)
