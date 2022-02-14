@@ -16,9 +16,9 @@ nn = (/"1_00","1_06","1_12","1_18","2_00","2_06","2_12","2_18",\
           "8_00","8_06","8_12","8_18","9_00","9_06","9_12","9_18","10_00","10_06","10_12","10_18"/)
 dim = dimsizes(nn) 
 
-do in = 11, dim-1,100
+do in = 0, 19,1
 
-    a = addfile("/ldata6/jyyin/sim_lev100/wrfout_d02_2000-02-0"+nn(in)+":00:00","r")  
+    a = addfile("/ldata6/jyyin/sim_lev100/wrfout_d01_2000-02-0"+nn(in)+":00:00","r")  
     print("time = " + in)
     
     ;files = systemfunc("ls ./sim_lev100/wrfout_d03_2000-02-01_2000-02-01_00:00:00")
@@ -32,8 +32,8 @@ do in = 11, dim-1,100
     ;t_pbl   = wrf_user_getvar(a, "te_temf", -1);
     ;p   = wrf_user_getvar(a, "p", 2)
     
-    ;th = wrf_user_getvar(a,"th",-1)
-    ;z = wrf_user_getvar(a, "z", -1)
+    th = wrf_user_getvar(a,"th",-1)
+    z = wrf_user_getvar(a, "z", -1)
     ;hei = wrf_user_getvar(a, "height", -1)
 
     ;slp = wrf_user_getvar(a, "slp", -1)
@@ -42,20 +42,22 @@ do in = 11, dim-1,100
     ;uu = wrf_user_getvar(a, "U10", -1)
     ;wnd = sqrt(uu^2+vv^2)
 
-    tb_adv_h = wrf_user_getvar(a, "T_TEND_ADV_H", -1)
-    tb_adv_v = wrf_user_getvar(a, "T_TEND_ADV_V", -1)
+    ;tb_adv_h = wrf_user_getvar(a, "T_TEND_ADV_H", -1)
+    ;tb_adv_v = wrf_user_getvar(a, "T_TEND_ADV_V", -1)
 
-    tb_diff1  = wrf_user_getvar(a, "T_TEND_DIFF", -1)
-    tb_diff3  = wrf_user_getvar(a, "T_TEND_DIFF3", -1)
+    ;tb_diff1  = wrf_user_getvar(a, "T_TEND_DIFF", -1)
+    ;tb_diff3  = wrf_user_getvar(a, "T_TEND_DIFF3", -1)
 
-    tb_cu    = wrf_user_getvar(a, "RTHCUTEN", -1)
-    tb_ra    = wrf_user_getvar(a, "RTHRATEN", -1)
-    tb_pbl   = wrf_user_getvar(a, "RTHBLTEN", -1)
-    tb_heat  = wrf_user_getvar(a, "H_DIABATIC", -1)
+    ;tb_cu    = wrf_user_getvar(a, "RTHCUTEN", -1)
+    ;tb_ra    = wrf_user_getvar(a, "RTHRATEN", -1)
+    ;tb_pbl   = wrf_user_getvar(a, "RTHBLTEN", -1)
+    ;tb_heat  = wrf_user_getvar(a, "H_DIABATIC", -1)
     
-    mu = wrf_user_getvar(a, "MU", -1)
-    mub = wrf_user_getvar(a, "MUB", -1)
-    mut = mu+mub
+    ;mu = wrf_user_getvar(a, "MU", -1)
+    ;mub = wrf_user_getvar(a, "MUB", -1)
+    ;mut = mu+mub
+    
+    ;dbz  = a->refl_10cm
 
     ;outfilet = addfile("sim_lev100/slp/slp0"+nn(in)+".nc","c")
     ;outfilet->slp = slp
@@ -63,30 +65,39 @@ do in = 11, dim-1,100
     ;outfilet = addfile("sim_lev100/wind10/wnd0"+nn(in)+".nc","c")
     ;outfilet->wnd = wnd
 
+    outfilet = addfile("sim_lev100/d01/theta_0"+nn(in)+".nc","c")
+    outfilet->th = th
 
-    outfilet = addfile("sim_lev100/d02_bud_or/adv_h_0"+nn(in)+".nc","c")
-    outfilet->T_TEND_ADV_H = tb_adv_h
+    outfilet = addfile("sim_lev100/d01/z_0"+nn(in)+".nc","c")
+    outfilet->z = z
 
-    outfilet = addfile("sim_lev100/d02_bud_or/adv_v_0"+nn(in)+".nc","c")
-    outfilet->T_TEND_ADV_V = tb_adv_v
+
+    ;outfilet = addfile("sim_lev100/d02_bud_or/adv_h_0"+nn(in)+".nc","c")
+    ;outfilet->T_TEND_ADV_H = tb_adv_h
+
+    ;outfilet = addfile("sim_lev100/d02_bud_or/adv_v_0"+nn(in)+".nc","c")
+    ;outfilet->T_TEND_ADV_V = tb_adv_v
     
-    outfilet = addfile("sim_lev100/d02_bud_or/diff_0"+nn(in)+".nc","c")
-    outfilet->T_TEND_DIFF = tb_diff1
+    ;outfilet = addfile("sim_lev100/d02_bud_or/diff_0"+nn(in)+".nc","c")
+    ;outfilet->T_TEND_DIFF = tb_diff1
 
-    outfilet = addfile("sim_lev100/d02_bud_or/diff3_0"+nn(in)+".nc","c")
-    outfilet->T_TEND_DIFF3 = tb_diff3
+    ;outfilet = addfile("sim_lev100/d02_bud_or/diff3_0"+nn(in)+".nc","c")
+    ;outfilet->T_TEND_DIFF3 = tb_diff3
 
-    outfilet = addfile("sim_lev100/d02_bud_or/pbl_0"+nn(in)+".nc","c")
-    outfilet->RTHBLTEN = tb_pbl
+    ;outfilet = addfile("sim_lev100/d02_bud_or/pbl_0"+nn(in)+".nc","c")
+    ;outfilet->RTHBLTEN = tb_pbl
     
-    outfilet = addfile("sim_lev100/d02_bud_or/heat_0"+nn(in)+".nc","c")
-    outfilet->H_DIABATIC = tb_heat
+    ;outfilet = addfile("sim_lev100/d02_bud_or/heat_0"+nn(in)+".nc","c")
+    ;outfilet->H_DIABATIC = tb_heat
 
-    outfilet = addfile("sim_lev100/d02_bud_or/mut_0"+nn(in)+".nc","c")
-    outfilet->MUT = mut
+    ;outfilet = addfile("sim_lev100/d02_bud_or/mut_0"+nn(in)+".nc","c")
+    ;outfilet->MUT = mut
 
-    outfilet = addfile("sim_lev100/d02_bud_or/cu_0"+nn(in)+".nc","c")
-    outfilet->RTHCUTEN = tb_cu
+    ;outfilet = addfile("sim_lev100/d02_bud_or/cu_0"+nn(in)+".nc","c")
+    ;outfilet->RTHCUTEN = tb_cu
+
+    ;outfilet = addfile("sim_lev100/wind/dbz_0"+nn(in)+".nc","c")
+    ;outfilet->dbz = dbz
 
     delete(a)
 

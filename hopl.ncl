@@ -7,51 +7,65 @@ load "$NCARG_ROOT/lib/ncarg/nclscripts/wrf/WRFUserARW.ncl"
 
 begin
 
-    files = systemfunc("ls ./sim9_v3/tha/unazi_*")
+    files = systemfunc("ls ./sim_lev100/hori/hori_tano3*")
     ano_h = addfiles(files, "r")
     ListSetType(ano_h, "cat")
 
     ;ano_h = addfile("sim9_v3/tha/unazi_tano_d1_12.nc","r")
     t_ano = ano_h[:]->ta
 
-    hei = fspan(500, 27500, 68)/1000
-    r1 = fspan(0.0,700.0,150)
+    files = systemfunc("ls ./sim_lev100/hori/hori_u3*")
+    ano_h = addfiles(files, "r")
+    ListSetType(ano_h, "cat")
+
+    ;ano_h = addfile("sim9_v3/tha/unazi_tano_d1_12.nc","r")
+    uu = ano_h[:]->ua
+
+    files = systemfunc("ls ./sim_lev100/hori/hori_v3*")
+    ano_h = addfiles(files, "r")
+    ListSetType(ano_h, "cat")
+
+    ;ano_h = addfile("sim9_v3/tha/unazi_tano_d1_12.nc","r")
+    vv = ano_h[:]->va
+
+    files = systemfunc("ls ./sim_lev100/hori/hori_w3*")
+    ano_h = addfiles(files, "r")
+    ListSetType(ano_h, "cat")
+
+    ;ano_h = addfile("sim9_v3/tha/unazi_tano_d1_12.nc","r")
+    ww = ano_h[:]->wa
+
+    hei = fspan(500, 27500, 100)/1000
+    r1 = ispan(0,400,1)
     hei@units = "m"
     r1@units = "km"
     ;print(r1)
     ;print(hei)
     printVarSummary(t_ano)
+    printVarSummary(uu)
+    printVarSummary(vv)
 
-    nt = 120*9
+    rms = dimsizes(uu)
 
-  do it = 0, nt-1
-    do iz = 0,67
+    nt = rms(0)
+    nx = rms(2)
+    ny = rms(3)
 
-      t_ano(it,iz,:,:) = smth9(t_ano(it,iz,:,:), 0.5, 0.25, True) 
-    
-    end do
-  end do
-
-    wks=gsn_open_wks("pdf","/user_home/jyyin/dta/sim9_v3/Hori_tano") 
+    wks=gsn_open_wks("pdf","/user_home/jyyin/dta/sim_lev100/Hori_tano_wind3") 
     ;gsn_define_colormap(wks,"BlueWhiteOrangeRed")  ; Change color map.
     gsn_define_colormap(wks,"MPL_RdBu")
     gsn_reverse_colormap(wks)
 
+    dt = 36   ;;;; multiple of 6
 
-    dt = 5
-
-
-do it = 0,nt-1, dt
+do it = 72, 73, dt
 
   res                     = True
-
   gres                    = True
   
-  res@gsnDraw            = True                   ; don't draw
-  res@gsnFrame           = True                   ; don't advance frame
-  res@cnFillOn            = True
-  res@cnLinesOn           = False
-  res@cnLineLabelsOn      = False
+  res@gsnDraw            = False                   ; don't draw
+  res@gsnFrame           = False                   ; don't advance frame
+
   ;res@cnLineThicknesses   = 1.5
   ;gres@gsMarkerIndex = 0
   ;gres@gsMarkerSizeF    = 0.015
@@ -69,20 +83,14 @@ do it = 0,nt-1, dt
   ;res@tmYLLabels  = (/5,10,15,20/)
  ; res@tmYLValues  = (/12,25,38,51/)
 
-  ti = ispan(0, 132, 1)
-  res@tmXBMode    = "Explicit"
-  res@tmXBValues  = ti(::20)
-  res@tmXBLabels   = ti(::20)*6
-
   res@tmYLMode    = "Explicit"
-  res@tmYLValues  = ti(::20)
-  res@tmYLLabels   = ti(::20)*6
+  res@tmYLLabels  = r1(::50)*2
+  res@tmYLValues  = r1(::50)
   
-  ;t_ano2=transpose(t_ano(:,0:44,1))
-  ;plots = gsn_csm_contour(wks,t_ano2, res)
+  res@tmXBMode    = "Explicit"
+  res@tmXBLabels  = r1(::50)*2
+  res@tmXBValues  = r1(::50)
 
-    ;res@gsnDraw            = False                   ; don't draw
-    ;res@gsnFrame           = False                   ; don't advance frame
 
     ;res@tmXBMode    = "Explicit"
     ;res@tmXBValues  = (/0, 22, 43, 64, 85,107,128/)
@@ -96,39 +104,87 @@ do it = 0,nt-1, dt
     ;res@cnLevels     = (/-2.2,-1.0,-0.8,-0.6,-0.4,-0.2,0.2,  1, 2, 3, 4, 5, 6,  7,  8,  9/)   ; set levels
     ;res@cnFillColors = (/  10,  15,  20,  30,  40,  60,  0, 70,75,80,85,90,95,100,105,110,112/)  ; set the colors to be used
     
-    time = it*6/60.
-    res@tiMainString = "time = " + time + "h day = " + time/24.
+    time = (it*10/60.)+24
+    res@tiMainString = "time = " + time + "h"
+  
+    vcres                     = res      ; plot mods desired
+    vcres@lbLabelStride       = 2         ; plot every other colar bar label
+    vcres@vcRefMagnitudeF         = 1.8              ; make vectors larger
+    vcres@vcRefLengthF            = 0.040            ; ref vec length
+    vcres@vcGlyphStyle            = "FillArrow"    ; turn on curly vectors
+    vcres@vcMinDistanceF          = 0.05            ; thin out vectors
+    vcres@vcGlyphOpacityF         = 0.8
 
-    res@cnLevelSelectionMode = "ManualLevels"   ; set explicit contour levels
+    vcres@vcFillArrowsOn           = True
+ ;  vcres@vcWindBarbLineThicknessF    =  1.5
+    vcres@vcFillArrowEdgeThicknessF = 2.0
+    vcres@vcMinFracLengthF         = 0.33
+    vcres@vcMinMagnitudeF          = 0.001
+    vcres@vcMonoFillArrowFillColor = False
+   ;vcres@vcMonoWindBarbColor     = False
+    vcres@vcFillArrowEdgeColor    ="Black"
+   ;vcres@vcMinDistanceF           = 0.025
+   ;opts@vcWindBarbTickLengthF    = 0.33
+
+   ww = abs(ww)
     
-    if (it.le.262) then
+    u_hori = dim_avg_n(uu(:,49:51,:,:),1) 
+    v_hori = dim_avg_n(vv(:,49:51,:,:),1)
+    w_hori = dim_avg_n(ww(:,49:51,:,:),1)
 
-      t_hori = dim_avg_n(t_ano(:,31:33,:,:),1)
-       
-      res@cnLevelSpacingF = 0.2
-      res@cnMinLevelValF  = -3.
-      res@cnMaxLevelValF  = 3.
+    w_hori = runave_n(w_hori, 5, 0, 1)
+    w_hori = runave_n(w_hori, 5, 0, 2)
+    
+    wndplot = gsn_vector(wks, u_hori(it,10:410,10:410), v_hori(it,10:410,10:410), vcres)
 
-    else 
-      if (it.le.926) then
 
-        t_hori = dim_avg_n(t_ano(:,33:35,:,:),1)
-       
-        res@cnLevelSpacingF = 0.5
-        res@cnMinLevelValF  = -4.
-        res@cnMaxLevelValF  = 4.
+    wres = True
+    wres@cnFillOn            = False
+    wres@cnLinesOn           = True
+    wres@cnLineLabelsOn      = False
+    wres@cnLineThicknessF    = 1.6
+
+    wres@cnLevelSelectionMode = "ManualLevels" 
+    wres@cnLevelSpacingF = 0.25
+    wres@cnMinLevelValF  = -1.
+    wres@cnMaxLevelValF  = 1.
+
+
+    wplot = gsn_csm_contour(wks,w_hori(it,10:410,10:410),wres)
+
+    cnres = res
+    cnres@cnFillOn            = True
+    cnres@cnLinesOn           = False
+    cnres@cnLineLabelsOn      = False
+
+    cnres@cnLevelSelectionMode = "ManualLevels"   ; set explicit contour levels
+    
+    t_hori = dim_avg_n(t_ano(:,49:51,:,:),1)
+
+    if (it.le.164) then
+        cnres@cnLevelSpacingF = 0.5
+        cnres@cnMinLevelValF  = -4.
+        cnres@cnMaxLevelValF  = 4.
+      else if (it.le.430) then
+        cnres@cnLevelSpacingF = 0.8
+        cnres@cnMinLevelValF  = -6.
+        cnres@cnMaxLevelValF  = 6.
       else
-
-        t_hori = dim_avg_n(t_ano(:,36:38,:,:),1)
-
-        res@cnLevelSpacingF = 0.5
-        res@cnMinLevelValF  = -6.5
-        res@cnMaxLevelValF  = 6.5
-
+          cnres@cnLevelSpacingF = 1.2
+          cnres@cnMinLevelValF  = -12
+          cnres@cnMaxLevelValF  = 12       
       end if
     end if
     
-    plots =  gsn_csm_contour(wks,t_hori(it,54:186,54:186), res)
+    
+    plot =  gsn_csm_contour(wks,t_hori(it,10:410,10:410), cnres)
+
+    overlay(plot, wplot)
+    overlay(plot, wndplot)
+    
+    draw(plot)
+    print(it)
+    frame(wks)
 
 end do
 

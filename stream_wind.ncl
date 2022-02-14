@@ -33,15 +33,20 @@ begin
 
    t_ano = ano_h[:]->ta
 
-  radial = runave_n(radial, 5, 3, 1)
-  radial = runave_n(radial, 5, 3, 2)
+  radial = runave_n(radial, 5, 0, 1)
+  radial = runave_n(radial, 5, 0, 2)
+
+  wwnd = runave_n(wwnd, 5, 0, 1)
+  wwnd = runave_n(wwnd, 5, 0, 2)
   
-  tangential = runave_n(tangential, 5, 3, 1)
-  tangential = runave_n(tangential, 5, 3, 2)
+  tangential = runave_n(tangential, 5, 0, 1)
+  tangential = runave_n(tangential, 5, 0, 2)
 
   nr = 200
   r = fspan(0.0,400.0,nr)
-  print(r)
+  ;print(r)
+
+  printVarSummary(radial)
 
   dims = dimsizes(t_ano)
 
@@ -128,84 +133,48 @@ begin
   ;res@tmXTOn                  = False
   ;res@tmYROn                  = False
 
-  t_k = new( 8,graphic) 
+  t_k = new( 12,graphic) 
 
   n = 0 
 
-do it = 432, 719, 36
+do it = 216, 719, 36
 
 ;------------------------ radial wind --------------------------------------------------
 
-  res_radial = res
-  res_radial@gsnLeftString  = "Temprature Anomaly (shading,K) ~C~Radial wind Speed (contour,black) ~C~Tangential wind Speed (contour,red) ~C~  "
-  res_radial@gsnRightString = it 
-  res_radial@cnFillOn = False
-  res_radial@cnLinesOn = True
-
-  res_radial@gsnContourNegLineDashPattern  = 11
-  res_radial@cnLineColor  =  18
-  ;
-
-  res_radial@cnLineLabelsOn    = True
-  ;res_radial@cnLineLabelPerimOn = True
-  ;res_radial@cnLineLabelPerimColor = -1
-  res_radial@cnLineLabelBackgroundColor = -1
-
-  ;res_radial@cnHighLabelsOn = True
-  ;res_radial@cnLowLabelsOn  = True
-  ;res_radial@cnLevelSpacingF  = 4
-  ;res_radial@cnMaxLevelValF   = -4
-  ;
-   ; res_radial@cnLevelSelectionMode = "AutomaticLevels"
-   res_radial@cnLevelSelectionMode = "ManualLevels"
-   res_radial@cnMinLevelValF = 0.0
-   res_radial@cnMaxLevelValF   = 20.0
-   res_radial@cnLevelSpacingF   = 4.
-   poradial_wind= gsn_csm_contour(wks,radial(it,0:62,0:199),res_radial)
-
-   res_radial@cnLevelSelectionMode = "ManualLevels"
-   res_radial@cnMinLevelValF = -15.
-   res_radial@cnMaxLevelValF   = 0.0
-   res_radial@cnLevelSpacingF   = 1.0
-   neradial_wind= gsn_csm_contour(wks,radial(it,0:62,0:199),res_radial)
+  res_st = res
+  res_st@gsnLeftString  = "Temprature Anomaly (shading,K) ~C~Radial wind Speed (contour,black) ~C~Tangential wind Speed (contour,red) ~C~  "
+  res_st@gsnRightString = it 
 
 
-;------------------------ tangential wind --------------------------------------------------
-  res_tan = res
-  res_tan@cnFillOn = False
-  res_tan@cnLinesOn = True
-  res_tan@gsnLeftString  = "Temprature Anomaly (shading,K) ~C~Radial wind Speed (contour,black) ~C~Tangential wind Speed (contour,red) ~C~  "
-  res_tan@gsnRightString =  it
-  res_tan@gsnContourNegLineDashPattern  = 11
-  res_tan@cnLineColor  =  98
+    time = (it*10/60.)
+    res@tiMainString = "time = " + time + "h"
+
   
-  res_tan@cnLevelSelectionMode = "ManualLevels"
-  ;res_tan@cnLevelSelectionMode = "AutomaticLevels"
-  res_tan@cnMinLevelValF = -10.
-  res_tan@cnMaxLevelValF   = 80.
-  res_tan@cnLevelSpacingF   = 8.
-  
-  tangential_wind= gsn_csm_contour(wks,tangential(it,0:62,0:199),res_tan)
+    vcres                     = res      ; plot mods desired
+    vcres@lbLabelStride       = 2         ; plot every other colar bar label
+    vcres@vcRefMagnitudeF         = 2.0            ; make vectors larger
+    vcres@vcRefLengthF            = 0.05           ; ref vec length
+    vcres@vcGlyphStyle            = "FillArrow"    ; turn on curly vectors
+    vcres@vcMinDistanceF          = 0.02
 
-;--------------------------------------------------------------------------------
-;---------------------- w wind ----------------------------------------------
+    vcres@vcFillArrowsOn           = True
+ ;  vcres@vcWindBarbLineThicknessF    =  1.5
+    vcres@vcFillArrowEdgeThicknessF = 2.0
+    vcres@vcMinFracLengthF         = 0.33
+    vcres@vcMinMagnitudeF          = 0.001
+    vcres@vcMonoFillArrowFillColor = False
+   ;vcres@vcMonoWindBarbColor     = False
+    vcres@vcFillArrowEdgeColor    ="Black"
+   ;vcres@vcMinDistanceF           = 0.025
+   ;opts@vcWindBarbTickLengthF    = 0.33
 
-  res_w = res
-  res_w@gsnFrame  = False
-  res_w@gsnDraw   = False
+    vcres@gsnLeftString  = "Temprature Anomaly (shading,K) ~C~Radial wind Speed (contour,black) ~C~Tangential wind Speed (contour,red) ~C~  "
+    vcres@gsnRightString = it 
 
-  res_w@cnLineColor  =  "Black"
-  res_w@cnFillOn = False
-  res_w@cnLinesOn = True
-  
-  res_w@cnLevelSelectionMode = "ManualLevels"
-  ;res_w@cnLineLabelsOn    = True
-  ;res_w@cnLineLabelBackgroundColor = -1
-  res_w@cnMaxLevelValF   = 21.
-  res_w@cnMinLevelValF   = 0.
-  res_w@cnLevelSpacingF = 3.
-  
-  w_wind = gsn_csm_contour(wks,wwnd(it,0:62,0:199),res_w) 
+    rad = dim_avg_n(radial(it-1:it+1,0:80,0:199), 0)
+    wd = dim_avg_n(wwnd(it-1:it+1,0:80,0:199), 0)
+    
+    wndplot = gsn_vector(wks, rad, wd, vcres)
 
 ;--------------------------------------------------------------------------------
   res_t = True
@@ -251,14 +220,17 @@ do it = 432, 719, 36
   res_t@cnLineLabelsOn = False                    ; turn the line labels off
 
   print(n)
-  t_k(n) = gsn_csm_contour(wks,t_ano(it,0:62,0:199),res_t) 
+  
+  to = dim_avg_n(t_ano(it-1:it+1,0:80,0:199), 0)
+
+  t_k(n) = gsn_csm_contour(wks,to,res_t) 
 ;--------------------------------------------------------------------------------
 
-  overlay(t_k(n), poradial_wind)
-  overlay(t_k(n), neradial_wind)
-  overlay(t_k(n), tangential_wind)
+  overlay(t_k(n), wndplot)
+  draw(t_k(n))
+  frame(wks)
 
-  ;t_k(n+4) = gsn_csm_contour(wks,t_ano(it,0:62,0:199),res_t) 
+  ;t_k(n+4) = gsn_csm_contour(wks,t_ano(it,0:80,0:199),res_t) 
   ;overlay(t_k(n+4), w_wind)
 
   n = n+1
@@ -268,6 +240,6 @@ end do
   gres_ta = True
   gres_ta@gsnPanelLabelBar = True
   ;gres_ta@txString = "Theta Anomaly ~C~"+"T = "+ it*10/60. +" h" 
-  gsn_panel(wks, t_k(0:7), (/2,4/), gres_ta)
+  gsn_panel(wks, t_k(0:11), (/3,4/), gres_ta)
 
 end

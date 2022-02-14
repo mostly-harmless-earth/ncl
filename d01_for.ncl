@@ -15,12 +15,16 @@ begin
           "300","306","312","318","400","406","412","418",\
           "500","506","512","518"/)
 
+  nn1 = (/"1_00","1_06","1_12","1_18","2_00","2_06","2_12","2_18",\
+          "3_00","3_06","3_12","3_18","4_00","4_06","4_12","4_18",\
+          "5_00","5_06","5_12","5_18"/)
+
   din = dimsizes(nn)
 
 do in = 0, din-1, 1
 
-  at = addfile("sim_lev100/d02_theta/theta0"+nn(in)+".nc", "r")
-  az = addfile("sim_lev100/d02_height/z0"+nn(in)+".nc", "r")
+  at = addfile("sim_lev100/d01/theta_0"+nn1(in)+".nc", "r")
+  az = addfile("sim_lev100/d01/z_0"+nn1(in)+".nc", "r")
   
   ;outfilet = addfile("sim_lev100/ev/envi0"+nn(in)+".nc","r")
   ;t_avg = outfilet->te  
@@ -54,9 +58,9 @@ do in = 0, din-1, 1
 
 ;;;;;;;;;;;;;;;;;;;;; Generate the pole coordinate ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-  nr = 120  ;;; 120 * 6 = 720 Km
+  nr = 100  ;;; 100 * 18 = 1800 Km
   nz = 100   ; Sigma levels
-  r = fspan(0.0, 720.0,nr)
+  r = fspan(0.0, 1620.0,nr)
   ;print(r)
   r@units = "km"
 
@@ -93,18 +97,18 @@ do in = 0, din-1, 1
     CAL::radheight(nz, nr, imin, jmin, t, nx, ny, t_pave)
     
     ;printVarSummary(t_pave)
-    ;print(t_pave(40,:))
+    print(t_pave(40,:))
 
     t_pave!0 = "rad"
     t_pave!1 = "lev"
 
     t_pave := t_pave(lev|:,rad|:)
-    t_avg(it,:) = dim_avg_n(t_pave(:,82:115), 1)  ;;;r = fspan(0.0, 720.0,nr) 500-700km
+    t_avg(it,:) = dim_avg_n(t_pave(:,44:66), 1) ;;; r = fspan(0.0, 720.0,nr) 800-1200km
 
 do lev = 0, 90
   do i = 0,nr-1
 
-    t_ano(it,lev,i) = t_pave(lev,i)-t_avg(it,lev)
+    t_ano(it,lev,i) = t_pave(lev,i)
    
     end do
 
@@ -119,36 +123,22 @@ end do
    
  t_avg!0 = "time"
  t_avg!1 = "height"
- t_avg@long_name = "temperature anomaly"
+ t_avg@long_name = "potential temperature"
  t_avg@units = "K"
  t_avg@_FillValue = 9.96921e+36
 
-outfilet = addfile("sim_lev100/ev/for_ev"+nn(in)+".nc","c")
+outfilet = addfile("sim_lev100/ev/d01_ev"+nn(in)+".nc","c")
 outfilet->ta = t_avg(:,0:90)
 
  t_ano!0 = "time"
  t_ano!1 = "height"
  t_ano!2 = "Radial"
- t_ano@long_name = "temperature anomaly"
+ t_ano@long_name = "potential temperature"
  t_ano@units = "K"
  t_ano@_FillValue = 9.96921e+36
 
-outfilet = addfile("sim_lev100/d02_tha/for_d02_tano"+nn(in)+".nc","c")
-outfilet->ta = t_ano(:,0:90,:)
-
-    ;wks=gsn_open_wks("pdf","/user_home/jyyin/dta/sim_lev100/test_for_ev"+nn(in)) 
-    ;gsn_define_colormap(wks,"BlueWhiteOrangeRed")  ; Change color map.
-    ;gsn_define_colormap(wks,"MPL_RdBu")
-    ;gsn_reverse_colormap(wks)
-
-    ;res  = True
-    ;res@cnFillOn            = True
-    ;res@cnLinesOn           = False
-    ;res@cnLineLabelsOn      = False
-    ;res@lbLabelBarOn        = True
-    ;print(t_pave(0,40,:))
-    ;plot = gsn_contour(wks, t_avg(0,0:65), res)
-    ;plot = gsn_contour(wks, t_pave(0:41,:), res)
+outfilet = addfile("sim_lev100/d01/theta"+nn(in)+".nc","c")
+outfilet->th = t_ano(:,0:90,:)
 
     delete(t_avg)
     delete(t_ano)
