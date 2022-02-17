@@ -13,14 +13,14 @@ begin
 
   nn = (/"100","106","112","118","200","206","212","218",\
           "300","306","312","318","400","406","412","418",\
-          "500","506","512","518"/)
+          "500","506","512","518","600","606","612","618","700","706","712","718"/)
 
   din = dimsizes(nn)
 
-do in = 0, din-1, 1
+do in = 20, din-1, 1
 
-  at = addfile("sim_lev100/d02_theta/theta0"+nn(in)+".nc", "r")
-  az = addfile("sim_lev100/d02_height/z0"+nn(in)+".nc", "r")
+  at = addfile("sim_lev100/d02/d02_theta/theta0"+nn(in)+".nc", "r")
+  az = addfile("sim_lev100/d02/d02_height/z0"+nn(in)+".nc", "r")
   
   ;outfilet = addfile("sim_lev100/ev/envi0"+nn(in)+".nc","r")
   ;t_avg = outfilet->te  
@@ -104,7 +104,8 @@ do in = 0, din-1, 1
 do lev = 0, 90
   do i = 0,nr-1
 
-    t_ano(it,lev,i) = t_pave(lev,i)-t_avg(it,lev)
+    t_ano(it,lev,i) = t_pave(lev,i)
+    ;-t_avg(it,lev)
    
     end do
 
@@ -117,14 +118,14 @@ delete(t_pave)
 end do
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; output Section ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
    
- t_avg!0 = "time"
- t_avg!1 = "height"
- t_avg@long_name = "temperature anomaly"
- t_avg@units = "K"
- t_avg@_FillValue = 9.96921e+36
+ ;t_avg!0 = "time"
+ ;t_avg!1 = "height"
+ ;t_avg@long_name = "temperature anomaly"
+ ;t_avg@units = "K"
+ ;t_avg@_FillValue = 9.96921e+36
 
-outfilet = addfile("sim_lev100/ev/for_ev"+nn(in)+".nc","c")
-outfilet->ta = t_avg(:,0:90)
+;outfilet = addfile("sim_lev100/ev/for_ev"+nn(in)+".nc","c")
+;outfilet->ta = t_avg(:,0:90)
 
  t_ano!0 = "time"
  t_ano!1 = "height"
@@ -133,7 +134,7 @@ outfilet->ta = t_avg(:,0:90)
  t_ano@units = "K"
  t_ano@_FillValue = 9.96921e+36
 
-outfilet = addfile("sim_lev100/d02_tha/for_d02_tano"+nn(in)+".nc","c")
+outfilet = addfile("sim_lev100/d02/afor_d02_t"+nn(in)+".nc","c")
 outfilet->ta = t_ano(:,0:90,:)
 
     ;wks=gsn_open_wks("pdf","/user_home/jyyin/dta/sim_lev100/test_for_ev"+nn(in)) 

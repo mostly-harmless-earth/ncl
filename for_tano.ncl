@@ -13,16 +13,16 @@ begin
 
   nn = (/"100","106","112","118","200","206","212","218",\
           "300","306","312","318","400","406","412","418",\
-          "500","506","512","518"/)
+          "500","506","512","518","600","606","612","618","700","706","712","718"/)
 
   din = dimsizes(nn)
 
-do in = 0, din-1, 1
+do in = 24, din-1, 1
 
   at = addfile("sim_lev100/theta/theta0"+nn(in)+".nc", "r")
   az = addfile("sim_lev100/height/z0"+nn(in)+".nc", "r")
   
-  outfilet = addfile("sim_lev100/ev/for_ev"+nn(in)+".nc","r")
+  outfilet = addfile("sim_lev100/ev/for_ev"+nn(in-10)+".nc","r")
   t_avg = outfilet->ta  
 
   printVarSummary(t_avg)
@@ -32,7 +32,7 @@ do in = 0, din-1, 1
   z = az->z
   ;printVarSummary(z_out)
 
-  print(in)
+  print(nn(in))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
  
   FirstTime = True
@@ -121,7 +121,7 @@ end do
  t_ano@units = "K"
  t_ano@_FillValue = 9.96921e+36
 
-outfilet = addfile("sim_lev100/tha/for_t"+nn(in)+".nc","c")
+outfilet = addfile("sim_lev100/tha/afor_t"+nn(in)+".nc","c")
 outfilet->ta = t_ano(:,0:90,:)
 
     wks=gsn_open_wks("pdf","/user_home/jyyin/dta/sim_lev100/test_for"+nn(in)) 

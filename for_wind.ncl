@@ -11,6 +11,11 @@ begin
   ;a = addfile("/user_home/jyyin/dta/wrfout_d02_2000-04-04_00:00:00","r")
   ;a1 = addfile("/user_home/jyyin/dta/wrfout_d01_2000-04-04_00:00:00","r")
 
+  nn1 = (/"1_00","1_06","1_12","1_18","2_00","2_06","2_12","2_18",\
+          "3_00","3_06","3_12","3_18","4_00","4_06","4_12","4_18",\
+          "5_00","5_06","5_12","5_18","6_00","6_06","6_12","6_18"/)
+
+
   nn = (/"100","106","112","118","200","206","212","218",\
           "300","306","312","318","400","406","412","418",\
           "500","506","512","518","6_00","6_06","6_12","6_18"/)
@@ -21,9 +26,9 @@ begin
 
 do in = 0, din-1, 1 
 
-  au = addfile("sim_lev100/wind/u_0"+nn(in)+".nc", "r")
-  av = addfile("sim_lev100/wind/v_0"+nn(in)+".nc", "r")
-  aw = addfile("sim_lev100/wind/w_0"+nn(in)+".nc", "r")
+  au = addfile("sim_lev100/wind/u_0"+nn1(in)+".nc", "r")
+  av = addfile("sim_lev100/wind/v_0"+nn1(in)+".nc", "r")
+  aw = addfile("sim_lev100/wind/w_0"+nn1(in)+".nc", "r")
 
   az = addfile("sim_lev100/height/z0"+nn(in)+".nc", "r")
   

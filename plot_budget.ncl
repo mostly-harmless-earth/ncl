@@ -32,22 +32,22 @@ begin
     ;ano_h = addfiles(files, "r")
     ;ListSetType(ano_h, "cat")
 
-    a1 = addfile("sim_lev100/bud/for_heat_05_00.nc","r")
+    a1 = addfile("sim_lev100/bud/for_heat_03_00.nc","r")
     t_heat = a1->t_heat 
 
-    a2 = addfile("sim_lev100/bud/for_pbl_05_00.nc","r")
+    a2 = addfile("sim_lev100/bud/for_pbl_03_00.nc","r")
     t_pbl = a2->t_pbl
 
-    a3 = addfile("sim_lev100/bud/for_diff_05_00.nc","r")
+    a3 = addfile("sim_lev100/bud/for_diff_03_00.nc","r")
     t_diff = a3->t_diff
 
-    a33 = addfile("sim_lev100/bud/for_diff3_05_00.nc","r")
+    a33 = addfile("sim_lev100/bud/for_diff3_03_00.nc","r")
     t_diff3 = a3->t_diff
     
-    a4 = addfile("sim_lev100/bud/for_adv_v_05_00.nc","r")
+    a4 = addfile("sim_lev100/bud/for_adv_v_03_00.nc","r")
     t_adv_v = a4->t_adv_v
 
-    a5 = addfile("sim_lev100/bud/for_adv_h_05_00.nc","r")
+    a5 = addfile("sim_lev100/bud/for_adv_h_03_00.nc","r")
     t_adv_h = a5->t_adv_h
 
     ;a6 = addfile("/user_home/jyyin/dta/sim9/bud_d3_12/adv.nc","r")
@@ -63,10 +63,10 @@ begin
     ;ano_h = addfiles(files, "r")
     ;ListSetType(ano_h, "cat")
 
-    ano_h = addfile("sim_lev100/tha/for_t500.nc","r")
+    ano_h = addfile("sim_lev100/tha/afor_t300.nc","r")
     t_ano = ano_h->ta
 
-    ano_h = addfile("sim_lev100/tha/for_t506.nc","r")
+    ano_h = addfile("sim_lev100/tha/afor_t518.nc","r")
     t_ano2 = ano_h->ta
 
     t_sum = t_adv_h + t_adv_v + t_heat + t_pbl  + t_diff
@@ -78,7 +78,7 @@ begin
     printVarSummary(t_ano)
     printVarSummary(t_sum)
 
-    wks=gsn_open_wks("pdf","sim_lev100/budget_test_500_6h") 
+    wks=gsn_open_wks("pdf","sim_lev100/budget_test_512_3h") 
     gsn_define_colormap(wks,"BlueWhiteOrangeRed")  ; Change color map.
 
     ;;; t_sum: 120 X 68 X 150
@@ -90,7 +90,7 @@ begin
   
     do it = 0,6,10
 
-    dt = 35
+    dt = 17
     nmin = 10*60
 
     t_sum_1h   = dim_sum_n(t_sum(it:it+dt,:,:), 0)
@@ -106,8 +106,8 @@ begin
 
     t_adv_1h = t_adv_h_1h + t_adv_v_1h
 
-    ;t_temp = t_ano(it+dt+1,:,:)-t_ano(it,:,:)
-    t_temp = t_ano2(it,:,:)-t_ano(it,:,:)
+    t_temp = t_ano(it+dt+1,:,:)-t_ano(it,:,:)
+    ;t_temp = t_ano2(it,:,:)-t_ano(it,:,:)
     ;t_temp(:,:) = smth9(t_temp(:,:), 0.5, -0.25, True)
     ;printVarSummary(t_cu_1h)
 
@@ -209,16 +209,16 @@ begin
 
 
   ares@tiMainString = "Diff"
-  plot9(6) = gsn_csm_contour(wks,t_diff_1h(0:61,0:199)*nmin, ares)
+  plot9(6) = gsn_csm_contour(wks,t_diff_1h(0:61,0:39)*nmin, ares)
 
   ares@tiMainString = "Nonadiabatic heating"
-  plot9(4) = gsn_csm_contour(wks,t_heat_1h(0:61,0:199)*nmin, ares)
+  plot9(4) = gsn_csm_contour(wks,t_heat_1h(0:61,0:39)*nmin, ares)
 
   ares@tiMainString = "PBL"
-  plot9(5) = gsn_csm_contour(wks,t_pbl_1h(0:61,0:199)*nmin, ares)
+  plot9(5) = gsn_csm_contour(wks,t_pbl_1h(0:61,0:39)*nmin, ares)
   
   ares@tiMainString = "ADV"
-  plot9(3) = gsn_csm_contour(wks,t_adv_1h(0:61,0:199)*nmin, ares)
+  plot9(3) = gsn_csm_contour(wks,t_adv_1h(0:61,0:39)*nmin, ares)
   
   ;ares@cnLevelSelectionMode = "ExplicitLevels"   ; set explicit contour levels
   ;ares@cnLevels     = (/-100,-80,-60,-40,-20, 0,   20,  40,  60,  80,100/)   ; set levels
@@ -230,12 +230,12 @@ begin
   ares@cnMaxLevelValF  = 80.
   
   ares@tiMainString = "Horizontal Advection"
-  plot9(7) = gsn_csm_contour(wks,t_adv_h_1h(0:61,0:199)*nmin, ares)
+  plot9(7) = gsn_csm_contour(wks,t_adv_h_1h(0:61,0:39)*nmin, ares)
   ;ares@tiMainString = "Radiation "
   ;plot9(6) = gsn_csm_contour(wks,t_ra_1h(11:41,:)*720, ares)
   
   ares@tiMainString = "Vertical Advection"
-  plot9(8) = gsn_csm_contour(wks,t_adv_v_1h(0:61,0:199)*nmin, ares)
+  plot9(8) = gsn_csm_contour(wks,t_adv_v_1h(0:61,0:39)*nmin, ares)
   
   ;gres = True
   ;gres@tiMainString = "theta Budget Term 1 hour"
@@ -259,12 +259,12 @@ begin
   ares@cnMaxLevelValF  = 5.
 
   ares@tiMainString = "Sum of RHS"
-  plot9(1) = gsn_csm_contour(wks,t_sum_1h(0:61,0:199)*nmin, ares)
+  plot9(1) = gsn_csm_contour(wks,t_sum_1h(0:61,0:39)*nmin, ares)
 
   ares@tiMainString = "Actual change"
-  plot9(0) = gsn_csm_contour(wks,t_temp(0:61,0:199), ares)
+  plot9(0) = gsn_csm_contour(wks,t_temp(0:61,0:39), ares)
 
-  t_dire = t_sum_1h(0:61,0:199)*nmin-t_temp(0:61,0:199)
+  t_dire = t_sum_1h(0:61,0:39)*nmin-t_temp(0:61,0:39)
 
   time = (it*10/60.)+96
   ;time = 100.

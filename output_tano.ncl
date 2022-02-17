@@ -15,11 +15,11 @@ begin
 
   nn = (/"100","106","112","118","200","206","212","218",\
           "300","306","312","318","400","406","412","418",\
-          "500","506","512","518"/)
+          "500","506","512","518","600","606","612","618","700","706","712","718"/)
 
   din = dimsizes(nn)
 
- do in = 15, din-1, 1 
+ do in = 0, din-1, 1 
 
   print(in)
     
@@ -31,10 +31,6 @@ begin
   at = addfile("sim_lev100/theta/theta0"+nn(in)+".nc", "r")
   az = addfile("sim_lev100/height/z0"+nn(in)+".nc", "r")
   
-  outfilet = addfile("sim_lev100/envi0"+nn(in)+".nc","r")
-  t_avg = outfilet->te  
-
-  printVarSummary(t_avg)
 
   tb = at->th
   ;printVarSummary(tb_out)
@@ -152,10 +148,10 @@ end do
   end do
 ;;-----------------------------------------------------------------------
  
- t_ano    = new((/ntimes,nz,nr/),"float")
+ t_ano    = new((/ntimes,nz,nr,360/),"float")
  print(ntimes)
 
-  do it = 0 , ntimes-1 , 1; TIME LOOP
+  do it = 0 , ntimes-1 , 6; TIME LOOP
    
     print("Working on time: " + it )
 ;-------------------------------------------------------------------------------------
@@ -183,32 +179,36 @@ end do
  t_p      = linint2_points(lat,lon,t,False,lat_p,lon_p,1)
  ;t_pout   = linint2_points(latout,lonout,t_out,False,lat_po,lon_po,1)
 
-do lev = 0,nz-1
-  do i = 0,nr-1
+  tt_po_level = onedtond(t_p,(/nr,360/)) 
+  printVarSummary(tt_po_level)
+
+;do lev = 0,nz-1
+  ;do i = 0,nr-1
       sum_te = 0.0
       ;sum_tout = 0.0
 
-      do j = 0,359,1
+      ;do j = 0,359,1
         
          sum_te    = sum_te    + t_p(lev,i*360+j)
          ;sum_tout  = sum_tout  + t_pout(lev,i*360+j)
 
-      end do
+      ;end do
 
-      t_pave(lev,i)= sum_te/360.0
+      ;t_pave(lev,i)= sum_te/360.0
       ;t_poave(lev,i)= sum_tout/360.0
 
-    end do
-end do
+    ;end do
+;end do
 
 
-do lev = 0,nz-1
-  do i = 0,nr-1
+;do lev = 0,nz-1
+  ;do i = 0,nr-1
 
-    t_ano(it,lev,i) = t_pave(lev,i)-t_avg(it,lev)
+    t_ano(it,:,:,:) = t_pave(:,:,:)
+    ;-t_avg(it,lev)
    
-    end do
-end do
+    ;end do
+;end do
 
 end do
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; output Section ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -226,8 +226,8 @@ end do
  ;t_avg@units = "K"
  ;t_avg@_FillValue = 9.96921e+36
 
-  outfilet = addfile("sim_lev100/tha/tano"+nn(in)+".nc","c")
-  outfilet->ta = t_ano
+  outfilet = addfile("sim_lev100/tha/cirtano"+nn(in)+".nc","c")
+  outfilet->ta = t_ano(:,0:90,:,:)
 
   delete(outfilet)
   delete(at)

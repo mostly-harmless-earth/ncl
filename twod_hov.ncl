@@ -14,8 +14,6 @@ begin
     d = addfile("/user_home/jyyin/dta/sim_lev100/tha/rela_t0_tano.nc","r")
     t_ano = d->ta
 
-    d = addfile("/user_home/jyyin/dta/sim_lev100/d02/rela_d02_t0_tano.nc","r")
-    t_d2ano = d->ta
 
     dim = dimsizes(t_ano)
     print(dim)
@@ -26,7 +24,7 @@ begin
     r1@units = "km"
     times =ispan(0, dim(0)-1, 1)
 
-  printVarSummary(t_d2ano)
+  printVarSummary(t_ano)
   print(hei)
   ;print(r1)
   ;print((times))
@@ -35,11 +33,11 @@ begin
   ;times  = wrf_user_getvar(ano_h,"times",-1)   ; get times in the file
   ;ntimes = dimsizes(times)          ; number of times in the file
 
-  wks = gsn_open_wks("pdf","sim_lev100/hov_theta_d7")
+  wks = gsn_open_wks("pdf","sim_lev100/hov_theta")
     gsn_define_colormap(wks,"MPL_RdBu")
-    ;gsn_reverse_colormap(wks)
+    gsn_reverse_colormap(wks)
 
-  plot = new(9,graphic)
+  plot = new(6,graphic)
 
   res = True
   
@@ -62,14 +60,15 @@ begin
   res@gsnLeftString   = ""
   res@lbLabelBarOn        = False           ; turn off individual cb's
   
-  res@cnLevelSelectionMode = "ExplicitLevels"   ; set explicit contour levels
-  res@cnLevels     = (/ -5, -4, -3,-2,-1, 0, 1, 3, 5, 7, 9,11, 13,15 /)   ; set levels
-  res@cnFillColors = (/120,110,100,90,82,73,66,60,50,40,30,20, 10, 9,8/)  ; set the colors to be used
+  ;res@cnLevelSelectionMode = "ExplicitLevels"   ; set explicit contour levels
+  ;res@cnLevelSpacingF = 0.2
+  ;res@cnLevels     = (/-4,-2,  0, 1, 3, 5, 7, 9, 11, 13 /)   ; set levels
+  ;res@cnFillColors = (/ 2, 8, 32, 0,80,90,93,96,108,120,126/)  ; set the colors to be used
 
-    ;res@cnLevelSelectionMode = "ManualLevels"   ; set explicit contour levels
-    ;res@cnLevelSpacingF = 0.5
-    ;res@cnMinLevelValF  = -5
-    ;res@cnMaxLevelValF  = 5
+    res@cnLevelSelectionMode = "ManualLevels"   ; set explicit contour levels
+    res@cnLevelSpacingF = 0.5
+    res@cnMinLevelValF  = -5
+    res@cnMaxLevelValF  = 5
   
   res@tiXAxisString  = "Hours"
   res@tmXBMode = "Explicit"
@@ -77,8 +76,8 @@ begin
   res@tmXBLabels  = times(::12)*60/60.
   
   res@tmYLMode    = "Explicit"
-  res@tmYLValues  = (/0, 17,24,35,53,61/)
-  res@tmYLLabels  = (/0.5,5, 7,10,15,17/)
+  res@tmYLValues  = (/0, 17,35,53,61/)
+  res@tmYLLabels  = (/0.5,5,10,15,17/)
 
   ;res@tmYLMode    = "Explicit"
   ;res@tmYLValues  = (/0, 7, 14,21,28/)
@@ -104,8 +103,8 @@ begin
   plot(2) = gsn_csm_contour(wks, tp, res)
 
   res@tmYLMode    = "Explicit"
-  res@tmYLValues  = (/0,40, 80, 120,160,199/)
-  res@tmYLLabels  = (/0,80, 160,240,320,400/)
+  res@tmYLValues  = (/40, 80, 120,160,199/)
+  res@tmYLLabels  = (/80, 160,240,320,400/)
 
   res@tiYAxisString  = "Radius(Km)"
   res@tiMainString = "h = 13km"
@@ -113,6 +112,7 @@ begin
   tmp2 = dim_avg_n(t_ano(::6,45:47,:),1)
   tmp3 = transpose(tmp2)
   plot(3) = gsn_csm_contour(wks, tmp3, res)
+
  
   res@tiYAxisString  = "Radius(Km)"
   res@tiMainString = "h = 14km"
@@ -127,35 +127,11 @@ begin
   tmp3 = transpose(tmp2)
   plot(5) = gsn_csm_contour(wks, tmp3, res)
 
-  res@tmYLMode    = "Explicit"
-  res@tmYLValues  = (/ 20, 40, 60,80 ,100,119/)
-  res@tmYLLabels  = (/120,240,320,480,600,720/)
-
-  res@tiYAxisString  = "Radius(Km)"
-  res@tiMainString = "h = 13km"
-
-  tmp4 = dim_avg_n(t_d2ano(::6,45:47,:),1)
-  tmp5 = transpose(tmp4)
-  plot(6) = gsn_csm_contour(wks, tmp5, res)
- 
-  res@tiYAxisString  = "Radius(Km)"
-  res@tiMainString = "h = 14km"
-
-  tmp4 = dim_avg_n(t_d2ano(::6,49:51,:),1)
-  tmp5 = transpose(tmp4)
-  plot(7) = gsn_csm_contour(wks, tmp5, res)
-
-  res@tiMainString = "h = 15km"
-
-  tmp4 = dim_avg_n(t_d2ano(::6,53:55,:),1)
-  tmp5 = transpose(tmp4)
-  plot(8) = gsn_csm_contour(wks, tmp5, res)
-
   gres = True
   gres@gsnPanelLabelBar = True
   gres@txString = "theta anomaly"
    
-  gsn_panel(wks, plot, (/3,3/), gres)
+  gsn_panel(wks, plot, (/2,3/), gres)
 
 end
 

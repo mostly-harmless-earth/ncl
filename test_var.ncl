@@ -14,12 +14,17 @@ nn = (/"1_00","1_06","1_12","1_18","2_00","2_06","2_12","2_18",\
           "3_00","3_06","3_12","3_18","4_00","4_06","4_12","4_18",\
           "5_00","5_06","5_12","5_18","6_00","6_06","6_12","6_18","7_00","7_06","7_12","7_18",\
           "8_00","8_06","8_12","8_18","9_00","9_06","9_12","9_18","10_00","10_06","10_12","10_18"/)
+
+nn1 = (/"1_00","1_06","1_12","1_18","2_00","2_06","2_12","2_18",\
+          "3_00","3_06","3_12","3_18","4_00","4_06","4_12","4_18",\
+          "5_00","5_06","5_12","5_18","600","606","612","618","700","706","712","718",\
+          "8_00","8_06","8_12","8_18","9_00","9_06","9_12","9_18","10_00","10_06","10_12","10_18"/)
 dim = dimsizes(nn) 
 
-do in = 0, 19,1
+do in = 20, 28,1
 
-    a = addfile("/ldata6/jyyin/sim_lev100/wrfout_d01_2000-02-0"+nn(in)+":00:00","r")  
-    print("time = " + in)
+    a = addfile("/ldata6/jyyin/sim_lev100/wrfout_d02_2000-02-0"+nn(in)+":00:00","r")  
+    print("time = " + nn(in))
     
     ;files = systemfunc("ls ./sim_lev100/wrfout_d03_2000-02-01_2000-02-01_00:00:00")
     ;a = addfiles(files, "r")
@@ -34,6 +39,9 @@ do in = 0, 19,1
     
     th = wrf_user_getvar(a,"th",-1)
     z = wrf_user_getvar(a, "z", -1)
+    ;ua = wrf_user_getvar(a,"ua",-1)
+    ;va = wrf_user_getvar(a,"va", -1)
+    ;wa = wrf_user_getvar(a,"wa",-1)
     ;hei = wrf_user_getvar(a, "height", -1)
 
     ;slp = wrf_user_getvar(a, "slp", -1)
@@ -65,12 +73,20 @@ do in = 0, 19,1
     ;outfilet = addfile("sim_lev100/wind10/wnd0"+nn(in)+".nc","c")
     ;outfilet->wnd = wnd
 
-    outfilet = addfile("sim_lev100/d01/theta_0"+nn(in)+".nc","c")
+    outfilet = addfile("sim_lev100/d02/d02_theta/theta0"+nn1(in)+".nc","c")
     outfilet->th = th
 
-    outfilet = addfile("sim_lev100/d01/z_0"+nn(in)+".nc","c")
+    outfilet = addfile("sim_lev100/d02/d02_height/z0"+nn1(in)+".nc","c")
     outfilet->z = z
-
+    
+    ;outfilet = addfile("sim_lev100/wind/u_0"+nn(in)+".nc","c")
+    ;outfilet->ua = ua
+    
+    ;outfilet = addfile("sim_lev100/wind/v_0"+nn(in)+".nc","c")
+    ;outfilet->va = va
+    
+    ;outfilet = addfile("sim_lev100/wind/w_0"+nn(in)+".nc","c")
+    ;outfilet->wa = wa
 
     ;outfilet = addfile("sim_lev100/d02_bud_or/adv_h_0"+nn(in)+".nc","c")
     ;outfilet->T_TEND_ADV_H = tb_adv_h
