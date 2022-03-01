@@ -13,9 +13,14 @@ begin
     nn = (/"1_00","1_06","1_12","1_18","2_00","2_06","2_12","2_18",\
           "3_00","3_06","3_12","3_18","4_00","4_06","4_12","4_18",\
           "5_00","5_06","5_12","5_18"/)
-    in = 17
-    
-    dim = dimsizes(nn)
+
+    nn1 = (/"100","106","112","118","200","206","212","218",\
+          "300","306","312","318","400","406","412","418",\
+          "500","506","512","518","6_00","6_06","6_12","6_18"/)
+
+ din = dimsizes(nn)
+
+ do in = 0, din-1, 1000 
 
     outfilet = addfile("sim_lev100/budget_or/adv_h_0"+nn(in)+".nc","r")
     tb_adv_h = outfilet->T_TEND_ADV_H
@@ -39,7 +44,7 @@ begin
     outfilet = addfile("sim_lev100/budget_or/mut_0"+nn(in)+".nc","r")
     mut = outfilet->MUT
 
-    outfilet = addfile("sim_lev100/height/z0312.nc","r")
+    outfilet = addfile("sim_lev100/height/z0"+nn1(in)+".nc","r")
     z = outfilet->z  
 
     printVarSummary(tb_adv_h)
@@ -137,19 +142,19 @@ end do
   ;frame(wks)
 ;;-----------------------------------------------------------------------
  
- ta_adv_v = new((/ntimes,nz,nr/),"float")
- ta_adv_h = new((/ntimes,nz,nr/),"float")
+ ta_adv_v = new((/ntimes,nz,nr,360/),"float")
+ ta_adv_h = new((/ntimes,nz,nr,360/),"float")
  ;ta_adv = new((/ntimes,nz,nr/),"float")
 
- ta_diff1  = new((/ntimes,nz,nr/),"float")
- ta_diff3  = new((/ntimes,nz,nr/),"float")
+ ta_diff1  = new((/ntimes,nz,nr,360/),"float")
+ ta_diff3  = new((/ntimes,nz,nr,360/),"float")
 
- ta_heat  = new((/ntimes,nz,nr/),"float")
- ta_pbl   = new((/ntimes,nz,nr/),"float")
- ta_cu   = new((/ntimes,nz,nr/),"float")
- ta_ra   = new((/ntimes,nz,nr/),"float")
+ ta_heat  = new((/ntimes,nz,nr,360/),"float")
+ ta_pbl   = new((/ntimes,nz,nr,360/),"float")
+ ta_cu   = new((/ntimes,nz,nr,360/),"float")
+ ta_ra   = new((/ntimes,nz,nr,360/),"float")
 
-  do it = 10 , ntimes-1 , 1; TIME LOOP
+  do it = 0 , ntimes-1 , 1; TIME LOOP
    
     print("Working on time: " + it )
 
@@ -219,57 +224,31 @@ end do
  ;tp_cu    = linint2_points(lat,lon,t_cu,False,lat_p,lon_p,1)
  ;tp_ra    = linint2_points(lat,lon,t_ra,False,lat_p,lon_p,1)
  
-do lev = 0,nz-1
-  do i = 0,nr-1
+  do lev = 0,nz-1
 
-      sum_adv_v = 0.0
-      sum_adv_h = 0.0
-      ;sum_adv = 0.0
+    advh_po_level = onedtond(tp_adv_h(lev,:),(/nr,360/)) 
+    advv_po_level = onedtond(tp_adv_v(lev,:),(/nr,360/)) 
+    diff_po_level = onedtond(tp_diff1(lev,:),(/nr,360/)) 
+    diff3_po_level = onedtond(tp_diff3(lev,:),(/nr,360/)) 
+    heat_po_level = onedtond(tp_adv_h(lev,:),(/nr,360/)) 
+    pbl_po_level = onedtond(tp_adv_h(lev,:),(/nr,360/)) 
 
-      sum_diff1 = 0.0
-      sum_diff2 = 0.0
-      sum_diff3 = 0.0
+    ta_adv_v(it,lev,:,:) = advv_po_level
+    ta_adv_h(it,lev,:,:) = advh_po_level
+    ta_diff1(it,lev,:,:) = diff_po_level
+    ta_diff3(it,lev,:,:) = diff3_po_level
+    ta_heat(it,lev,:,:)  = heat_po_level
+    ta_pbl(it,lev,:,:)   = pbl_po_level
 
-      sum_heat = 0.0
-      sum_pbl = 0.0
-      sum_cu = 0.0
-      sum_ra = 0.0
+  end do
 
-      do j = 0,359,1
-
-         sum_adv_v = sum_adv_v + tp_adv_v(lev,i*360+j)
-         sum_adv_h = sum_adv_h + tp_adv_h(lev,i*360+j)
-         ;sum_adv = sum_adv + tp_adv(lev,i*360+j)
-
-         sum_diff1  = sum_diff1  + tp_diff1(lev,i*360+j)
-         sum_diff3  = sum_diff3  + tp_diff3(lev,i*360+j)
-
-         sum_heat  = sum_heat  + tp_heat(lev,i*360+j)
-         sum_pbl   = sum_pbl   + tp_pbl(lev,i*360+j)
-         ;sum_cu    = sum_cu    + tp_cu(lev,i*360+j)
-         ;sum_ra    = sum_ra    + tp_ra(lev,i*360+j)
-        
-      end do
-
-      ta_adv_v(it,lev,i) = sum_adv_v/360.0
-      ta_adv_h(it,lev,i) = sum_adv_h/360.0
-
-      ta_diff1(it,lev,i)  = sum_diff1/360.0
-      ta_diff3(it,lev,i)  = sum_diff3/360.0
-
-      ta_heat(it,lev,i)  = sum_heat/360.0
-      ta_pbl(it,lev,i)   = sum_pbl/360.0
-      ;ta_cu(it,lev,i)    = sum_cu/360.0
-      ;ta_ra(it,lev,i)    = sum_ra/360.0
-
-    end do
-end do
 end do
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; output Section ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
  ta_adv_v!0 = "time"
  ta_adv_v!1 = "height"
  ta_adv_v!2 = "Radial"
+ ta_adv_v!3 = "angle"
  ta_adv_v@long_name = "vertical advection"
  ta_adv_v@units = "K/s"
  ta_adv_v@_FillValue = 9.96921e+36
@@ -277,6 +256,7 @@ end do
  ta_adv_h!0 = "time"
  ta_adv_h!1 = "height"
  ta_adv_h!2 = "Radial"
+ ta_adv_h!3 = "angle"
  ta_adv_h@long_name = "Horizontal advection"
  ta_adv_h@units = "K/s"
  ta_adv_h@_FillValue = 9.96921e+36
@@ -285,31 +265,35 @@ end do
  ta_diff1!0 = "time"
  ta_diff1!1 = "height"
  ta_diff1!2 = "Radial"
+ ta_diff1!3 = "angle"
  ta_diff1@long_name = "diffusion"
- ta_diff1@units = "K"
+ ta_diff1@units = "K/s"
  ta_diff1@_FillValue = 9.96921e+36
  
  
  ta_diff3!0 = "time"
  ta_diff3!1 = "height"
  ta_diff3!2 = "Radial"
+ ta_diff3!3 = "angle"
  ta_diff3@long_name = "diffusion"
- ta_diff3@units = "K"
+ ta_diff3@units = "K/s"
  ta_diff3@_FillValue = 9.96921e+36
 
  
  ta_heat!0 = "time"
  ta_heat!1 = "height"
  ta_heat!2 = "Radial"
+ ta_heat!3 = "angle"
  ta_heat@long_name = "Nondiabatic heating"
- ta_heat@units = "K"
+ ta_heat@units = "K/s"
  ta_heat@_FillValue = 9.96921e+36
 
  ta_pbl!0 = "time"
  ta_pbl!1 = "height"
  ta_pbl!2 = "Radial"
+ ta_pbl!3 = "angle"
  ta_pbl@long_name = "pbl"
- ta_pbl@units = "K"
+ ta_pbl@units = "K/s"
  ta_pbl@_FillValue = 9.96921e+36
 
  ;ta_cu!0 = "time"
@@ -334,23 +318,23 @@ end do
  ;ta_ra@_FillValue = 9.96921e+36
 
 outfilet = addfile("sim_lev100/bud/azi_adv_h_0"+nn(in)+".nc","c")
-outfilet->t_adv_h = ta_adv_h
+outfilet->t_adv_h = ta_adv_h(:,0:90,:,:)
 
 outfilet = addfile("sim_lev100/bud/azi_adv_v_0"+nn(in)+".nc","c")
 ;outfilet = addfile("sim9/bud_d1_06/adv.nc","c")
-outfilet->t_adv_v = ta_adv_v
+outfilet->t_adv_v = ta_adv_v(:,0:90,:,:)
 
 outfilet = addfile("sim_lev100/bud/azi_diff_0"+nn(in)+".nc","c")
-outfilet->t_diff = ta_diff1
+outfilet->t_diff = ta_diff1(:,0:90,:,:)
 
 outfilet = addfile("sim_lev100/bud/azi_diff3_0"+nn(in)+".nc","c")
-outfilet->t_diff = ta_diff3
+outfilet->t_diff = ta_diff3(:,0:90,:,:)
 
 outfilet = addfile("sim_lev100/bud/azi_heat_0"+nn(in)+".nc","c")
-outfilet->t_heat = ta_heat
+outfilet->t_heat = ta_heat(:,0:90,:,:)
 
 outfilet = addfile("sim_lev100/bud/azi_pbl_0"+nn(in)+".nc","c")
-outfilet->t_pbl = ta_pbl
+outfilet->t_pbl = ta_pbl(:,0:90,:,:)
 
-
+end do
 end

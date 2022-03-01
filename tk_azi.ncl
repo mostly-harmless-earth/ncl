@@ -15,7 +15,7 @@ begin
 
    nn = (/"100","106","112","118","200","206","212","218",\
           "300","306","312","318","400","406","412","418",\
-          "500","506","512","518","6_00","6_06","6_12","6_18"/)
+          "500","506","512","518","600","606","612","618"/)
 
   nn1 = (/"1_00","1_06","1_12","1_18","2_00","2_06","2_12","2_18",\
           "3_00","3_06","3_12","3_18","4_00","4_06","4_12","4_18",\
@@ -23,48 +23,17 @@ begin
 
   din = dimsizes(nn)
 
- do in = 1, din-1, 1 
+ do in = 0, din-1, 1 
 
   print(in)
     
-  ;tb = at[:]->th
-  ;printVarSummary(tb)
-  ;z = az[:]->z
-  ;printVarSummary(z)
-  
-  at = addfile("sim_lev100/theta/theta0"+nn(in)+".nc", "r")
+  at = addfile("sim_lev100/tk/tink"+nn1(in)+".nc", "r")
   az = addfile("sim_lev100/height/z0"+nn(in)+".nc", "r")
-  au = addfile("sim_lev100/wind/u_0"+nn1(in)+".nc", "r")
-  av = addfile("sim_lev100/wind/v_0"+nn1(in)+".nc", "r")
-  aw = addfile("sim_lev100/wind/w_0"+nn1(in)+".nc", "r")
-  
-  u   = au->ua
-  v   = av->va
-  w   = aw->wa
 
-  tb = at->th
+  tb = at->tk
   ;printVarSummary(tb_out)
   z = az->z
   ;printVarSummary(z_out)
-
-    ;p1     = wrf_user_getvar(f,"p",-1)
-    ;t1     = wrf_user_getvar(f,"tk",-1)  ;
-
-    ;times = wrf_user_getvar(a, "times", -1) ; get all time values on file
-    ;p     = wrf_user_getvar(a,"p",-1)  ; calculate pressure across all time, levels
-    ;t     = wrf_user_getvar(a,"tk",-1) ;
-    ;hz     = wrf_user_getvar(f,"z",1)  ;
-    
-  ;tb = at[:]->th
-  ;printVarSummary(tb)
-  ;z = az[:]->z
-  ;printVarSummary(z)
-
-  ;tb = wrf_user_getvar(a, "th", it)
-  ;z = wrf_user_getvar(a, "z", it)
-  ;tb_out   = wrf_user_getvar(aout, "th", it)
-  ;z_out   = wrf_user_getvar(aout, "z", it)
-;
   
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
  
@@ -77,7 +46,6 @@ begin
 
   nxo = 240
   nyo = 240
- 
  
   mdims = new((/ntimes,nx,ny/), integer)
   nd = dimsizes(mdims)
@@ -159,10 +127,6 @@ end do
 ;;-----------------------------------------------------------------------
  
  t_ano    = new((/ntimes,nz,nr,360/),"float")
- rai_ave  = new((/ntimes,nz,nr,360/),"float")
- tan_ave  = new((/ntimes,nz,nr,360/),"float")
- w_ave = new((/ntimes,nz,nr,360/),"float")
- 
 
   do it = 0 , ntimes-1 , 6; TIME LOOP
    
@@ -179,9 +143,6 @@ end do
     do iz = 0, nz-1
 
       t(iz,:,:)  = wrf_interp_3d_z(tb(it,:,:,:), z(it,:,:,:), hei(iz))
-      uu(iz,:,:) = wrf_interp_3d_z(u(it,:,:,:), z(it,:,:,:), hei(iz))
-      vv(iz,:,:) = wrf_interp_3d_z(v(it,:,:,:), z(it,:,:,:), hei(iz)) 
-      ww(iz,:,:) = wrf_interp_3d_z(w(it,:,:,:), z(it,:,:,:), hei(iz)) 
 
     end do
 
@@ -194,33 +155,13 @@ end do
  t_pave   = new((/nz,nr/),"float")
 
  t_p = linint2_points(lat,lon,t,False,lat_p,lon_p,1)
- u_p = linint2_points(lat,lon,uu,False,lat_p,lon_p,1)
- v_p = linint2_points(lat,lon,vv,False,lat_p,lon_p,1)
- w_p = linint2_points(lat,lon,ww,False,lat_p,lon_p,1)
-
 
  do lev = 0,nz-1
 
     tt_po_level = onedtond(t_p(lev,:),(/nr,360/)) 
-    ww_po_level = onedtond(w_p(lev,:),(/nr,360/)) 
-
     t_ano(it,lev,:,:) = tt_po_level
-    w_ave(it,lev,:,:) = ww_po_level
    
 end do
-
-  do lev = 0,90
-    do i = 0,nr-1
-      do j = 0,359,1
-        
-         tangential= -u_p(lev,i*360+j)*sin(alfa(j))+v_p(lev,i*360+j)*cos(alfa(j))
-         radial= u_p(lev,i*360+j)*cos(alfa(j))+v_p(lev,i*360+j)*sin(alfa(j))
-         rai_ave(it,lev,i,j) = radial
-         tan_ave(it,lev,i,j) = tangential
-     
-      end do
-    end do
-  end do
 
 
 end do
@@ -234,56 +175,17 @@ end do
  t_ano@units = "K"
  t_ano@_FillValue = 9.96921e+36
 
- rai_ave!0 = "time"
- rai_ave!1 = "height"
- rai_ave!2 = "Radial"
- rai_ave!3 = "Angles"
- rai_ave@long_name = "Radial wind"
- rai_ave@units = "m/s"
- rai_ave@_FillValue = 9.96921e+36
-
- tan_ave!0 = "time"
- tan_ave!1 = "height"
- tan_ave!2 = "Radial"
- tan_ave!3 = "Angles"
- tan_ave@long_name = "tangential wind"
- tan_ave@units = "m/s"
- tan_ave@_FillValue = 9.96921e+36
-
- w_ave!0 = "time"
- w_ave!1 = "height"
- w_ave!2 = "Radial"
- w_ave!3 = "Angles"
- w_ave@long_name = "vertical wind"
- w_ave@units = "m/s"
- w_ave@_FillValue = 9.96921e+36
-
-  outfilet = addfile("sim_lev100/angle/cirtano"+nn(in)+".nc","c")
-  outfilet->ta = t_ano(:,0:90,:,:)
-
-  outfilet = addfile("sim_lev100/angle/radial_wind"+nn(in)+".nc","c")
-  outfilet->wrad = rai_ave(:,0:90,:,:)
-
-  outfilet = addfile("sim_lev100/angle/tangential_wind"+nn(in)+".nc","c")            
-  outfilet->wtan = tan_ave(:,0:90,:,:)
-
-  outfilet = addfile("sim_lev100/angle/vertical_wind"+nn(in)+".nc","c")            
-  outfilet->ww = w_ave(:,0:90,:,:)
+  outfilet = addfile("sim_lev100/tk/tkcir0"+nn(in)+".nc","c")
+  outfilet->tk = t_ano(:,0:90,:,:)
 
   print("Finish output")
 
   delete(outfilet)
   delete(at)
   delete(az)
-  delete(au)
-  delete(av)
-  delete(aw)
  
   delete(tb)
   delete(z)
-  delete(u)
-  delete(v)
-  delete(w)
 
 end do
 

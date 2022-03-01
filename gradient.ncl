@@ -12,44 +12,42 @@ begin
 
     ;printVarSummary(t_d01)
 
-    files = systemfunc("ls ./sim_lev100/tk/tkcir*")
-    ano_h = addfiles(files, "r")
-    ListSetType(ano_h, "cat")
+    ;files = systemfunc("ls ./sim_lev100/angle/cirtano*")
+    ;ano_h = addfiles(files, "r")
+    ;ListSetType(ano_h, "cat")
 
-    printVarSummary(ano_h)
-
-    t_ano_for1 = ano_h[:]->tk
-    t_ano_for = dim_avg_n(t_ano_for1,3)
+    ;t_ano_for1 = ano_h[:]->ta
+    ;t_ano_for = dim_avg_n(t_ano_for1,3)
 
     ;t_ano_for = ano_h[:]->ta
 
-    printVarSummary(t_ano_for1)
-
-outfilet = addfile("sim_lev100/tk/tk_azi.nc","c")
-outfilet->tk = t_ano_for
-
-print("finish output")
-printVarSummary(tttt)
-    
-    nr = 100  ;;; 100 * 18 = 1800 Km
-    nz = 100   ; Sigma levels
-    r = fspan(0.0, 1800.0,nr)
+    ;printVarSummary(t_ano_for1)
+    ;
+    ;nr = 100  ;;; 100 * 18 = 1800 Km
+    ;nz = 100   ; Sigma levels
+    ;r = fspan(0.0, 1800.0,nr)
     ;print(r)
-    r@units = "km"
+    ;r@units = "km"
 
-    t_ev = dim_avg_n(t_d01(:,:,55:83), 2) ;;; r = fspan(0.0, 1800.0, 100)
+    ;t_ev = dim_avg_n(t_d01(:,:,55:83), 2) ;;; r = fspan(0.0, 1800.0, 100)
 
-    printVarSummary(t_ev)
+    ;printVarSummary(t_ev)
 
-    do lev = 0, 90
-      do i = 0, 199
+    ;do lev = 0, 90
+      ;do i = 0, 199
 
-        t_ano_for(:,lev,i) = t_ano_for(:,lev,i)-t_ev(0,lev)
+        ;t_ano_for(:,lev,i) = t_ano_for(:,lev,i)-t_ev(0,lev)
    
-      end do
-    end do
+      ;end do
+    ;end do
 
+    d = addfile("/user_home/jyyin/dta/sim_lev100/angle/angle_t0_tano.nc","r")
+    t_ano_for = d->ta
+    
     dim = dimsizes(t_ano_for)
+
+    t_ano_for = runave_n(t_ano_for, 5, 0, 1)
+    t_ano_for = runave_n(t_ano_for, 5, 0, 2)
 
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -60,9 +58,6 @@ printVarSummary(tttt)
     print(nt)
     plots = new(100,graphic)
     n = 0 
-
-;outfilet = addfile("sim_lev100/angle/angle_t0_tano.nc","c")
-;outfilet->ta = t_ano_for
  
     ;nr = 120  ;;; 120 * 6 = 720 Km
     ;nz = 100   ; Sigma levels
@@ -71,10 +66,10 @@ printVarSummary(tttt)
     
     ;hei = fspan(500, 27500, 100)/1000
 
-    wks=gsn_open_wks("pdf","sim_lev100/warm-core") 
+    wks=gsn_open_wks("pdf","sim_lev100/dtdr") 
     ;gsn_define_colormap(wks,"BlueWhiteOrangeRed")  ; Change color map.
     gsn_define_colormap(wks,"MPL_RdBu")
-    ;gsn_reverse_colormap(wks)
+    gsn_reverse_colormap(wks)
 
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -138,32 +133,37 @@ do it = 0, dim(0)-1, 18
     ;res@tmYMajorGrid          = True
     ;res@tmYMajorGridLineColor = "gray"
 
-    ;res@cnLevelSelectionMode = "ManualLevels"   ; set explicit contour levels
+    res@cnLevelSelectionMode = "ManualLevels"   ; set explicit contour levels
     ;if (it.le.164) then
-        ;res@cnLevelSpacingF = 0.5
-        ;res@cnMinLevelValF  = -4.
-        ;res@cnMaxLevelValF  = 4.
+        res@cnLevelSpacingF = 0.05
+        res@cnMinLevelValF  = -0.5
+        res@cnMaxLevelValF  = 0.5
       ;else if (it.le.435) then
         ;res@cnLevelSpacingF = 0.8
         ;res@cnMinLevelValF  = -6.
         ;res@cnMaxLevelValF  = 6.
       ;else
-         ; res@cnLevelSpacingF = 1.2
+          ;res@cnLevelSpacingF = 1.2
           ;res@cnMinLevelValF  = -12
           ;res@cnMaxLevelValF  = 12       
       ;end if
     ;end if
 
-    res@cnLevelSelectionMode = "ExplicitLevels"   ; set explicit contour levels
-    res@cnLevels     = (/ -5, -4, -3,-2,-1,-0.5, 1, 3, 5, 7, 9,11,13,15,17,21,25 /)   ; set levels
-    res@cnFillColors = (/120,110,100,90,82,  73,65,60,50,40,35,30,25,20,15,10,9,8/)   ; set the colors to be used
+    ;res@cnLevelSelectionMode = "ExplicitLevels"   ; set explicit contour levels
+    ;res@cnLevels     = (/-2.2,-1.0,-0.8,-0.6,-0.4,-0.2,0.2,  1, 2, 3, 4, 5, 6,  7,  8,  9/)   ; set levels
+    ;res@cnFillColors = (/  10,  15,  20,  30,  40,  60,  0, 70,75,80,85,90,95,100,105,110,112/)  ; set the colors to be used
 
     res@lbLabelBarOn        = False           ; turn off individual cb's
     
     ;time = it*6/60.
     res@tiMainString = "time = " + (it*10)/60./24. + " day"+" = " + (it*10)/60. + " h"
     ;plots =  gsn_csm_contour(wks,t_ano_for(it,0:61,0:25)-t_ano_for(it-72,0:61,0:25), res)
-    plots(n) =  gsn_csm_contour(wks,t_ano_for(it,0:62,0:199), res)
+
+    dtdr = new((/91,200/), float)
+    do ir = 2, 199
+      dtdr(:,ir) = t_ano_for(it,:,ir)-t_ano_for(it,:,ir-2)
+    end do
+    plots(n) =  gsn_csm_contour(wks,dtdr(0:62,0:198), res)
     n = n+1
 
 end do

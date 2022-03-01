@@ -9,12 +9,12 @@ begin
 ; The WRF ARW input file.  
 ; This needs to have a ".nc" appended, so just do it.
   
-  files = systemfunc("ls ./sim_lev100/tha/tano*")
-  ano_h = addfiles(files, "r")
-  ListSetType(ano_h, "cat")
+  ;files = systemfunc("ls ./sim_lev100/tha/tano*")
+  ;ano_h = addfiles(files, "r")
+  ;ListSetType(ano_h, "cat")
 
-  ;ano_h = addfile("sim9_wrfv3/tano_d1_00.nc","r")
-  t_ano = ano_h[:]->ta
+  ano_h = addfile("sim_lev100/tha/brela_t0_tano.nc","r")
+  t_ano = ano_h->ta
 
   dimst = dimsizes(t_ano)
   print(dimst)
@@ -24,10 +24,11 @@ begin
   ilon = new(dimst(0), float)
   ta_max = new(dimst(0), float)
 
-  ;t_ano = runave_n(t_ano, 3, 0, 1)
-  ;t_ano = runave_n(t_ano, 3, 0, 2)
+  ;t_ano = runave_n(t_ano, 5, 0, 1)
+  ;t_ano = runave_n(t_ano, 5, 0, 2)
+  t_ano = smth9(smth9(t_ano, 0.5, -0.25, False), 0.5, -0.25, False)
 
-  do it = 0, dimst(0)-1, 3
+  do it = 0, dimst(0)-1, 6
 
     dims = dimsizes(t_ano(it,1:61,1:180))
     x1d = ndtooned(t_ano(it,1:61,1:180))      ; convert 2D array to 1D for use in maxind
@@ -57,12 +58,12 @@ begin
 
   res = True
 
-  res@tiXAxisString =  "Time (h)" ; axis string
+ 
   res@tiYAxisString =  "Radius" ; axis string
   res@cnFillOn = True
   res@cnLinesOnon = False
 
-  to =  transpose(t_ano(:,0:46,1))
+  to =  transpose(t_ano(:,0:61,1))
   temp = gsn_csm_contour(wks,to,res) 
   
   res@gsnDraw            = False                   ; don't draw
@@ -94,9 +95,10 @@ begin
   plots(1) = gsn_csm_xy(wks, time ,ilat, res)
   
    res@tmYLMode    = "Explicit"
-    res@tmYLValues  = (/40, 80, 120,160,199/)
-    res@tmYLLabels  = (/80, 160,240,320,400/)
-  res@xyMarkerColor     = 15                    ; Marker color
+   res@tmYLValues  = (/40, 80, 120,160,199/)
+   res@tmYLLabels  = (/80, 160,240,320,400/)
+   res@xyMarkerColor     = 15                    ; Marker color
+   res@tiXAxisString =  "Time (h)" ; axis string
 
   res@tiYAxisString =  " Radius (Km)" ; axis string
   

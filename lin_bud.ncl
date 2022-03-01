@@ -6,32 +6,43 @@ load "$NCARG_ROOT/lib/ncarg/nclscripts/wrf/WRFUserARW.ncl"
 ;************************************************
 begin
 
-  nn = (/"100","106","112","118","200","206","212","218",\
-          "300","306","312","318","400","406","412","418",\
-          "500","506","512","518","6_00","6_06","6_12","6_18"/)
-
-  nn1 = (/"1_00","1_06","1_12","1_18","2_00","2_06","2_12","2_18",\
+  nn = (/"1_00","1_06","1_12","1_18","2_00","2_06","2_12","2_18",\
           "3_00","3_06","3_12","3_18","4_00","4_06","4_12","4_18",\
-          "5_00","5_06","5_12","5_18","6_00","6_06","6_12","6_18"/)
+          "5_00","5_06","5_12","5_18"/)
 
+  nn1 = (/"100","106","112","118","200","206","212","218",\
+          "300","306","312","318","400","406","412","418",\
+          "500","506","512","518"/)
   din = dimsizes(nn)
 
 do in = 1, din-1, 1 
 
-  au = addfile("sim_lev100/wind/u_0"+nn1(in)+".nc", "r")
-  av = addfile("sim_lev100/wind/v_0"+nn1(in)+".nc", "r")
-  at = addfile("sim_lev100/theta/theta0"+nn(in)+".nc", "r")
+    outfilet = addfile("sim_lev100/budget_or/adv_h_0"+nn(in)+".nc","r")
+    tb_adv_h = outfilet->T_TEND_ADV_H
 
-  az = addfile("sim_lev100/height/z0"+nn(in)+".nc", "r")
-  
-  ua = au->ua
-  va = av->va
-  ta = at->th
-  
-  z1 = az->z
-  ;printVarSummary(z_out)
+    outfilet = addfile("sim_lev100/budget_or/adv_v_0"+nn(in)+".nc","r")
+    tb_adv_v = outfilet->T_TEND_ADV_V
+    
+    outfilet = addfile("sim_lev100/budget_or/diff_0"+nn(in)+".nc","r")
+    tb_diff1 = outfilet->T_TEND_DIFF
+    
+    outfilet = addfile("sim_lev100/budget_or/diff3_0"+nn(in)+".nc","r")
+    tb_diff3 = outfilet->T_TEND_DIFF3
+
+    outfilet = addfile("sim_lev100/budget_or/pbl_0"+nn(in)+".nc","r")
+    tb_pbl = outfilet->RTHBLTEN
+    
+    outfilet = addfile("sim_lev100/budget_or/heat_0"+nn(in)+".nc","r")
+    tb_heat = outfilet->H_DIABATIC 
+
+    outfilet = addfile("sim_lev100/budget_or/mut_0"+nn(in)+".nc","r")
+    mut = outfilet->MUT
+
+    az = addfile("sim_lev100/height/z0"+nn1(in)+".nc", "r")
+    z1 = az->z
 
   print(in)
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
  
   FirstTime = True
@@ -80,9 +91,12 @@ do in = 1, din-1, 1
     nlevs    = 100
     ;h        = new((/21/),float)
 
-    Vt_lev  = new((/ntimes,nz,sumlen,360/),float)
-    Vr_lev  = new((/ntimes,nz,sumlen,360/),float)
-    t_lev  = new((/ntimes,nz,sumlen,360/),float)
+    advh_lev  = new((/ntimes,nz,sumlen,360/),float)
+    advv_lev  = advh_lev
+    diff_lev  = advh_lev
+    diff3_lev = advh_lev
+    pbl_lev   = advh_lev
+    heat_lev  = advh_lev
 
 do ih = 0 , 90
 
@@ -91,10 +105,13 @@ do ih = 0 , 90
 
     hei = fspan(100, 27500, 100)
 
-    ua_po    = new((/ntimes,sumlen,360/),float)  ;creat final out put arry
-    va_po    = new((/ntimes,sumlen,360/),float)  ;creat final out put arry 
-    ta_po    = new((/ntimes,sumlen,360/),float)
-    
+    advh_po = new((/ntimes,sumlen,360/),float)  ;creat final out put arry
+    advv_po  = advh_po
+    diff_po  = advh_po
+    diff3_po = advh_po
+    pbl_po   = advh_po
+    heat_po  = advh_po
+
     xloc = new((/ntimes/),"float")
     yloc = new((/ntimes/),"float")
 
@@ -106,13 +123,19 @@ do ih = 0 , 90
     yloc = 210.
     
     ;print(xloc)
-    Vr_sum     = new((/nlevs/),float)
-    Vt_sum     = new((/nlevs/),float)
-    tt_sum     = new((/nlevs/),float)
-
-    Vt         = new((/ntimes,sumlen,360/),float)
-    Vr         = new((/ntimes,sumlen,360/),float)
-    to         = new((/ntimes,sumlen,360/),float)
+    advh_sum  = new((/nlevs/),float)
+    advv_sum  = advh_sum
+    diff_sum  = advh_sum
+    diff3_sum = advh_sum
+    pbl_sum   = advh_sum
+    heat_sum  = advh_sum
+    
+    advh   = new((/ntimes,sumlen,360/),float)
+    advv   = advh
+    diff   = advh
+    diff3  = advh
+    pbl    = advh
+    heat   = advh
 
     do ifs = 0 , ntimes-1, 6                                                                                        
     
@@ -125,20 +148,26 @@ do ih = 0 , 90
         ;modeluu   = wrf_user_getvar(a,"ua",0)
         ;modelvv   = wrf_user_getvar(a,"va",0)
         z         = z1(ifs,:,:,:)
-        modeluu   = ua(ifs,:,:,:)
-        modelvv   = va(ifs,:,:,:)
-        modeltt   = ta(ifs,:,:,:)
+        modeladvh   = tb_adv_h(ifs,:,:,:)
+        modeladvv   = tb_adv_v(ifs,:,:,:)
+        modeldiff   = tb_diff1(ifs,:,:,:)
+        modeldiff3  = tb_diff3(ifs,:,:,:)
+        modelpbl    = tb_pbl(ifs,:,:,:)
+        modelheat   = tb_heat(ifs,:,:,:)
 
 ;-----------------intrp to height or pressure--------------------
 
         ;uu  =  wrf_user_intrp3d_z(modeluu,z,"h",h(ih),0.,False)   ;new((/my,nx/),"float")
         ;vv  =  wrf_user_intrp3d_z(modelvv,z,"h",h(ih),0.,False)   ;new((/my,nx/),"float")
 
-        uu = wrf_interp_3d_z(modeluu,z, hei(ih))
-        vv = wrf_interp_3d_z(modelvv,z, hei(ih))
-        tt = wrf_interp_3d_z(modeltt,z, hei(ih))
+        advhhh = wrf_interp_3d_z(modeladvh,z, hei(ih))
+        advvvv = wrf_interp_3d_z(modeladvv,z, hei(ih))
+        diffff = wrf_interp_3d_z(modeldiff,z, hei(ih))
+        diffff3 = wrf_interp_3d_z(modeldiff3,z, hei(ih))
+        pbllll = wrf_interp_3d_z(modelpbl,z, hei(ih))
+        heattt = wrf_interp_3d_z(modelheat,z, hei(ih))
 
-        mdims = dimsizes(uu)
+        mdims = dimsizes(heattt)
         my = mdims(0)      ;lat
         nx = mdims(1)      ;lon
 
@@ -163,39 +192,37 @@ do ih = 0 , 90
         xo_2d = onedtond(xo,(/sumlen,360/))
         yo_2d = onedtond(yo,(/sumlen,360/))
 
-        uu_po_level  = new((/sumlen,360/),float)                                                      
-        vv_po_level  = new((/sumlen,360/),float)
-        tt_po_level  = new((/sumlen,360/),float)
+        advh_po_level  = new((/sumlen,360/),float)                                                      
+        advv_po_level  = new((/sumlen,360/),float)
+        diff_po_level  = new((/sumlen,360/),float)
+        diff3_po_level  = new((/sumlen,360/),float)
+        pbl_po_level  = new((/sumlen,360/),float)
+        heat_po_level  = new((/sumlen,360/),float)
                                                                      
-         uu_lev = linint2_points(xi,yi,uu,False,xo,yo,0)
-         vv_lev = linint2_points(xi,yi,vv,False,xo,yo,0)
-         tt_lev = linint2_points(xi,yi,tt,False,xo,yo,0)
+         advh_lev  = linint2_points(xi,yi,advhhh,False,xo,yo,0)
+         advv_lev  = linint2_points(xi,yi,advvvv,False,xo,yo,0)
+         diff_lev  = linint2_points(xi,yi,diffff,False,xo,yo,0)
+         diff3_lev = linint2_points(xi,yi,diffff3,False,xo,yo,0)
+         pbl_lev   = linint2_points(xi,yi,pbllll,False,xo,yo,0)
+         heat_lev  = linint2_points(xi,yi,heattt,False,xo,yo,0)
         
-         uu_po_level = onedtond(uu_lev,(/sumlen,360/))
-         vv_po_level = onedtond(vv_lev,(/sumlen,360/))
-         tt_po_level = onedtond(tt_lev,(/sumlen,360/))                                              
+         advh_po_level = onedtond(advh_lev,(/sumlen,360/))
+         advv_po_level = onedtond(advv_lev,(/sumlen,360/))
+         diff_po_level = onedtond(diff_lev,(/sumlen,360/))
+         diff3_po_level = onedtond(diff3_lev,(/sumlen,360/))                                              
+         pbl_po_level = onedtond(pbl_lev,(/sumlen,360/))
+         heat_po_level = onedtond(heat_lev,(/sumlen,360/))
                                                                                                                   
 ;-----------------change dimensions------------------
  
-        ua_po(ifs,:,:) = uu_po_level
-        va_po(ifs,:,:) = vv_po_level
-        ta_po(ifs,:,:) = tt_po_level
+        advh_po(ifs,:,:) = advh_po_level
+        advv_po(ifs,:,:) = advv_po_level
+        diff_po(ifs,:,:) = diff_po_level
+        diff3_po(ifs,:,:) = diff3_po_level
+        pbl_po(ifs,:,:) = pbl_po_level
+        heat_po(ifs,:,:) = heat_po_level
 
-    end do
-;---------------calculate Vt and Vr---------------
 
-    pp = pi/180.0
-
-    do it = 0 , ntimes-1,6
-        ;print("Running...")
-     
-           do len = 0 , sumlen-1
-               do ang = 0,359 
-                  Vt(it,len,ang) = va_po(it,len,ang)*cos(1.*ang*pp)-ua_po(it,len,ang)*sin(1.*ang*pp)
-                  Vr(it,len,ang) = va_po(it,len,ang)*sin(1.*ang*pp)+ua_po(it,len,ang)*cos(1.*ang*pp)
-               end do
-           end do  
-      
     end do
 
     Vt_lev(:,ih,:,:) =  Vt(:,:,:)

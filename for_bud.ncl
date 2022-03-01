@@ -21,7 +21,7 @@ begin
 
   din = dimsizes(nn)
 
-do in = 0, din-1, 1
+do in = 1, 4, 2
 
     outfilet = addfile("sim_lev100/budget_or/adv_h_0"+nn(in)+".nc","r")
     tb_adv_h = outfilet->T_TEND_ADV_H
@@ -48,6 +48,7 @@ do in = 0, din-1, 1
     z = az->z
 
   print(in)
+  print(nn(in))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
  
   FirstTime = True
@@ -283,23 +284,23 @@ end do
  ;ta_ra@units = "K"
  ;ta_ra@_FillValue = 9.96921e+36
 
-outfilet = addfile("sim_lev100/bud/for_adv_h_0"+nn(in)+".nc","c")
+outfilet = addfile("sim_lev100/bud_for/for_adv_h_0"+nn(in)+".nc","c")
 outfilet->t_adv_h = ta_adv_h
 
-outfilet = addfile("sim_lev100/bud/for_adv_v_0"+nn(in)+".nc","c")
+outfilet = addfile("sim_lev100/bud_for/for_adv_v_0"+nn(in)+".nc","c")
 ;outfilet = addfile("sim9/bud_d1_06/adv.nc","c")
 outfilet->t_adv_v = ta_adv_v
 
-outfilet = addfile("sim_lev100/bud/for_diff_0"+nn(in)+".nc","c")
+outfilet = addfile("sim_lev100/bud_for/for_diff_0"+nn(in)+".nc","c")
 outfilet->t_diff = ta_diff1
 
-outfilet = addfile("sim_lev100/bud/for_diff3_0"+nn(in)+".nc","c")
+outfilet = addfile("sim_lev100/bud_for/for_3diff3_0"+nn(in)+".nc","c")
 outfilet->t_diff = ta_diff3
 
-outfilet = addfile("sim_lev100/bud/for_heat_0"+nn(in)+".nc","c")
+outfilet = addfile("sim_lev100/bud_for/for_heat_0"+nn(in)+".nc","c")
 outfilet->t_heat = ta_heat
 
-outfilet = addfile("sim_lev100/bud/for_pbl_0"+nn(in)+".nc","c")
+outfilet = addfile("sim_lev100/bud_for/for_pbl_0"+nn(in)+".nc","c")
 outfilet->t_pbl = ta_pbl
 
 ;outfilet = addfile("sim_lev100/bud/for_pbl_0"+nn(in)+".nc","c")

@@ -75,7 +75,7 @@ do in = 1, din-1, 1
    ;ntimes = ied - ist+1
 ;   ntimes = ntimes/6
 ;----------------------values set by user---------------------------
-    sumlen   = 210 ; the total circul of interpolate
+    sumlen   = 200 ; the total circul of interpolate
     pi       = 3.14159265
     nlevs    = 100
     ;h        = new((/21/),float)
@@ -102,8 +102,8 @@ do ih = 0 , 90
    ;xloc = fbinrecread("x0_cen.ieee",0,(/ntimes/),"float")
    ;yloc = fbinrecread("y0_cen.ieee",0,(/ntimes/),"float")
 
-    xloc = 210.
-    yloc = 210.
+    xloc = 210
+    yloc = 210
     
     ;print(xloc)
     Vr_sum     = new((/nlevs/),float)

@@ -32,39 +32,43 @@ begin
     ;ano_h = addfiles(files, "r")
     ;ListSetType(ano_h, "cat")
 
-    a1 = addfile("sim_lev100/bud/for_heat_01_12.nc","r")
-    t_heat = a1->t_heat 
+    files = systemfunc("ls ./sim_lev100/bud_for/for_heat*")
+    a_heat = addfiles(files, "r")
+    ListSetType(a_heat, "cat")
+    t_heat = a_heat[:]->t_heat
 
-    a2 = addfile("sim_lev100/bud/for_pbl_01_12.nc","r")
-    t_pbl = a2->t_pbl
+    files = systemfunc("ls ./sim_lev100/bud_for/for_pbl*")
+    a_pbl = addfiles(files, "r")
+    ListSetType(a_pbl, "cat")
+    t_pbl = a_pbl[:]->t_pbl
 
-    a3 = addfile("sim_lev100/bud/for_diff_01_12.nc","r")
-    t_diff = a3->t_diff
+    files = systemfunc("ls ./sim_lev100/bud_for/for_diff*")
+    a_diff = addfiles(files, "r")
+    ListSetType(a_diff, "cat")
+    t_diff = a_diff[:]->t_diff
 
-    a3 = addfile("sim_lev100/bud/for_diff3_01_12.nc","r")
-    t_diff3 = a3->t_diff
-    
-    a4 = addfile("sim_lev100/bud/for_adv_v_01_12.nc","r")
-    t_adv_v = a4->t_adv_v
+    files = systemfunc("ls ./sim_lev100/bud_for/for_3diff*")
+    a_diff3 = addfiles(files, "r")
+    ListSetType(a_diff, "cat")
+    t_diff3 = a_diff3[:]->t_diff
 
-    a5 = addfile("sim_lev100/bud/for_adv_h_01_12.nc","r")
-    t_adv_h = a5->t_adv_h
+    files = systemfunc("ls ./sim_lev100/bud_for/for_adv_v*")
+    a_v = addfiles(files, "r")
+    ListSetType(a_v, "cat")
+    t_adv_v = a_v[:]->t_adv_v
 
-    ;a6 = addfile("/user_home/jyyin/dta/sim9_v3/bud/adv_d1_00.nc","r")
-    ;t_adv = a6->t_adv
-    
-    ;a7 = addfile("/user_home/jyyin/dta/sim9_v3/bud/cu_d1_00.nc","r")
-   ; t_cu = a7->t_cu
-    
-    ;a8 = addfile("/user_home/jyyin/dta/sim9_v3/bud_d1_00/ra.nc","r")
-    ;t_ra = a8->t_ra
-    
-    ;files = systemfunc("ls ./sim9_v3/tano_d2*")
-    ;ano_h = addfiles(files, "r")
-    ;ListSetType(ano_h, "cat")
+    files = systemfunc("ls ./sim_lev100/bud_for/for_adv_h*")
+    a_h = addfiles(files, "r")
+    ListSetType(a_h, "cat")
+    t_adv_h = a_h[:]->t_adv_h
 
-    ano_h = addfile("sim_lev100/tha/for_t112.nc","r")
-    t_ano = ano_h->ta
+    files = systemfunc("ls ./sim_lev100/tha/afor_t*")
+    ano_h = addfiles(files, "r")
+    ListSetType(ano_h, "cat")
+    th = ano_h[:]->ta
+
+    d = addfile("/user_home/jyyin/dta/sim_lev100/angle/angle_t0_tano.nc","r")
+    t_ano = d->ta
 
     t_sum = t_adv_h + t_adv_v + t_heat + t_pbl + t_diff + t_diff3
     t_adv = t_adv_h + t_adv_v
@@ -74,10 +78,10 @@ begin
     hei@units = "m"
     r1@units = "km"
 
-    dims = dimsizes(t_ano)
-    printVarSummary(t_ano)
+    dims = dimsizes(th)
+    printVarSummary(th)
 
-    wks=gsn_open_wks("pdf","sim_lev100/profile_bud_d112") 
+    wks=gsn_open_wks("pdf","sim_lev100/profile_bud_13.5km") 
     gsn_define_colormap(wks,"amwg")  ; Change color map.
 
     ;;; t_sum: 120 X 68 X 150
@@ -87,12 +91,12 @@ begin
     it = 0
   
 
-    do it = 0,dims(0)-13,12
+    do it = 216,dims(0)-19,18
 
     n = 0
     plots = new(12,graphic)
   
-    dt = 11
+    dt = 17
 
     t_sum_1h  = dim_sum_n(t_sum(it:it+dt,:,:), 0)
     t_sum_1h  = runave_n(t_sum_1h, 5, 0, 1)
@@ -110,20 +114,20 @@ begin
 
     t_adv_1h = t_adv_h_1h + t_adv_v_1h
 
-    pt_sum_1h   = dim_avg_n(t_sum_1h(46:49,0:199),0)
-    pt_adv_h_1h = dim_avg_n(t_adv_h_1h(46:49,0:199),0)
-    pt_adv_v_1h = dim_avg_n(t_adv_v_1h(46:49,0:199),0)
-    pt_adv_1h   = dim_avg_n(t_adv_1h(46:49,0:199),0)
+    pt_sum_1h   = dim_avg_n(t_sum_1h(46:48,0:199),0)
+    pt_adv_h_1h = dim_avg_n(t_adv_h_1h(46:48,0:199),0)
+    pt_adv_v_1h = dim_avg_n(t_adv_v_1h(46:48,0:199),0)
+    pt_adv_1h   = dim_avg_n(t_adv_1h(46:48,0:199),0)
 
-    pt_heat_1h  = dim_avg_n(t_heat_1h(46:49,0:199),0)
-    pt_pbl_1h   = dim_avg_n(t_pbl_1h(46:49,0:199),0)
-    ;pt_cu_1h    = dim_avg_n(t_cu_1h(46:49,0:199),0)
-    pt_diff_1h  = dim_avg_n(t_diff_1h(46:49,0:199),0)
+    pt_heat_1h  = dim_avg_n(t_heat_1h(46:48,0:199),0)
+    pt_pbl_1h   = dim_avg_n(t_pbl_1h(46:48,0:199),0)
+    ;pt_cu_1h    = dim_avg_n(t_cu_1h(46:48,0:199),0)
+    pt_diff_1h  = dim_avg_n(t_diff_1h(46:48,0:199),0)
 
     ;printVarSummary(pt_cu_1h)
 
-    t_temp1 = t_ano(it+dt+1,:,:)-t_ano(it,:,:)
-    t_temp  = dim_avg_n(t_temp1(46:49,0:199),0)
+    t_temp1 = th(it+dt+1,:,:)-th(it,:,:)
+    t_temp  = dim_avg_n(t_temp1(46:48,0:199),0)
 
     pt = new((/9,200/),float)
     nmin = 10*60
@@ -191,7 +195,7 @@ begin
   ares@gsnStringFontHeightF    = 0.025
 
   
-  time = (it*10/60.)+12
+  time = (it*10/60.)
   ;ares@tiMainString = "time = " + (time+0.5) + "h"
 
   plot2(0) = gsn_csm_xy(wks, r1(0:199), pt(0:6,:), ares)
@@ -209,16 +213,19 @@ begin
   ares@gsnYRefLineThicknessF = 1.5 
   ares@xyLineThicknessF = 2.5
 
-  ;ares@trYMinF          = -3           ; Set min/max of left Y axis
-  ;ares@trYMaxF          = 3
+  ares@trYMinF          = -3           ; Set min/max of left Y axis
+  ares@trYMaxF          = 3
 
   plot2(1) = gsn_csm_xy(wks, r1(0:199), pt(7:8,:), ares)
 
   ;ares@tiMainString = "diffrence"
   ;plot9(8) = gsn_csm_y(wks,r1,t_dire, ares)
 
-  gres@txString = "time = " + time +"h - "+ (time+2) + "h"
+  gres@txString = "time = " + time +"h - "+ (time+3) + "h" +" height = 13.5km"
   gsn_panel(wks, plot2, (/2,1/), gres)
+
+  delete(ares@trYMinF)
+  delete(ares@trYMaxF)
 
 end do
 
@@ -234,7 +241,7 @@ end do
   ;draw(plot9(0))
 
 
-  ;plots(n) =  gsn_csm_contour(wks,t_ano(119,0:41,:), res)
+  ;plots(n) =  gsn_csm_contour(wks,th(119,0:41,:), res)
 
 
 

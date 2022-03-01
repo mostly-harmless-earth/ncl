@@ -23,7 +23,7 @@ begin
 
   din = dimsizes(nn)
 
- do in = 1, din-1, 1 
+ do in = 0, din-1, 1000 
 
   print(in)
     
@@ -197,7 +197,6 @@ end do
  u_p = linint2_points(lat,lon,uu,False,lat_p,lon_p,1)
  v_p = linint2_points(lat,lon,vv,False,lat_p,lon_p,1)
  w_p = linint2_points(lat,lon,ww,False,lat_p,lon_p,1)
-
 
  do lev = 0,nz-1
 

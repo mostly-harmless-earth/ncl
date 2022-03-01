@@ -21,9 +21,9 @@ nn1 = (/"1_00","1_06","1_12","1_18","2_00","2_06","2_12","2_18",\
           "8_00","8_06","8_12","8_18","9_00","9_06","9_12","9_18","10_00","10_06","10_12","10_18"/)
 dim = dimsizes(nn) 
 
-do in = 20, 28,1
+do in = 0, 28,1
 
-    a = addfile("/ldata6/jyyin/sim_lev100/wrfout_d02_2000-02-0"+nn(in)+":00:00","r")  
+    a = addfile("/ldata6/jyyin/sim_lev100/wrfout_d03_2000-02-0"+nn(in)+":00:00","r")  
     print("time = " + nn(in))
     
     ;files = systemfunc("ls ./sim_lev100/wrfout_d03_2000-02-01_2000-02-01_00:00:00")
@@ -37,8 +37,8 @@ do in = 20, 28,1
     ;t_pbl   = wrf_user_getvar(a, "te_temf", -1);
     ;p   = wrf_user_getvar(a, "p", 2)
     
-    th = wrf_user_getvar(a,"th",-1)
-    z = wrf_user_getvar(a, "z", -1)
+    ;th = wrf_user_getvar(a,"th",-1)
+    ;z = wrf_user_getvar(a, "z", -1)
     ;ua = wrf_user_getvar(a,"ua",-1)
     ;va = wrf_user_getvar(a,"va", -1)
     ;wa = wrf_user_getvar(a,"wa",-1)
@@ -73,11 +73,20 @@ do in = 20, 28,1
     ;outfilet = addfile("sim_lev100/wind10/wnd0"+nn(in)+".nc","c")
     ;outfilet->wnd = wnd
 
-    outfilet = addfile("sim_lev100/d02/d02_theta/theta0"+nn1(in)+".nc","c")
-    outfilet->th = th
+    ;p = wrf_user_getvar(a,"p",-1)
+    ;printVarSummary(p)
 
-    outfilet = addfile("sim_lev100/d02/d02_height/z0"+nn1(in)+".nc","c")
-    outfilet->z = z
+    tk = wrf_user_getvar(a,"tk",-1)
+    printVarSummary(tk)
+
+    ;outfilet = addfile("sim_lev100/d02/d02_theta/theta0"+nn1(in)+".nc","c")
+    ;outfilet->th = th
+    
+    outfilet = addfile("sim_lev100/tk/tink"+nn(in)+".nc","c")
+    outfilet->tk = tk
+
+    ;outfilet = addfile("sim_lev100/d02/d02_height/z0"+nn1(in)+".nc","c")
+    ;outfilet->z = z
     
     ;outfilet = addfile("sim_lev100/wind/u_0"+nn(in)+".nc","c")
     ;outfilet->ua = ua

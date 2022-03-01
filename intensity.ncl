@@ -17,13 +17,13 @@ begin
   print(dims)
   m = ispan(0,dims-1,1)*10/60.
   m1 = ispan(0,dims-7,1)
-  v_change_1h = new(dims-36, "float")
+  v_change_12h = new(dims, "float")
 
   ;print(m)
 
-do i = 0, dims-37
-  v_change_1h(i) = vmax(i+36)-vmax(i)
-  if (v_change_1h(i).ge.3.8175) then
+do i = 0, dims-73
+  v_change_12h(i) = vmax(i+72)-vmax(i)
+  if (v_change_12h(i).ge.7.6) then
     print("time = " + m(i) )
     print("tt = " + i )
   end if
@@ -66,7 +66,7 @@ end do
   resL@xyLineThicknesses      = 2.5 
   resL@xyLineColor      = "Blue3"
 
-  resL@gsnXRefLine    = (/m(164),m(896)/); four X reference lines 
+  resL@gsnXRefLine  = m(282); four X reference lines 
   resL@gsnXRefLineThicknessF = 2.8   
   ;resL@gsnXRefLineColor = "blue"
 
