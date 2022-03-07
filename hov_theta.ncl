@@ -11,7 +11,7 @@ begin
     ;ano_h = addfiles(files, "r")
     ;ListSetType(ano_h, "cat")
     ;t_ano = ano_h[:]->ta
-    d = addfile("/user_home/jyyin/dta/sim_lev100/tha/rela_t0_tano.nc","r")
+    d = addfile("/user_home/jyyin/dta/sim_lev100/angle/d7_t0_ta.nc","r")
     t_ano = d->ta
 
     d = addfile("/user_home/jyyin/dta/sim_lev100/d02/rela_d02_t0_tano.nc","r")
@@ -39,9 +39,12 @@ begin
     gsn_define_colormap(wks,"MPL_RdBu")
     ;gsn_reverse_colormap(wks)
 
-  plot = new(9,graphic)
+  plot = new(12,graphic)
 
   res = True
+
+  res@gsnDraw = False
+  res@gsnFrame = False
   
   res@cnFillOn = True
   res@cnLinesOn = False
@@ -77,8 +80,8 @@ begin
   res@tmXBLabels  = times(::12)*60/60.
   
   res@tmYLMode    = "Explicit"
-  res@tmYLValues  = (/0, 17,24,35,53,61/)
-  res@tmYLLabels  = (/0.5,5, 7,10,15,17/)
+  res@tmYLValues  = (/17,24,35,46,53,61/)
+  res@tmYLLabels  = (/ 5, 7,10,13,15,17/)
 
   ;res@tmYLMode    = "Explicit"
   ;res@tmYLValues  = (/0, 7, 14,21,28/)
@@ -103,6 +106,12 @@ begin
   tp = transpose(tp2)
   plot(2) = gsn_csm_contour(wks, tp, res)
 
+  res@tiMainString = "r = 300 km"
+
+  tp2 = dim_avg_n(t_ano(::6,0:62,150:155),2)
+  tp = transpose(tp2)
+  plot(3) = gsn_csm_contour(wks, tp, res)
+
   res@tmYLMode    = "Explicit"
   res@tmYLValues  = (/0,40, 80, 120,160,199/)
   res@tmYLLabels  = (/0,80, 160,240,320,400/)
@@ -112,20 +121,26 @@ begin
 
   tmp2 = dim_avg_n(t_ano(::6,45:47,:),1)
   tmp3 = transpose(tmp2)
-  plot(3) = gsn_csm_contour(wks, tmp3, res)
+  plot(4) = gsn_csm_contour(wks, tmp3, res)
  
   res@tiYAxisString  = "Radius(Km)"
   res@tiMainString = "h = 14km"
 
   tmp2 = dim_avg_n(t_ano(::6,49:51,:),1)
   tmp3 = transpose(tmp2)
-  plot(4) = gsn_csm_contour(wks, tmp3, res)
+  plot(5) = gsn_csm_contour(wks, tmp3, res)
 
   res@tiMainString = "h = 15km"
 
   tmp2 = dim_avg_n(t_ano(::6,53:55,:),1)
   tmp3 = transpose(tmp2)
-  plot(5) = gsn_csm_contour(wks, tmp3, res)
+  plot(6) = gsn_csm_contour(wks, tmp3, res)
+
+  res@tiMainString = "h = 16km"
+
+  tmp2 = dim_avg_n(t_ano(::6,56:58,:),1)
+  tmp3 = transpose(tmp2)
+  plot(7) = gsn_csm_contour(wks, tmp3, res)
 
   res@tmYLMode    = "Explicit"
   res@tmYLValues  = (/ 20, 40, 60,80 ,100,119/)
@@ -136,26 +151,32 @@ begin
 
   tmp4 = dim_avg_n(t_d2ano(::6,45:47,:),1)
   tmp5 = transpose(tmp4)
-  plot(6) = gsn_csm_contour(wks, tmp5, res)
+  plot(8) = gsn_csm_contour(wks, tmp5, res)
  
   res@tiYAxisString  = "Radius(Km)"
   res@tiMainString = "h = 14km"
 
   tmp4 = dim_avg_n(t_d2ano(::6,49:51,:),1)
   tmp5 = transpose(tmp4)
-  plot(7) = gsn_csm_contour(wks, tmp5, res)
+  plot(9) = gsn_csm_contour(wks, tmp5, res)
 
   res@tiMainString = "h = 15km"
 
   tmp4 = dim_avg_n(t_d2ano(::6,53:55,:),1)
   tmp5 = transpose(tmp4)
-  plot(8) = gsn_csm_contour(wks, tmp5, res)
+  plot(10) = gsn_csm_contour(wks, tmp5, res)
+
+  res@tiMainString = "h = 16km"
+
+  tmp4 = dim_avg_n(t_d2ano(::6,56:58,:),1)
+  tmp5 = transpose(tmp4)
+  plot(11) = gsn_csm_contour(wks, tmp5, res)
 
   gres = True
   gres@gsnPanelLabelBar = True
   gres@txString = "theta anomaly"
    
-  gsn_panel(wks, plot, (/3,3/), gres)
+  gsn_panel(wks, plot, (/3,4/), gres)
 
 end
 

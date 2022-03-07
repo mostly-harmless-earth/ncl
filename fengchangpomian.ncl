@@ -89,7 +89,7 @@ begin
   c = addfile("/user_home/jyyin/dta/sim_lev100/angle/azi_vertical.nc","r")
   wwnd = c->ww
 
-  d = addfile("/user_home/jyyin/dta/sim_lev100/angle/angle_t0_tano.nc","r")
+  d = addfile("/user_home/jyyin/dta/sim_lev100/angle/d7_t0_ta.nc","r")
   t_ano_for = d->ta
 
   radial = runave_n(radial, 5, 0, 1)
@@ -111,7 +111,7 @@ begin
   print(dims)
 
 
-  wks = gsn_open_wks("pdf","sim_lev100/vert_tidu_wendu_feng")
+  wks = gsn_open_wks("pdf","sim_lev100/wendu_allwind_d7")
   gsn_define_colormap(wks, "MPL_RdBu")
   ;gsn_reverse_colormap(wks)
 
@@ -156,14 +156,14 @@ begin
   ;res@tmXTOn                  = False
   ;res@tmYROn                  = False
 
-  t_k = new(100,graphic)
+  t_k = new(400,graphic)
   win = new(100,graphic)
 
-  n = 0 
+  n = 1 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Time loop ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-do it = 144, dims(0)-1, 36
+do it = 6, dims(0)-7, 6
 
   aradial = dim_sum_n(radial(it-6:it+6,:,:), 0)/3.
   atangential = dim_sum_n(tangential(it-6:it+6,:,:), 0)/3.
@@ -173,8 +173,8 @@ do it = 144, dims(0)-1, 36
 ;------------------------ radial wind --------------------------------------------------
 
   res_radial = res
-  res_radial@gsnLeftString  = "Temprature Anomaly (shading,K) ~C~Radial wind Speed (contour,black) ~C~"
-  res_radial@gsnRightString = it 
+  res_radial@gsnLeftString  = "Temprature Anomaly (shading,K) ~C~Vr(contour,black) ~C~W(contour,green)"
+  res_radial@gsnRightString = " ~C~-0.2,-0.5,-0.8,-1.5,1,3,5,7,11,15,20,25 ~C~-0.1,-0.01,0.1,0.25,2" 
   res_radial@cnFillOn = False
   res_radial@cnLinesOn = True
 
@@ -193,7 +193,7 @@ do it = 144, dims(0)-1, 36
    pores = res_radial
    pores@cnLevelSelectionMode = "ExplicitLevels"
    ;pores@cnLevels = (/ 0.2,0.5,0.8,1,3,5,7,9,11,15,20/)   ; set levels
-   pores@cnLevels = (/ 3,7,11,15/)   ; set levels
+   pores@cnLevels = (/ 1,3,5,7,11,15,20,25/)   ; set levels
    
    ;res_radial@cnLevelSelectionMode = "ManualLevels"
    ;res_radial@cnMinLevelValF = 0.0
@@ -209,7 +209,7 @@ do it = 144, dims(0)-1, 36
    neres = res_radial
    neres@cnLevelSelectionMode = "ExplicitLevels"
    ;neres@cnLevels = (/ -0.1,-0.2,-0.3,-0.5,-1,-3,-5/)   ; set levels
-   neres@cnLevels = (/ -0.2,-0.5,-0.8/)
+   neres@cnLevels = (/ -0.2,-0.5,-0.8,-1.5/)
 
    ;res_radial@cnLevelSelectionMode = "ManualLevels"
    ;res_radial@cnMinLevelValF = -15.
@@ -241,8 +241,8 @@ do it = 144, dims(0)-1, 36
   res_tan = res
   res_tan@cnFillOn = False
   res_tan@cnLinesOn = True
-  res_tan@gsnLeftString  = "Vertical wind speed (contour,green) ~C~Tangential wind Speed (contour,red) ~C~"
-  res_tan@gsnRightString =  it
+  ;res_tan@gsnLeftString  = "Vertical wind speed (contour,green) ~C~Tangential wind Speed (contour,red) ~C~"
+  ;res_tan@gsnRightString =  it
   res_tan@gsnContourNegLineDashPattern  = 11
   res_tan@cnLineColor  =  18
   
@@ -274,7 +274,7 @@ do it = 144, dims(0)-1, 36
   res_w@cnLinesOn = True
   
   res_w@cnLevelSelectionMode = "ExplicitLevels"
-  res_w@cnLevels = (/-0.01,0.25,2/)   ; set levels
+  res_w@cnLevels = (/-0.1,-0.01,0.1,0.25,1,2,3,4/)   ; set levels
 
   res_w@gsnContourNegLineDashPattern  = 11
   ;res_w@cnLineLabelsOn    = True
@@ -282,7 +282,7 @@ do it = 144, dims(0)-1, 36
   ;res_w@cnMaxLevelValF   = 0.
   ;res_w@cnMinLevelValF   = -5.
   ;res_w@cnLevelSpacingF = 3.
-  res_w@cnLineThicknessF  = 1.5
+  res_w@cnLineThicknessF  = 1.0
   
   w_wind = gsn_csm_contour(wks,awwnd(34:63,0:199),res_w) 
   w_wind1 = gsn_csm_contour(wks,awwnd(34:63,0:199),res_w) 
@@ -328,7 +328,7 @@ do it = 144, dims(0)-1, 36
 
   res_t@cnFillOn = True
   res_t@cnLinesOn = False
-  ;res_t@lbLabelBarOn        = False           ; turn off individual cb's
+  res_t@lbLabelBarOn        = False           ; turn off individual cb's
   ;res_t@cnLevelSelectionMode = "ExplicitLevels"   ; set explicit contour levels
  ; res_t@cnLevels     = (/ -4, -3,-2,-1,-0.5,-0.3,0.3,0.5,  1,3 ,  5,  7,  9,13/)   ; set levels
   ;res_t@cnFillColors = (/  2,  8,16,26,  32,  40,  0, 75, 83,95,106,112,120,126,129/)  ; set the colors to be used
@@ -336,21 +336,21 @@ do it = 144, dims(0)-1, 36
 
   ;print(n)
 
-  res_t@cnLevelSelectionMode = "ExplicitLevels"   ; set explicit contour levels
-  res_t@cnLevels     = (/-1.5,-1.2,-0.9,-0.6,-0.3,-0.05,0, 0.05,0.3,0.6,0.9,1.2,1.5,1.8/)   ; set levels
-  res_t@cnFillColors = (/ 120, 110, 100,  90,  82,  73,  65,64,   60, 50, 40, 30, 20, 10, 9/)  ; set the colors to be used
+  ;res_t@cnLevelSelectionMode = "ExplicitLevels"   ; set explicit contour levels
+  ;res_t@cnLevels     = (/-1.5,-1.2,-0.9,-0.6,-0.3,-0.05,0, 0.05,0.3,0.6,0.9,1.2,1.5,1.8/)   ; set levels
+  ;res_t@cnFillColors = (/ 120, 110, 100,  90,  82,  73,  65,64,   60, 50, 40, 30, 20, 10, 9/)  ; set the colors to be used
 
 
-  dtdh = new((/91,200/), float)
-  do ih = 0, 80
-    dtdh(ih,:) = atha(ih+2,:)-atha(ih,:)
-  end do
+  ;dtdh = new((/91,200/), float)
+  ;do ih = 0, 80
+    ;dtdh(ih,:) = atha(ih+2,:)-atha(ih,:)
+  ;end do
   
-  t_gr = gsn_csm_contour(wks,dtdh(34:63,0:199),res_t) 
+  ;t_gr = gsn_csm_contour(wks,dtdh(34:63,0:199),res_t) 
   
   res_t@cnLevelSelectionMode = "ExplicitLevels"   ; set explicit contour levels
-  res_t@cnLevels     = (/ -5, -4, -3,-2,-1,-0.5, 1, 3, 5, 7, 9,11, 13,15 /)   ; set levels
-  res_t@cnFillColors = (/120,110,100,90,82,73,65,60,50,40,30,20, 10, 9,8/)  ; set the colors to be used
+  res_t@cnLevels     = (/ -5, -4, -3,-2,-1,-0.5,0, 1, 3, 5, 7, 9,11, 13,15 /)   ; set levels
+  res_t@cnFillColors = (/120,115,110,100,90,82,73,65,60,50,40,30,20, 10, 9,8/)  ; set the colors to be used
 
   t_pl = gsn_csm_contour(wks,atha(34:63,0:199),res_t) 
   
@@ -359,36 +359,37 @@ do it = 144, dims(0)-1, 36
 
   
   t_k(n) = t_pl
-  t_k(n+1) = t_gr
-  ;t_k(n+1) = tangential_wind
+  ;t_k(n+1) = t_gr
+  t_k(n+1) = tangential_wind
   
   overlay(t_k(n), poradial_wind)
   overlay(t_k(n), neradial_wind)
-  overlay(t_k(n), zeradial_wind)
+  ;overlay(t_k(n), zeradial_wind)
+  overlay(t_k(n), tangential_wind)
   overlay(t_k(n), w_wind)
-  overlay(t_k(n+1), poradial_wind1)
-  overlay(t_k(n+1), neradial_wind1)
-  overlay(t_k(n+1), zeradial_wind1)
-  overlay(t_k(n+1), w_wind1)
+  ;overlay(t_k(n+1), poradial_wind1)
+  ;overlay(t_k(n+1), neradial_wind1)
+  ;overlay(t_k(n+1), zeradial_wind1)
+  ;overlay(t_k(n+1), w_wind1)
 
   ;t_k(n+4) = gsn_csm_contour(wks,t_ano(it,0:62,0:199),res_t) 
   ;overlay(t_k(n+4), w_wind)
 
-  n = n+2
+  n = n+1
 
 end do
   
   gres_ta = True
-  ;gres_ta@gsnPanelLabelBar = True
-  ;gres_ta@lbOrientation        = "Vertical"
+  gres_ta@gsnPanelLabelBar = True
+  gres_ta@lbOrientation        = "Vertical"
   
-  gsn_panel(wks, t_k(0:15), (/4,4/), gres_ta)
-  ;gsn_panel(wks, t_k(8:15), (/4,2/), gres_ta)
-  gsn_panel(wks, t_k(16:32), (/4,4/), gres_ta)
-  gsn_panel(wks, t_k(32:47), (/4,4/), gres_ta)
-  ;gsn_panel(wks, t_k(48:60), (/4,4/), gres_ta)
-  ;gsn_panel(wks, win(6:13), (/4,4/), gres_ta)
-  ;gsn_panel(wks, win(14:21), (/4,4/), gres_ta)
+  gsn_panel(wks, t_k(0:23), (/6,4/), gres_ta)
+  gsn_panel(wks, t_k(24:47), (/6,4/), gres_ta)
+  gsn_panel(wks, t_k(48:71), (/6,4/), gres_ta)
+  gsn_panel(wks, t_k(72:95), (/6,4/), gres_ta)
+  gsn_panel(wks, t_k(96:119), (/6,4/), gres_ta)
+  gsn_panel(wks, t_k(120:143), (/6,4/), gres_ta)
+  gsn_panel(wks, t_k(144:167), (/6,4/), gres_ta)
 
   ;--------------------------------------------------------------------------------
   ;do it = 0,49,5

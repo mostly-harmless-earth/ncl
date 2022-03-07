@@ -10,7 +10,7 @@ begin
 ; This needs to have a ".nc" appended, so just do it.
 
 
-  a = addfile("/user_home/jyyin/dta/sim_lev100/tk/hgtoflapsrate.nc","r")
+  a = addfile("/user_home/jyyin/dta/sim_lev100/tk/hgtoflapsrate_avg.nc","r")
   alti = a->alti
 
   d = addfile("/user_home/jyyin/dta/sim_lev100/angle/angle_t0_tano.nc","r")
@@ -25,7 +25,7 @@ begin
   dims = dimsizes(t_ano_for)
   print(dims)
 
-  wks = gsn_open_wks("pdf","sim_lev100/lapse-rate")
+  wks = gsn_open_wks("pdf","sim_lev100/laps-avg-time")
   gsn_define_colormap(wks, "MPL_RdBu")
   ;gsn_reverse_colormap(wks)
 
@@ -158,28 +158,37 @@ end do
   ;gsn_panel(wks, win(14:21), (/4,4/), gres_ta)
 
   ;--------------------------------------------------------------------------------
-  ;do it = 0,49,5
 
-    ;pls =new(3, graphic)
+  gsn_define_colormap(wks,"amwg256")
 
-    ;pls(0) = gsn_csm_contour(wks, radial(it,:,0:199), res)
-    ;pls(1) = gsn_csm_contour(wks, tangential(it,:,0:199), res)
-    ;pls(2) = gsn_csm_contour(wks, wwnd(it,:,0:199), res)
-  
+  colorr = ispan(0, 254, 1)
+  ares = True
+  ares@vpWidthF         = 0.7            ; Change the aspect ratio, but 
+  ares@vpHeightF        = 0.4            ; make plot as large as possible.
 
-    ;res@tiLeftString         = "Streamline"
-    ;res@stArrowLengthF       = 0.015         ; changes the size of the arrows.
-    ;res@stLevelSelectionMode = "ManualLevels"
-    ;res@stLevelSpacingF      = 1000
-    ;res@stLineThicknessF     = 1.5           ; changes the line thickness
-    ;res@stLineColor          = "Black"      ; changes color
-    ;pls(3) = gsn_csm_streamline(wks, radial(1000,0:41,:), wwnd(1000,0:41,:)*10, res)
+  ares@xyLineThicknessF = 2.0
+  ares@xyLineColors     = colorr(::20); colors chosen
+  ares@xyDashPatterns   = 0.      ; make all lines solid
 
-    ;mres = True
-    ;mres@gsnPanelLabelBar    = True                ; add common colorbar
-    ;mresP@lbLabelFontHeightF  = 0.007               ; make labels smaller
-    ;gsn_panel(wks, pls(:), (/1,3/), mres)
+  ;ares@trYMinF          = 52.           ; Set min/max of left Y axis
+  ;ares@trYMaxF          = 66.
 
-  ;end do
+
+  ;ares@tmYLMode    = "Explicit"
+  ;ares@tmYLValues  = (/0, 7, 14,21,28/)
+  ;ares@tmYLLabels  = (/10,12,14,16,18/)
+
+  cp = alti
+  cp = runave_n(cp, 3, 0, 1)
+  ;pk = new(100,graphic)
+
+  do it = 0, dims(0)-73,72
+
+    cp(it,:) = dim_sum_n(alti(it:it+72,:), 0)/12.
+    
+  end do
+
+pk = gsn_csm_y(wks,cp(::72,:),ares)
+
 
 end

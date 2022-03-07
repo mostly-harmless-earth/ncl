@@ -48,7 +48,7 @@ begin
     c = addfile("/user_home/jyyin/dta/sim_lev100/angle/azi_vertical.nc","r")
     wwnd = c->ww
 
-    d = addfile("/user_home/jyyin/dta/sim_lev100/angle/angle_t0_tano.nc","r")
+    d = addfile("/user_home/jyyin/dta/sim_lev100/angle/d7_t0_ta.nc","r")
     t_ano = d->ta
 
     ;a1 = addfile("sim_lev100/bud_for/for_heat*","r")
@@ -89,21 +89,25 @@ begin
 
     t_sum = t_adv_h + t_adv_v + t_heat + t_pbl  + t_diff
     t_adv = t_adv_h + t_adv_v
+
+    t_sum = smth9(smth9(t_sum, 0.50, 0.25, False), 0.50, -0.25, False)
+    t_sum = runave_n(t_sum, 3, 0, 2)
+    t_sum = runave_n(t_sum, 3, 0, 2)
     
-    t_sum = runave_n(t_sum, 3, 0, 0)
-    t_sum = runave_n(t_sum, 5, 0, 1)
-    t_sum = runave_n(t_sum, 5, 0, 2)
+    ;t_sum = runave_n(t_sum, 3, 0, 0)
+    ;t_sum = runave_n(t_sum, 5, 0, 1)
+    ;t_sum = runave_n(t_sum, 5, 0, 2)
     
-    t_adv_h = runave_n(t_adv_h, 12, 0, 0)
-    t_adv_v = runave_n(t_adv_v, 12, 0, 0)
-    t_heat  = runave_n(t_heat, 12, 0, 0)
-    t_pbl   = runave_n(t_pbl, 12, 0, 0)
-    t_diff  = runave_n(t_diff, 12, 0, 0)
+    ;t_adv_h = runave_n(t_adv_h, 12, 0, 0)
+    ;t_adv_v = runave_n(t_adv_v, 12, 0, 0)
+    ;t_heat  = runave_n(t_heat, 12, 0, 0)
+    ;t_pbl   = runave_n(t_pbl, 12, 0, 0)
+    ;t_diff  = runave_n(t_diff, 12, 0, 0)
     
     printVarSummary(th)
     printVarSummary(t_sum)
 
-    wks=gsn_open_wks("pdf","sim_lev100/budget_12h_10-18km") 
+    wks=gsn_open_wks("pdf","sim_lev100/56h_budget") 
     gsn_define_colormap(wks,"MPL_RdBu")  ; Change color map.
     gsn_reverse_colormap(wks)
 
@@ -115,9 +119,9 @@ begin
     dims = dimsizes(th)
     plots = new(12,graphic)
   
-    do it = 0,dims(0)-73,72
+    do it = 336,642,6
 
-    dt = 71
+    dt = 59
     nmin = 10*60
 
     ;th(it,:,:) = dim_sum_n(th(it-6:it+6,:,:), 0)/3.
@@ -179,21 +183,21 @@ begin
   res@gsnRightString = time +"h"
   plot6(0) = gsn_csm_contour(wks, t_ano(it,35:64,:), res)
 
-  res@gsnRightString = time+3 +"h"
-  plot6(1) = gsn_csm_contour(wks, t_ano(it+18,35:64,:), res)
+  res@gsnRightString = time+10 +"h"
+  plot6(1) = gsn_csm_contour(wks, t_ano(it+dt+1,35:64,:), res)
   
-  res@gsnRightString = time+6 +"h"
-  plot6(2) = gsn_csm_contour(wks, t_ano(it+36,35:64,:), res)
+  ;res@gsnRightString = time+4 +"h"
+  ;plot6(2) = gsn_csm_contour(wks, t_ano(it+24,35:64,:), res)
   
-  res@gsnRightString = time+9 +"h"
-  plot6(3) = gsn_csm_contour(wks, t_ano(it+54,35:64,:), res)
+  ;res@gsnRightString = time+6 +"h"
+  ;plot6(3) = gsn_csm_contour(wks, t_ano(it+54,35:64,:), res)
   
-  res@gsnRightString = time+12 +"h"
-  plot6(4) = gsn_csm_contour(wks, t_ano(it+72,35:64,:), res)
+  ;res@gsnRightString = time+12 +"h"
+  ;plot6(4) = gsn_csm_contour(wks, t_ano(it+72,35:64,:), res)
   
   time = (it*10/60.)
-  gres@txString = "time = " + time +"h - "+ (time+12) + "h"
-  gsn_panel(wks, plot6, (/3,2/), gres)
+  gres@txString = "time = " + time +"h - "+ (time+10) + "h"
+  gsn_panel(wks, plot6, (/1,2/), gres)
 
   ares = True
   ares@gsnDraw            = False                   ; don't draw
@@ -204,8 +208,8 @@ begin
   
   ares@tiXAxisString           = "Radius(km)"
   ares@tiYAxisString           = "height(km)"
-  ares@cnFillOn            = True
-  ares@cnLinesOn           = True
+  ares@cnFillOn                = True
+  ares@cnLinesOn               = False 
 
   ;ares@tmXMajorGrid          = True               ; Add white grid lines
   ;ares@tmXMajorGridLineColor = "gray"
@@ -218,7 +222,7 @@ begin
   ares@tmYLLabelFontHeightF    = 0.025
   ares@tmYRLabelFontHeightF    = 0.025
   ares@gsnStringFontHeightF    = 0.025
-  ares@cnLinesOn               = False
+
 
   ;ares@cnLevelSelectionMode = "AutomaticLevels"
 
@@ -247,16 +251,15 @@ begin
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Draw RHS & Actual change ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
   ares@cnLevelSelectionMode = "ManualLevels"   ; set explicit contour levels  
-  if (it.le.400) then 
+  if (it.le.1000) then 
     ares@cnLevelSpacingF = 0.5
-    ares@cnMinLevelValF  = -3.5
-    ares@cnMaxLevelValF  = 3.5
+    ares@cnMinLevelValF  = -3.0
+    ares@cnMaxLevelValF  = 3.0
   else
     ares@cnLevelSpacingF = 1.
     ares@cnMinLevelValF  = -6.
     ares@cnMaxLevelValF  = 6.
   end if
-
 
   ares@tiMainString = "Sum of RHS"
   plot9(1) = gsn_csm_contour(wks,t_sum_1h(35:64,0:199)*nmin, ares)
@@ -309,7 +312,19 @@ begin
   ;gres@tiMainString = "theta Budget Term 1 hour"
   ;gsn_panel(wks, plot9, (/2,3/), gres)
 
+  ares@cnFillOn  = False
+  ares@cnLinesOn = True 
+  ares@cnLineThicknessF = 1.2
+ 
+  ares@cnLevelSelectionMode = "ExplicitLevels"   ; set explicit contour levels
+  ares@cnLevels     = (/-5,-4,-3,-2,-1, 0/)   ; set levels
+  ;ares@cnFillColors = (/ 7, 23,33,59,71,101,149,152,167,183,199,215/)  ; set the colors to be used
 
+  ne1 = gsn_csm_contour(wks,t_sum_1h(35:64,0:199)*nmin, ares)
+  ne2 = gsn_csm_contour(wks,t_sum_1h(35:64,0:199)*nmin, ares)
+
+  overlay(plot9(3), ne1)
+  overlay(plot9(4), ne2)
 
   ;gres@gsnPanelLabelBar = True
   gsn_panel(wks, plot9, (/3,3/), gres)

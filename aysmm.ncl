@@ -42,8 +42,9 @@ end do
   end do
 
   n = 0 
-  wks = gsn_open_wks("pdf","sim_lev100/asmyty_d5")
+  wks = gsn_open_wks("pdf","sim_lev100/asmyty_ta_vr_14.5km")
   gsn_define_colormap(wks, "MPL_RdBu")
+  gsn_reverse_colormap(wks)
 
   t_k = new(100,graphic)
   win = new(100,graphic)
@@ -111,7 +112,7 @@ do in = 0,4
   ;print(hei)
 
   dims = dimsizes(radial)
-  print(dims)
+  ;print(dims)
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Plotting Section ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ;gsn_reverse_colormap(wks)
@@ -154,17 +155,17 @@ do in = 0,4
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Time loop ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-  do it = 0, dims(0)-13, 36
+  do it = 0, dims(0)-37, 36
 
-  aradial = dim_sum_n(radial(it:it+12,:,:,:), 0)/3.
-  atha  = dim_sum_n(t_ano(it:it+12,:,:,:), 0)/3.
+  aradial = dim_sum_n(radial(it:it+36,:,:,:), 0)/6.
+  atha  = dim_sum_n(t_ano(it:it+36,:,:,:), 0)/6.
 
   ;do ih = 0,3
 
   ;rr = (/52,50,100,150/) ;;;20km,50km,100km,200km,300km
 
-  bradial = dim_avg_n(aradial(49:51,:,:), 0)
-  btha  = dim_avg_n(atha(49:51,:,:), 0)
+  bradial = dim_avg_n(aradial(51:53,:,:), 0)
+  btha  = dim_avg_n(atha(51:53,:,:), 0)
 
   cradial = ndtooned(bradial)
   ctha = ndtooned(btha)
@@ -180,6 +181,7 @@ do in = 0,4
 
   res_radial@gsnContourNegLineDashPattern  = 11
   res_radial@cnLineColor  =  "black"
+  res_radial@cnLineThicknessF  = 0.8
 
   res_radial@cnLineLabelsOn    = True
   ;res_radial@cnLineLabelPerimOn = True
@@ -193,7 +195,7 @@ do in = 0,4
    pores = res_radial
    pores@cnLevelSelectionMode = "ExplicitLevels"
    ;pores@cnLevels = (/ 0.2,0.5,0.8,1,2,3,5,7,9,11,15,20/)   ; set levels
-   pores@cnLevels = (/ 1,3,5,7,11,13,18/)   ; set levels
+   pores@cnLevels = (/ 0.5,2,4,6,8/)   ; set levels
    
    ;res_radial@cnLevelSelectionMode = "ManualLevels"
    ;res_radial@cnMinLevelValF = 0.0
@@ -208,7 +210,7 @@ do in = 0,4
 
    neres = res_radial
    neres@cnLevelSelectionMode = "ExplicitLevels"
-   neres@cnLevels = (/ -0.1,-0.3,-0.5,-0.7/)   ; set levels
+   neres@cnLevels = (/ -0.5,-2,-4,-6,-8/)   ; set levels
 
    ;res_radial@cnLevelSelectionMode = "ManualLevels"
    ;res_radial@cnMinLevelValF = -15.
@@ -241,12 +243,12 @@ do in = 0,4
   res_t@gsnDraw  = False
 
   res_t@gsnLeftString  = " "
-  res_t@gsnRightString  = " "
+  res_t@gsnRightString  = (it+in*144)*10/60. +" h"
   
-  time = (it*10)/60./24.
+  time = ((it+in*24)*10)/60./24.
   ;res_t@tiYAxisString = "Day  " + (time-1) + " - " + time
   ;res_t@tiYAxisString = "T = "+ it*10/60. +" h" 
-  res_t@tiMainString  = "height = 14 Km" 
+  res_t@tiMainString  = "height = 14.5 Km" 
 
   ;res_t@tmYLMode    = "Explicit"
   ;res_t@tmYLValues  = (/0, 7, 14,21,28/)
@@ -256,11 +258,11 @@ do in = 0,4
   ;res_t@tmXBValues  = (/0, 50,100,150,199/)
   ;res_t@tmXBLabels  = (/0,100,200,300,400/)
 
-    ;res_t@cnLevelSelectionMode = "ManualLevels"   ; set explicit contour levels
+    res_t@cnLevelSelectionMode = "ManualLevels"   ; set explicit contour levels
     ;if (it.le.164) then
-        ;res_t@cnLevelSpacingF = 0.5
-        ;res_t@cnMinLevelValF  = -4.
-       ; res_t@cnMaxLevelValF  = 4.
+        res_t@cnLevelSpacingF = 0.4
+        res_t@cnMinLevelValF  = -2.4
+        res_t@cnMaxLevelValF  = 2.4
       ;else if (it.le.430) then
        ; res_t@cnLevelSpacingF = 0.8
        ; res_t@cnMinLevelValF  = -6.
@@ -278,11 +280,11 @@ do in = 0,4
 
   res_t@cnFillOn = True
   res_t@cnLinesOn = False
-  res_t@lbLabelBarOn        = False           ; turn off individual cb's
+  res_t@lbLabelBarOn        = True           ; turn off individual cb's
   ;res_t@cnLevelSelectionMode = "ExplicitLevels"   ; set explicit contour levels
  ; res_t@cnLevels     = (/ -4, -3,-2,-1,-0.5,-0.3,0.3,0.5,  1,3 ,  5,  7,  9,13/)   ; set levels
   ;res_t@cnFillColors = (/  2,  8,16,26,  32,  40,  0, 75, 83,95,106,112,120,126,129/)  ; set the colors to be used
-  res_t@cnLineLabelsOn = False                    ; turn the line labels off
+  res_t@cnLineLabelsOn = True                    ; turn the line labels off
 
   ;print(n)
   t_pl = gsn_csm_contour(wks,ctha,res_t) 
@@ -330,11 +332,13 @@ end do
 
   ;end do
 
+  print(in)
+
 end do
 
   gres_ta = True
-  gres_ta@gsnPanelLabelBar = True
-  gres_ta@lbOrientation    = "Vertical"
+  ;gres_ta@gsnPanelLabelBar = True
+  ;gres_ta@lbOrientation    = "Vertical"
   
   gsn_panel(wks, t_k(0:19), (/5,4/), gres_ta)
   ;gsn_panel(wks, t_k(8:15), (/4,2/), gres_ta)

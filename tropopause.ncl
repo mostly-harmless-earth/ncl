@@ -66,17 +66,23 @@ begin
  dtdz@units = "k/km"
  dtdz@_FillValue = 9.96921e+36
 
-  outfilet = addfile("sim_lev100/tk/dtdz.nc","c")
-  outfilet->dtdz = dtdz
+  ;outfilet = addfile("sim_lev100/tk/dtdz.nc","c")
+  ;outfilet->dtdz = dtdz
+
+  dtdz = abs(dtdz)
 
    do it = 0,dims(0)-1,6
-    do ih = 0,dims(1)-2
+    do ih = -(dims(1)-10),-30
       do ir = 0,dims(2)-1
 
-        if (dtdz(it,ih,ir).le.0) then
-          
-          alti(it,ir)= ih
-        
+        if (dtdz(it,-ih,ir).le.2) then
+
+          lap = dim_avg_n(dtdz(it,-ih:(-ih+6),ir), 0)
+
+          if (lap.le.2) then
+            alti(it,ir)= -ih
+          end if
+              
         end if
 
       end do
@@ -134,7 +140,7 @@ begin
  alti@units = "m/s"
  alti@_FillValue = 9.96921e+36
 
-  outfilet = addfile("sim_lev100/tk/hgtoflapsrate.nc","c")
+  outfilet = addfile("sim_lev100/tk/hgtoflapsrate_avg.nc","c")
   outfilet->alti = alti
 
 end
