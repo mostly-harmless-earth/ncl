@@ -9,17 +9,65 @@ begin
 ; The WRF ARW input file.  
 ; This needs to have a ".nc" appended, so just do it.
 
-   files = systemfunc("ls ./sim_lev100/bud/azi_adv_v_*")
+   files = systemfunc("ls ./sim_lev100/bud/ang_adv_h_*")
+   a = addfiles(files, "r")
+   ListSetType(a, "cat")
+   radial360 = a[:]->t_adv_h
+   radial = dim_avg_n(radial360,3)
+    delete(a)
+    delete(radial360)
+outfilet = addfile("sim_lev100/bud/adv_h_azi.nc","c")
+outfilet->t_adv_h = radial
+
+   files = systemfunc("ls ./sim_lev100/bud/ang_adv_v_*")
    a = addfiles(files, "r")
    ListSetType(a, "cat")
    radial360 = a[:]->t_adv_v
    radial = dim_avg_n(radial360,3)
-
     delete(a)
     delete(radial360)
-
 outfilet = addfile("sim_lev100/bud/adv_v_azi.nc","c")
 outfilet->t_adv_v = radial
+
+   files = systemfunc("ls ./sim_lev100/bud/ang_diff_*")
+   a = addfiles(files, "r")
+   ListSetType(a, "cat")
+   radial360 = a[:]->t_diff
+   radial = dim_avg_n(radial360,3)
+    delete(a)
+    delete(radial360)
+outfilet = addfile("sim_lev100/bud/diff_azi.nc","c")
+outfilet->t_diff = radial
+
+   files = systemfunc("ls ./sim_lev100/bud/ang_diff3_*")
+   a = addfiles(files, "r")
+   ListSetType(a, "cat")
+   radial360 = a[:]->t_diff
+   radial = dim_avg_n(radial360,3)
+    delete(a)
+    delete(radial360)
+outfilet = addfile("sim_lev100/bud/diff3_azi.nc","c")
+outfilet->t_diff = radial
+
+   files = systemfunc("ls ./sim_lev100/bud/ang_pbl_*")
+   a = addfiles(files, "r")
+   ListSetType(a, "cat")
+   radial360 = a[:]->t_pbl
+   radial = dim_avg_n(radial360,3)
+    delete(a)
+    delete(radial360)
+outfilet = addfile("sim_lev100/bud/pbl_azi.nc","c")
+outfilet->t_pbl = radial
+
+   files = systemfunc("ls ./sim_lev100/bud/ang_heat_*")
+   a = addfiles(files, "r")
+   ListSetType(a, "cat")
+   radial360 = a[:]->t_heat
+   radial = dim_avg_n(radial360,3)
+    delete(a)
+    delete(radial360)
+outfilet = addfile("sim_lev100/bud/heat_azi.nc","c")
+outfilet->t_heat = radial
 
    ;files = systemfunc("ls ./sim_lev100/angle/tangential_wind*")
    ;b = addfiles(files, "r")

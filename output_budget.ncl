@@ -16,11 +16,11 @@ begin
 
     nn1 = (/"100","106","112","118","200","206","212","218",\
           "300","306","312","318","400","406","412","418",\
-          "500","506","512","518","6_00","6_06","6_12","6_18"/)
+          "500","506","512","518","600","606","612","618"/)
 
  din = dimsizes(nn)
 
- do in = 0, din-1, 1000 
+ do in = 0, din-1, 1
 
     outfilet = addfile("sim_lev100/budget_or/adv_h_0"+nn(in)+".nc","r")
     tb_adv_h = outfilet->T_TEND_ADV_H
@@ -230,8 +230,8 @@ end do
     advv_po_level = onedtond(tp_adv_v(lev,:),(/nr,360/)) 
     diff_po_level = onedtond(tp_diff1(lev,:),(/nr,360/)) 
     diff3_po_level = onedtond(tp_diff3(lev,:),(/nr,360/)) 
-    heat_po_level = onedtond(tp_adv_h(lev,:),(/nr,360/)) 
-    pbl_po_level = onedtond(tp_adv_h(lev,:),(/nr,360/)) 
+    heat_po_level = onedtond(tp_heat(lev,:),(/nr,360/)) 
+    pbl_po_level = onedtond(tp_pbl(lev,:),(/nr,360/)) 
 
     ta_adv_v(it,lev,:,:) = advv_po_level
     ta_adv_h(it,lev,:,:) = advh_po_level
@@ -317,23 +317,23 @@ end do
  ;ta_ra@units = "K"
  ;ta_ra@_FillValue = 9.96921e+36
 
-outfilet = addfile("sim_lev100/bud/azi_adv_h_0"+nn(in)+".nc","c")
+outfilet = addfile("sim_lev100/bud/ang_adv_h_0"+nn(in)+".nc","c")
 outfilet->t_adv_h = ta_adv_h(:,0:90,:,:)
 
-outfilet = addfile("sim_lev100/bud/azi_adv_v_0"+nn(in)+".nc","c")
+outfilet = addfile("sim_lev100/bud/ang_adv_v_0"+nn(in)+".nc","c")
 ;outfilet = addfile("sim9/bud_d1_06/adv.nc","c")
 outfilet->t_adv_v = ta_adv_v(:,0:90,:,:)
 
-outfilet = addfile("sim_lev100/bud/azi_diff_0"+nn(in)+".nc","c")
+outfilet = addfile("sim_lev100/bud/ang_diff_0"+nn(in)+".nc","c")
 outfilet->t_diff = ta_diff1(:,0:90,:,:)
 
-outfilet = addfile("sim_lev100/bud/azi_diff3_0"+nn(in)+".nc","c")
+outfilet = addfile("sim_lev100/bud/ang_diff3_0"+nn(in)+".nc","c")
 outfilet->t_diff = ta_diff3(:,0:90,:,:)
 
-outfilet = addfile("sim_lev100/bud/azi_heat_0"+nn(in)+".nc","c")
+outfilet = addfile("sim_lev100/bud/ang_heat_0"+nn(in)+".nc","c")
 outfilet->t_heat = ta_heat(:,0:90,:,:)
 
-outfilet = addfile("sim_lev100/bud/azi_pbl_0"+nn(in)+".nc","c")
+outfilet = addfile("sim_lev100/bud/ang_pbl_0"+nn(in)+".nc","c")
 outfilet->t_pbl = ta_pbl(:,0:90,:,:)
 
 end do

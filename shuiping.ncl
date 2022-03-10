@@ -7,7 +7,7 @@ load "$NCARG_ROOT/lib/ncarg/nclscripts/wrf/WRFUserARW.ncl"
 
 begin
 
-    files = systemfunc("ls ./sim_lev100/hori/ahori_t4*")
+    files = systemfunc("ls ./sim_lev100/hori/ahori_t2*")
     ano = addfiles(files, "r")
     ListSetType(ano, "cat")
 
@@ -39,40 +39,40 @@ begin
     ;t_ano = ano->ta(:,40:60,:,:)
 
     dim = dimsizes(t_ano)
-
-    files = systemfunc("ls ./sim_lev100/hori/hori_u4*")
-    ano_h = addfiles(files, "r")
-    ListSetType(ano_h, "cat")
-
-    ;ano_h = addfile("sim9_v3/tha/unazi_tano_d1_12.nc","r")
-    uu = ano_h[:]->ua
-
-    files = systemfunc("ls ./sim_lev100/hori/hori_v4*")
-    ano_h = addfiles(files, "r")
-    ListSetType(ano_h, "cat")
-
-    ;ano_h = addfile("sim9_v3/tha/unazi_tano_d1_12.nc","r")
-    vv = ano_h[:]->va
-
-    ;files = systemfunc("ls ./sim_lev100/hori/hori_w3*")
+    printVarSummary(t_ano)
+    ;files = systemfunc("ls ./sim_lev100/hori/hori_u2*")
     ;ano_h = addfiles(files, "r")
     ;ListSetType(ano_h, "cat")
 
     ;ano_h = addfile("sim9_v3/tha/unazi_tano_d1_12.nc","r")
-    ;ww = ano_h[:]->wa
+    ;uu = ano_h[:]->ua
+
+    ;files = systemfunc("ls ./sim_lev100/hori/hori_v2*")
+    ;ano_h = addfiles(files, "r")
+    ;ListSetType(ano_h, "cat")
+
+    ;ano_h = addfile("sim9_v3/tha/unazi_tano_d1_12.nc","r")
+    ;vv = ano_h[:]->va
+
+    files = systemfunc("ls ./sim_lev100/hori/hori_w2*")
+    ano_h = addfiles(files, "r")
+    ListSetType(ano_h, "cat")
+
+    ;ano_h = addfile("sim9_v3/tha/unazi_tano_d1_12.nc","r")
+    ww = ano_h[:]->wa
 
     hei = fspan(500, 27500, 100)/1000
-    r1 = ispan(0,400,1)
-    r2 = ispan(-400,400,2)
+    r1 = ispan(0,120,1)
+    r2 = ispan(-120,120,2)
     hei@units = "m"
     r1@units = "km"
     ;print(r1)
-    print(hei)
-    printVarSummary(t_ano)
-    printVarSummary(uu)
-    printVarSummary(vv)
+    ;print(hei)
+    
+    ;printVarSummary(uu)
+    ;printVarSummary(vv)
 
-    rms = dimsizes(uu)
+    rms = dimsizes(ww)
 
     nt = rms(0)
     nx = rms(2)
@@ -84,135 +84,143 @@ begin
 ;outfilet = addfile("sim_lev100/wind/v_d5.nc","c")
 ;outfilet->va = vv(:,40:60,:,:)
 
-    wks=gsn_open_wks("pdf","/user_home/jyyin/dta/sim_lev100/Hori_d3") 
+    wks=gsn_open_wks("pdf","/user_home/jyyin/dta/sim_lev100/levels_d2") 
     ;gsn_define_colormap(wks,"BlueWhiteOrangeRed")  ; Change color map.
     gsn_define_colormap(wks,"MPL_RdBu")
     ;gsn_reverse_colormap(wks)
 
-    dt = 36   ;;;; multiple of 6
+    dt = 12   ;;;; multiple of 6
     plot = new(200, graphic)
     n=0
 
-do it = 0, rms(0)-1, dt
+do it = 36, 96, dt
+    
+    hi = (/38,42,46,50/)
+    hei = fspan(500, 27500, 100)/1000
+    
 
-  time = (it*10/60.)+24
+    do in = 0,3
 
-  res                     = True
-  gres                    = True
+        time = (it*10/60.)+24
+
+        res                     = True
+        gres                    = True
   
-  res@gsnDraw            = False                   ; don't draw
-  res@gsnFrame           = False                   ; don't advance frame
+        res@gsnDraw            = False                   ; don't draw
+        res@gsnFrame           = False                   ; don't advance frame
 
-  ;res@cnLineThicknesses   = 1.5
-  ;gres@gsMarkerIndex = 0
-  ;gres@gsMarkerSizeF    = 0.015
-  ;gres@gsMarkerColor       = "navy"                 ; color chosen
-  ;gres@gsMarkerThicknessF = 3
-  ;res@xyLineThicknesses = 2.0
-  ;res@tiMainString = "Sea Level Pressure ~c~ Max Wind Speed"
+        ;res@cnLineThicknesses   = 1.5
+        ;gres@gsMarkerIndex = 0
+        ;gres@gsMarkerSizeF    = 0.015
+        ;gres@gsMarkerColor       = "navy"                 ; color chosen
+        ;gres@gsMarkerThicknessF = 3
+        ;res@xyLineThicknesses = 2.0
+        ;res@tiMainString = "Sea Level Pressure ~c~ Max Wind Speed"
+
+        res@tmYLMode    = "Explicit"
+        res@tmYLLabels  = r2(::20)
+        res@tmYLValues  = r1(::20)
   
-  
-  ;res@tiYAxisString           = "height(km)"
-  ;res@tiXAxisString           = "times(hr)"
-  ;res@tiMainString = "Hovmoller 72-96h (r=0km)"
+        res@tmXBMode    = "Explicit"
+        res@tmXBLabels  = r2(::20)
+        res@tmXBValues  = r1(::20)
 
-  ;res@tmYLMode    = "Explicit"
-  ;res@tmYLLabels  = (/5,10,15,20/)
- ; res@tmYLValues  = (/12,25,38,51/)
+        ;res@tmXBMode    = "Explicit"
+        ;res@tmXBValues  = (/0, 22, 43, 64, 85,107,128/)
+        ;res@tmXBLabels  = (/0,100,200,300,400,500,600/)
 
-  res@tmYLMode    = "Explicit"
-  res@tmYLLabels  = r2(::50)
-  res@tmYLValues  = r1(::50)
-  
-  res@tmXBMode    = "Explicit"
-  res@tmXBLabels  = r2(::50)
-  res@tmXBValues  = r1(::50)
+        ;res@tmYLMode    = "Explicit"
+        ;res@tmYLValues  = (/0, 11,24,36,40/)
+        ; res@tmYLLabels  = (/0.5,5,10,15,17/)
 
+        ;res@cnLevelSelectionMode = "ExplicitLevels"   ; set explicit contour levels
+        ;res@cnLevels     = (/-2.2,-1.0,-0.8,-0.6,-0.4,-0.2,0.2,  1, 2, 3, 4, 5, 6,  7,  8,  9/)   ; set levels
+        ;res@cnFillColors = (/  10,  15,  20,  30,  40,  60,  0, 70,75,80,85,90,95,100,105,110,112/)  ; set the colors to be used
 
-    ;res@tmXBMode    = "Explicit"
-    ;res@tmXBValues  = (/0, 22, 43, 64, 85,107,128/)
-    ;res@tmXBLabels  = (/0,100,200,300,400,500,600/)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;    
+       
+        vcres                     = res      ; plot mods desired
+        vcres@lbLabelStride       = 2         ; plot every other colar bar label
+        vcres@vcRefMagnitudeF         = 4.              ; make vectors larger
+        vcres@vcRefLengthF            = 0.030            ; ref vec length ;;; biger Value biger Arrow
+        vcres@vcGlyphStyle            = "LineArrow"    ; turn on curly vectors
+        vcres@vcMinDistanceF          = 0.05            ; thin out vectors
+        vcres@vcGlyphOpacityF         = 0.8
 
-    ;res@tmYLMode    = "Explicit"
-    ;res@tmYLValues  = (/0, 11,24,36,40/)
-   ; res@tmYLLabels  = (/0.5,5,10,15,17/)
-
-    ;res@cnLevelSelectionMode = "ExplicitLevels"   ; set explicit contour levels
-    ;res@cnLevels     = (/-2.2,-1.0,-0.8,-0.6,-0.4,-0.2,0.2,  1, 2, 3, 4, 5, 6,  7,  8,  9/)   ; set levels
-    ;res@cnFillColors = (/  10,  15,  20,  30,  40,  60,  0, 70,75,80,85,90,95,100,105,110,112/)  ; set the colors to be used
+        ;vcres@vcFillArrowsOn           = True
+        vcres@vcWindBarbLineThicknessF    =  1.0
+        vcres@vcFillArrowEdgeThicknessF = 1.0
+        vcres@vcMinFracLengthF         = 0.33
+        vcres@vcMinMagnitudeF          = 0.001
+        vcres@vcMonoFillArrowFillColor = False
+        vcres@vcMonoWindBarbColor     = False
+        vcres@vcFillArrowEdgeColor    ="gray70"
+        ; opts@vcWindBarbTickLengthF    = 0.33
     
+        ;u_hori1 = dim_avg_n(uu(:,46:48,:,:),1)
+        ;u_hori2 = dim_avg_n(uu(:,49:51,:,:),1) 
+        ;u_hori3 = dim_avg_n(uu(:,53:55,:,:),1)
 
+        ;v_hori1 = dim_avg_n(vv(:,46:48,:,:),1)
+        ;v_hori2 = dim_avg_n(vv(:,49:51,:,:),1)
+        ;v_hori3 = dim_avg_n(vv(:,53:55,:,:),1)
+
+        ;u_hori = uu(:,hi(in),:,:)
+        ;v_hori = vv(:,hi(in),:,:)
+
+       ; uc = u_hori(it,150:270,150:270)
+        ;vc = v_hori(it,150:270,150:270)
+
+        ;wndplot = gsn_vector(wks, uc, vc, vcres)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+        
+        wres = True
+        wres@gsnDraw = False
+        wres@gsnFrame = False
+        wres@cnFillOn            = False
+        wres@cnLinesOn           = True
+        wres@cnLineLabelsOn      = False
+        wres@cnInfoLabelOn       = False
+        wres@cnLineThicknessF    = 0.8
+
+        ;wres@cnLevelSelectionMode = "ManualLevels" 
+        ;wres@cnLevelSpacingF = 0.2
+        ;wres@cnMinLevelValF  = -1.
+        ;wres@cnMaxLevelValF  = 1.
+        wres@cnLevelSelectionMode = "ExplicitLevels"   ; set explicit contour levels
+        wres@cnLevels     = (/1.,5.,10.,15./)   ; set levels
+        ;wres@cnFillColors = (/  10,  15,  20,  30,  40,  60,  0, 70,75,80,85,90,95,100,105,110,112/) 
+        wres@cnMonoLineColor  = False
+        wres@cnLineColors = (/"seagreen1","seagreen2","seagreen3","seagreen4"/)
+
+        ;w_hori1 = dim_avg_n(ww(:,47:49,:,:),1)
+        ;w_hori2 = dim_avg_n(ww(:,49:51,:,:),1)
+        ;w_hori3 = dim_avg_n(ww(:,53:55,:,:),1)
+
+        w_hori = ww(:,hi(in),:,:)
+
+        wplot = gsn_csm_contour(wks,w_hori(it,150:270,150:270),wres)
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+        
+        cnres = res
+        cnres@cnFillOn            = True
+        cnres@cnLinesOn           = False
+        cnres@cnLineLabelsOn      = False
+
+        cnres@cnLevelSelectionMode = "ManualLevels"   ; set explicit contour levels
     
-  
-    vcres                     = res      ; plot mods desired
-    vcres@lbLabelStride       = 2         ; plot every other colar bar label
-    vcres@vcRefMagnitudeF         = 4.              ; make vectors larger
-    vcres@vcRefLengthF            = 0.030            ; ref vec length ;;; biger Value biger Arrow
-    vcres@vcGlyphStyle            = "CurlyVector"    ; turn on curly vectors
-    vcres@vcMinDistanceF          = 0.05            ; thin out vectors
-    vcres@vcGlyphOpacityF         = 0.8
+        ;t_hori1 = dim_avg_n(t_ano(:,47:49,:,:),1)
+        ;t_hori2 = dim_avg_n(t_ano(:,49:51,:,:),1)
+        ;t_hori3 = dim_avg_n(t_ano(:,53:55,:,:),1)
 
-    ;vcres@vcFillArrowsOn           = True
-    vcres@vcWindBarbLineThicknessF    =  1.5
-    vcres@vcFillArrowEdgeThicknessF = 2.0
-    vcres@vcMinFracLengthF         = 0.33
-    vcres@vcMinMagnitudeF          = 0.001
-    vcres@vcMonoFillArrowFillColor = False
-    vcres@vcMonoWindBarbColor     = False
-    vcres@vcFillArrowEdgeColor    ="Black"
-    vcres@vcMinDistanceF           = 0.03
-   ; opts@vcWindBarbTickLengthF    = 0.33
-    
-    u_hori1 = dim_avg_n(uu(:,47:49,:,:),1)
-    u_hori2 = dim_avg_n(uu(:,49:51,:,:),1) 
-    u_hori3 = dim_avg_n(uu(:,53:55,:,:),1)
+        t_hori = t_ano(:,hi(in),:,:)
 
-    v_hori1 = dim_avg_n(vv(:,47:49,:,:),1)
-    v_hori2 = dim_avg_n(vv(:,49:51,:,:),1)
-    v_hori3 = dim_avg_n(vv(:,53:55,:,:),1)
-
-    ;uc = dim_sum_n(u_hori(it,10:410,10:410), 0)
-    ;vc = dim_sum_n(v_hori(it,10:410,10:410), 0)
-    uc1 = u_hori1(it,10:410,10:410)
-    vc1 = v_hori1(it,10:410,10:410)
-    
-    uc2 = u_hori2(it,10:410,10:410)
-    vc2 = v_hori2(it,10:410,10:410)
-    
-    uc3 = u_hori3(it,10:410,10:410)
-    vc3 = v_hori3(it,10:410,10:410)
- 
-    wndplot1 = gsn_vector(wks, uc1, vc1, vcres)
-    wndplot2 = gsn_vector(wks, uc2, vc2, vcres)
-    wndplot3 = gsn_vector(wks, uc3, vc3, vcres)
-
-    wres = True
-    wres@cnFillOn            = False
-    wres@cnLinesOn           = True
-    wres@cnLineLabelsOn      = False
-    wres@cnLineThicknessF    = 1.6
-
-    wres@cnLevelSelectionMode = "ManualLevels" 
-    wres@cnLevelSpacingF = 0.25
-    wres@cnMinLevelValF  = -1.
-    wres@cnMaxLevelValF  = 1.
-
-    ;wplot = gsn_csm_contour(wks,w_hori(it,10:410,10:410),wres)
-
-    cnres = res
-    cnres@cnFillOn            = True
-    cnres@cnLinesOn           = False
-    cnres@cnLineLabelsOn      = False
-
-    cnres@cnLevelSelectionMode = "ManualLevels"   ; set explicit contour levels
-    
-    t_hori1 = dim_avg_n(t_ano(:,47:49,:,:),1)
-    t_hori2 = dim_avg_n(t_ano(:,49:51,:,:),1)
-    t_hori3 = dim_avg_n(t_ano(:,53:55,:,:),1)
-
-    cnres@cnLevelSelectionMode = "ExplicitLevels"   ; set explicit contour levels
-    cnres@cnLevels     = (/ -5, -4, -3,-2,-1, 0, 1, 3, 5, 7, 9,11, 13,15 /)   ; set levels
-    cnres@cnFillColors = (/120,110,100,90,82,73,66,60,50,40,30,20, 10, 9,8/)  ; set the colors to be used
+        cnres@cnLevelSelectionMode = "ExplicitLevels"   ; set explicit contour levels
+        cnres@cnLevels     = (/ -5, -4, -3,-2,-1,-0.5,0.5, 3, 5, 7, 9,11, 13,15 /)   ; set levels
+        cnres@cnFillColors = (/120,110,100,95,90,82,65,60,50,40,30,20, 10, 9,8/)  ; set the colors to be used
     ;if (it.le.164) then
         ;cnres@cnLevelSpacingF = 0.5
         ;cnres@cnMinLevelValF  = -4.
@@ -228,31 +236,31 @@ do it = 0, rms(0)-1, dt
       ;end if
     ;end if
     
-    cnres@tiMainString = "time = " + time + "h " +" 13.5km"
-    plot(n) =  gsn_csm_contour(wks,t_hori1(it,10:410,10:410), cnres)
+        cnres@gsnLeftString = sprintf("%6.2f",hei(hi(in))) +" Km"
+        cnres@gsnRightString = "time = " + time + "h " 
+        plot(n) =  gsn_csm_contour(wks,t_hori(it,150:270,150:270), cnres)
 
-    cnres@tiMainString = "time = " + time + "h "+" 14km"
-    plot(n+1) =  gsn_csm_contour(wks,t_hori2(it,10:410,10:410), cnres)
-
-    cnres@tiMainString = "time = " + time + "h "+" 15km"
-    plot(n+2) =  gsn_csm_contour(wks,t_hori3(it,10:410,10:410), cnres)
-
-
-    ;overlay(plot, wplot)
-    overlay(plot(n), wndplot1)
-    overlay(plot(n+1), wndplot2)
-    overlay(plot(n+2), wndplot3)
-
-    n = n+3
-    ;print(it)
-
+        ;overlay(plot, wplot)
+        ;overlay(plot(n), wndplot)
+        overlay(plot(n), wplot)
+        ;overlay(plot(n+1), wplot2)
+        ;overlay(plot(n+2), wplot3)
+        ;overlay(plot(n+1), wndplot2)
+        ;overlay(plot(n+2), wndplot3)
+        n = n+1
+        ;print(it)
+    end do
 end do
-
+    
     gres = True
     gres@gsnPanelLabelBar = True
-    gres@lbOrientation        = "Vertical"
-    gres@txString = "Theta Anomaly"
-    gsn_panel(wks, plot(0:11), (/4,3/), gres)
-
+    gres@lbOrientation  = "Vertical"
+    ;gres@txString = 
+    gsn_panel(wks, plot(0:19), (/5,4/), gres)
+ 
+    ;gsn_panel(wks, plot(24:47), (/4,6/), gres)
+    ;gsn_panel(wks, plot(48:59), (/4,6/), gres)
+    ;gsn_panel(wks, plot(60:83), (/4,6/), gres)
+    ;gsn_panel(wks, plot(84:107), (/4,6/), gres)
 
 end

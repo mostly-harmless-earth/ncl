@@ -7,40 +7,46 @@ load "$NCARG_ROOT/lib/ncarg/nclscripts/wrf/WRFUserARW.ncl"
 
 begin
 
-    files = systemfunc("ls ./sim_lev100/bud_for/for_heat*")
-    a_heat = addfiles(files, "r")
-    ListSetType(a_heat, "cat")
-    t_heat = a_heat[:]->t_heat
+    ;files = systemfunc("ls ./sim_lev100/bud_for/for_heat*")
+    ;a_heat = addfiles(files, "r")
+    ;ListSetType(a_heat, "cat")
+    a_heat = addfile("sim_lev100/bud/heat_azi.nc","r")
+    t_heat = a_heat->t_heat
 
-    files = systemfunc("ls ./sim_lev100/bud_for/for_pbl*")
-    a_pbl = addfiles(files, "r")
-    ListSetType(a_pbl, "cat")
-    t_pbl = a_pbl[:]->t_pbl
+    ;files = systemfunc("ls ./sim_lev100/bud_for/for_pbl*")
+    ;a_pbl = addfiles(files, "r")
+    ;ListSetType(a_pbl, "cat")
+    a_pbl = addfile("sim_lev100/bud/pbl_azi.nc","r")
+    t_pbl = a_pbl->t_pbl
 
-    files = systemfunc("ls ./sim_lev100/bud_for/for_diff*")
-    a_diff = addfiles(files, "r")
-    ListSetType(a_diff, "cat")
-    t_diff1 = a_diff[:]->t_diff
+    ;files = systemfunc("ls ./sim_lev100/bud_for/for_diff*")
+    ;a_diff = addfiles(files, "r")
+    ;ListSetType(a_diff, "cat")
+    a_diff = addfile("sim_lev100/bud/diff_azi.nc","r")
+    t_diff1 = a_diff->t_diff
 
-    files = systemfunc("ls ./sim_lev100/bud_for/for_3diff*")
-    a_diff3 = addfiles(files, "r")
-    ListSetType(a_diff, "cat")
-    t_diff3 = a_diff3[:]->t_diff
+    ;files = systemfunc("ls ./sim_lev100/bud_for/for_3diff*")
+    ;a_diff3 = addfiles(files, "r")
+    ;ListSetType(a_diff, "cat")
+    a_diff3 = addfile("sim_lev100/bud/diff3_azi.nc","r")
+    t_diff3 = a_diff3->t_diff
 
-    files = systemfunc("ls ./sim_lev100/bud_for/for_adv_v*")
-    a_v = addfiles(files, "r")
-    ListSetType(a_v, "cat")
-    t_adv_v = a_v[:]->t_adv_v
+    ;files = systemfunc("ls ./sim_lev100/bud_for/for_adv_v*")
+    ;a_v = addfiles(files, "r")
+    ;ListSetType(a_v, "cat")
+    a_v = addfile("sim_lev100/bud/adv_v_azi.nc","r")
+    t_adv_v = a_v->t_adv_v
 
-    files = systemfunc("ls ./sim_lev100/bud_for/for_adv_h*")
-    a_h = addfiles(files, "r")
-    ListSetType(a_h, "cat")
-    t_adv_h = a_h[:]->t_adv_h
+    ;files = systemfunc("ls ./sim_lev100/bud_for/for_adv_h*")
+    ;a_h = addfiles(files, "r")
+    ;ListSetType(a_h, "cat")
+    a_h = addfile("sim_lev100/bud/adv_h_azi.nc","r")
+    t_adv_h = a_h->t_adv_h
 
-    files = systemfunc("ls ./sim_lev100/tha/afor_t*")
-    ano_h = addfiles(files, "r")
-    ListSetType(ano_h, "cat")
-    th = ano_h[:]->ta
+    ;files = systemfunc("ls ./sim_lev100/tha/afor_t*")
+    ;ano_h = addfiles(files, "r")
+    ;ListSetType(ano_h, "cat")
+    ;th = ano_h[:]->ta
 
     b = addfile("/user_home/jyyin/dta/sim_lev100/angle/vr_azi.nc.nc","r")
     radial = b->wrad
@@ -51,63 +57,33 @@ begin
     d = addfile("/user_home/jyyin/dta/sim_lev100/angle/d7_t0_ta.nc","r")
     t_ano = d->ta
 
-    ;a1 = addfile("sim_lev100/bud_for/for_heat*","r")
-    ;t_heat = a1->t_heat 
-
-    ;a2 = addfile("sim_lev100/bud_for/for_pbl*","r")
-   ; t_pbl = a2->t_pbl
-
-    ;a3 = addfile("sim_lev100/bud_for/for_diff*","r")
-    ;t_diff = a3->t_diff
-
-    ;a33 = addfile("sim_lev100/bud_for/for_diff3*","r")
-    ;t_diff3 = a3->t_diff
-    
-    ;a4 = addfile("sim_lev100/bud_for/for_adv_v*","r")
-    ;t_adv_v = a4->t_adv_v
-
-    ;a5 = addfile("sim_lev100/bud_for/for_adv_h*","r")
-    ;t_adv_h = a5->t_adv_h
-
-    ;a6 = addfile("/user_home/jyyin/dta/sim9/bud_d3_12/adv.nc","r")
-    ;t_adv = a6->t_adv
-    
-    ;a7 = addfile("sim_lev100/bud/cu_d1_12.nc","r")
-    ;t_cu = a7->t_cu
-    
-    ;a8 = addfile("/user_home/jyyin/dta/sim9/bud_d3_12/ra.nc","r")
-    ;t_ra = a8->t_ra
-    
-    ;files = systemfunc("ls ./sim_lev100/tha/tano218")
-    ;ano_h = addfiles(files, "r")
-    ;ListSetType(ano_h, "cat")
-
-    ;ano_h = addfile("sim_lev100/tha/afor_t*","r")
-    ;th = ano_h->ta
-
     t_diff = t_diff1 + t_diff3
 
     t_sum = t_adv_h + t_adv_v + t_heat + t_pbl  + t_diff
     t_adv = t_adv_h + t_adv_v
-
-    t_sum = smth9(smth9(t_sum, 0.50, 0.25, False), 0.50, -0.25, False)
+     
+    ;t_sum = smth9(t_sum, 0.50, -0.25, False)
+    t_sum = runave_n(t_sum, 3, 0, 0)
+    ;t_sum = runave_n(t_sum, 3, 0, 0)
+    t_sum = runave_n(t_sum, 3, 0, 1)
+    ;t_sum = runave_n(t_sum, 3, 0, 1)
+    t_sum = runave_n(t_sum, 5, 0, 2)
     t_sum = runave_n(t_sum, 3, 0, 2)
-    t_sum = runave_n(t_sum, 3, 0, 2)
+    
+    t_adv_h = runave_n(t_adv_h, 5, 0, 2)
+    t_adv_v = runave_n(t_adv_v, 5, 0, 2)
+    t_heat  = runave_n(t_heat, 5, 0, 2)
+    t_pbl   = runave_n(t_pbl, 5, 0, 2)
+    t_diff  = runave_n(t_diff, 5, 0, 2)   
     
     ;t_sum = runave_n(t_sum, 3, 0, 0)
     ;t_sum = runave_n(t_sum, 5, 0, 1)
     ;t_sum = runave_n(t_sum, 5, 0, 2)
     
-    ;t_adv_h = runave_n(t_adv_h, 12, 0, 0)
-    ;t_adv_v = runave_n(t_adv_v, 12, 0, 0)
-    ;t_heat  = runave_n(t_heat, 12, 0, 0)
-    ;t_pbl   = runave_n(t_pbl, 12, 0, 0)
-    ;t_diff  = runave_n(t_diff, 12, 0, 0)
-    
-    printVarSummary(th)
+    printVarSummary(t_ano)
     printVarSummary(t_sum)
 
-    wks=gsn_open_wks("pdf","sim_lev100/56h_budget") 
+    wks=gsn_open_wks("pdf","sim_lev100/stages4_budget") 
     gsn_define_colormap(wks,"MPL_RdBu")  ; Change color map.
     gsn_reverse_colormap(wks)
 
@@ -116,12 +92,17 @@ begin
     ;;; 1h: 6 ;;; 2h: 12
 
     n = 0
-    dims = dimsizes(th)
+    dims = dimsizes(t_pbl)
     plots = new(12,graphic)
   
-    do it = 336,642,6
+    do i = 0,3,1
 
-    dt = 59
+    timi = (/198,276,396,492/) ;;;33h, 46h, 66h, 82h
+    dtg  = (/29,59,119,59/)
+    
+    it = timi(i)
+    dt = dtg(i)
+    
     nmin = 10*60
 
     ;th(it,:,:) = dim_sum_n(th(it-6:it+6,:,:), 0)/3.
@@ -139,14 +120,14 @@ begin
 
     t_adv_1h = t_adv_h_1h + t_adv_v_1h
 
-    t_temp = th(it+dt+1,:,:)-th(it,:,:)
+    t_temp = t_ano(it+dt+1,:,:)-t_ano(it,:,:)
     ;t_temp = th2(it,:,:)-th(it,:,:)
     ;t_temp(:,:) = smth9(t_temp(:,:), 0.5, -0.25, True)
     ;printVarSummary(t_cu_1h)
 
   gres                    = True
   plot9 = new(9,graphic)
-  plot6 = new(6,graphic)
+  plot6 = new(2,graphic)
 
   res = True
   res@cnFillOn            = True
@@ -178,25 +159,26 @@ begin
   res@cnLevelSelectionMode = "ExplicitLevels"   ; set explicit contour levels
   res@cnLevels     = (/-5,-4,-3,-2,-1,-0.5, 1, 3, 5, 7,  9, 11, 13,15 /)   ; set levels
   res@cnFillColors = (/10,20,30,40,50,  60,65,70,80,90,100,110,120,124,128/)
+  
+  time1 = it*10/60.
+  time2 = (it+dt+1)*10/60.
 
-  time = (it*10/60.)
-  res@gsnRightString = time +"h"
-  plot6(0) = gsn_csm_contour(wks, t_ano(it,35:64,:), res)
+  res@gsnRightString = time1 +"h"
+  plot6(0) = gsn_csm_contour(wks, t_ano(it,36:65,:), res)
 
-  res@gsnRightString = time+10 +"h"
-  plot6(1) = gsn_csm_contour(wks, t_ano(it+dt+1,35:64,:), res)
+  res@gsnRightString = time2 +"h"
+  plot6(1) = gsn_csm_contour(wks, t_ano(it+dt+1,36:65,:), res)
   
   ;res@gsnRightString = time+4 +"h"
-  ;plot6(2) = gsn_csm_contour(wks, t_ano(it+24,35:64,:), res)
+  ;plot6(2) = gsn_csm_contour(wks, t_ano(it+24,36:65,:), res)
   
   ;res@gsnRightString = time+6 +"h"
-  ;plot6(3) = gsn_csm_contour(wks, t_ano(it+54,35:64,:), res)
+  ;plot6(3) = gsn_csm_contour(wks, t_ano(it+54,36:65,:), res)
   
   ;res@gsnRightString = time+12 +"h"
-  ;plot6(4) = gsn_csm_contour(wks, t_ano(it+72,35:64,:), res)
-  
-  time = (it*10/60.)
-  gres@txString = "time = " + time +"h - "+ (time+10) + "h"
+  ;plot6(4) = gsn_csm_contour(wks, t_ano(it+72,36:65,:), res)
+
+  gres@txString = "time = " + time1 +"h - "+ time2 + "h"
   gsn_panel(wks, plot6, (/1,2/), gres)
 
   ares = True
@@ -262,27 +244,27 @@ begin
   end if
 
   ares@tiMainString = "Sum of RHS"
-  plot9(1) = gsn_csm_contour(wks,t_sum_1h(35:64,0:199)*nmin, ares)
+  plot9(1) = gsn_csm_contour(wks,t_sum_1h(36:65,0:199)*nmin, ares)
 
   ares@tiMainString = "Actual change"
-  plot9(0) = gsn_csm_contour(wks,t_temp(35:64,0:199), ares)
+  plot9(0) = gsn_csm_contour(wks,t_temp(36:65,0:199), ares)
 
-  t_dire = t_sum_1h(35:64,0:199)*nmin-t_temp(35:64,0:199)
+  t_dire = t_sum_1h(36:65,0:199)*nmin-t_temp(36:65,0:199)
 
   ares@tiMainString = "diffrence"
   plot9(2) = gsn_csm_contour(wks,t_dire(:,:), ares)
 
   ares@tiMainString = "Diff"
-  plot9(8) = gsn_csm_contour(wks,t_diff_1h(35:64,0:199)*nmin, ares)
+  plot9(8) = gsn_csm_contour(wks,t_diff_1h(36:65,0:199)*nmin, ares)
 
   ares@tiMainString = "Nonadiabatic heating"
-  plot9(7) = gsn_csm_contour(wks,t_heat_1h(35:64,0:199)*nmin, ares)
+  plot9(7) = gsn_csm_contour(wks,t_heat_1h(36:65,0:199)*nmin, ares)
 
   ares@tiMainString = "PBL"
-  plot9(6) = gsn_csm_contour(wks,t_pbl_1h(35:64,0:199)*nmin, ares)
+  plot9(6) = gsn_csm_contour(wks,t_pbl_1h(36:65,0:199)*nmin, ares)
   
   ares@tiMainString = "ADV"
-  plot9(5) = gsn_csm_contour(wks,t_adv_1h(35:64,0:199)*nmin, ares)
+  plot9(5) = gsn_csm_contour(wks,t_adv_1h(36:65,0:199)*nmin, ares)
 
 
   ;ares@cnLevelSelectionMode = "ExplicitLevels"   ; set explicit contour levels
@@ -301,12 +283,12 @@ begin
   end if
 
   ares@tiMainString = "Horizontal Advection"
-  plot9(3) = gsn_csm_contour(wks,t_adv_h_1h(35:64,0:199)*nmin, ares)
+  plot9(3) = gsn_csm_contour(wks,t_adv_h_1h(36:65,0:199)*nmin, ares)
   ;ares@tiMainString = "Radiation "
   ;plot9(6) = gsn_csm_contour(wks,t_ra_1h(11:41,:)*720, ares)
   
   ares@tiMainString = "Vertical Advection"
-  plot9(4) = gsn_csm_contour(wks,t_adv_v_1h(35:64,0:199)*nmin, ares)
+  plot9(4) = gsn_csm_contour(wks,t_adv_v_1h(36:65,0:199)*nmin, ares)
   
   ;gres = True
   ;gres@tiMainString = "theta Budget Term 1 hour"
@@ -314,14 +296,15 @@ begin
 
   ares@cnFillOn  = False
   ares@cnLinesOn = True 
-  ares@cnLineThicknessF = 1.2
+  ares@cnLineThicknessF = 1.5
+  ares@cnLineColor = "black"
  
   ares@cnLevelSelectionMode = "ExplicitLevels"   ; set explicit contour levels
-  ares@cnLevels     = (/-5,-4,-3,-2,-1, 0/)   ; set levels
+  ares@cnLevels     = (/-5,-4,-3,-2,-1.5,-1/)   ; set levels
   ;ares@cnFillColors = (/ 7, 23,33,59,71,101,149,152,167,183,199,215/)  ; set the colors to be used
 
-  ne1 = gsn_csm_contour(wks,t_sum_1h(35:64,0:199)*nmin, ares)
-  ne2 = gsn_csm_contour(wks,t_sum_1h(35:64,0:199)*nmin, ares)
+  ne1 = gsn_csm_contour(wks,t_temp(36:65,0:199), ares)
+  ne2 = gsn_csm_contour(wks,t_temp(36:65,0:199), ares)
 
   overlay(plot9(3), ne1)
   overlay(plot9(4), ne2)
