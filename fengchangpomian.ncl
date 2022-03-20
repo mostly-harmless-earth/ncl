@@ -92,6 +92,9 @@ begin
   d = addfile("/user_home/jyyin/dta/sim_lev100/angle/d7_t0_ta.nc","r")
   t_ano_for = d->ta
 
+  e = addfile("/user_home/jyyin/dta/sim_lev100/tk/hgtoflapsrate_avg.nc","r")
+  alti = e->alti
+
   radial = runave_n(radial, 5, 0, 1)
   radial = runave_n(radial, 5, 0, 2)
  
@@ -111,7 +114,7 @@ begin
   print(dims)
 
 
-  wks = gsn_open_wks("pdf","sim_lev100/wendu_d7")
+  wks = gsn_open_wks("pdf","sim_lev100/dlcd_wendu_d7")
   gsn_define_colormap(wks, "MPL_RdBu")
   ;gsn_reverse_colormap(wks)
 
@@ -163,12 +166,13 @@ begin
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Time loop ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-do it = 6, dims(0)-7, 6
+do it = 6, dims(0)-181, 36
 
   aradial = dim_sum_n(radial(it-6:it+6,:,:), 0)/3.
   atangential = dim_sum_n(tangential(it-6:it+6,:,:), 0)/3.
   awwnd = dim_sum_n(wwnd(it-6:it+6,:,:), 0)/3.
   atha  = dim_sum_n(t_ano_for(it-6:it+6,:,:), 0)/3.
+  acp  = dim_sum_n(alti(it-6:it+6,:), 0)/3.-36.
 
 ;------------------------ radial wind --------------------------------------------------
 
@@ -289,6 +293,22 @@ do it = 6, dims(0)-7, 6
   w_wind1 = gsn_csm_contour(wks,awwnd(36:65,0:199),res_w) 
 
 ;--------------------------------------------------------------------------------
+;---------------------- cold point tropopause -----------------------------------
+
+  res_al = True
+
+  res_al@gsnFrame = False
+  res_al@gsnDraw  = False
+
+  res_al@vpWidthF         = 0.7            ; Change the aspect ratio, but 
+  res_al@vpHeightF        = 0.4            ; make plot as large as possible.
+
+  res_al@xyLineColor = "yellow"
+  res_al@xyLineThicknessF = 1.5
+
+  al = gsn_csm_y(wks,acp,res_al)
+;--------------------------------------------------------------------------------
+
   res_t = res
 
   res_t@gsnFrame = False
@@ -353,9 +373,8 @@ do it = 6, dims(0)-7, 6
   res_t@cnLevels     = (/ -5, -4, -3,-2,-1,-0.5,0, 1, 3, 5, 7, 9,11, 13,15 /)   ; set levels
   res_t@cnFillColors = (/120,115,110,100,90,82,73,65,60,50,40,30,20, 10, 9,8/)  ; set the colors to be used
 
-  t_pl = gsn_csm_contour(wks,atha(0:65,0:199),res_t) 
+  t_pl = gsn_csm_contour(wks,atha(36:65,0:199),res_t) 
   
-
 ;--------------------------------------------------------------------------------
 
   
@@ -363,11 +382,12 @@ do it = 6, dims(0)-7, 6
   ;t_k(n+1) = t_gr
   ;t_k(n+1) = tangential_wind
   
-  ;overlay(t_k(n), poradial_wind)
-  ;overlay(t_k(n), neradial_wind)
+  overlay(t_k(n), poradial_wind)
+  overlay(t_k(n), neradial_wind)
+  overlay(t_k(n), al)
   ;overlay(t_k(n), zeradial_wind)
   ;overlay(t_k(n), tangential_wind)
-  ;overlay(t_k(n), w_wind)
+  overlay(t_k(n), w_wind)
   ;overlay(t_k(n+1), poradial_wind1)
   ;overlay(t_k(n+1), neradial_wind1)
   ;overlay(t_k(n+1), zeradial_wind1)

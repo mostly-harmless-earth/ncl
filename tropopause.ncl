@@ -66,21 +66,25 @@ begin
  dtdz@units = "k/km"
  dtdz@_FillValue = 9.96921e+36
 
+
   ;outfilet = addfile("sim_lev100/tk/dtdz.nc","c")
   ;outfilet->dtdz = dtdz
 
-  dtdz = abs(dtdz)
+  dtdz = -dtdz
 
    do it = 0,dims(0)-1,6
-    do ih = -(dims(1)-10),-30
-      do ir = 0,dims(2)-1
+     do ir = 0,dims(2)-1
+       do ih = 35,(dims(1)-20)
 
-        if (dtdz(it,-ih,ir).le.2) then
+        if (dtdz(it,ih,ir).le.2) then
 
-          lap = dim_avg_n(dtdz(it,-ih:(-ih+6),ir), 0)
+          lap = dim_avg_n(dtdz(it,ih:ih+6,ir), 0)
 
           if (lap.le.2) then
-            alti(it,ir)= -ih
+            
+            alti(it,ir)= ih
+            break
+          
           end if
               
         end if
@@ -142,5 +146,7 @@ begin
 
   outfilet = addfile("sim_lev100/tk/hgtoflapsrate_avg.nc","c")
   outfilet->alti = alti
+
+  asciiwrite("sim_lev100/tropopause_rate.txt",alti)
 
 end

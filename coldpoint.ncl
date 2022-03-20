@@ -13,7 +13,7 @@ begin
   a = addfile("/user_home/jyyin/dta/sim_lev100/tk/hgtoflapsrate_avg.nc","r")
   alti = a->alti
 
-  d = addfile("/user_home/jyyin/dta/sim_lev100/angle/angle_t0_tano.nc","r")
+  d = addfile("/user_home/jyyin/dta/sim_lev100/angle/d7_t0_ta.nc","r")
   t_ano_for = d->ta
 
   nr = 200
@@ -22,7 +22,7 @@ begin
   hei = fspan(500, 27500, 100)/1000
   print(hei)
 
-  dims = dimsizes(t_ano_for)
+  dims = dimsizes(alti)
   print(dims)
 
   wks = gsn_open_wks("pdf","sim_lev100/laps-avg-time")
@@ -149,7 +149,7 @@ end do
   gres_ta@lbOrientation        = "Vertical"
   gres_ta@txString = "cold point tropopause"
   
-  gsn_panel(wks, t_k(0:4), (/2,2/), gres_ta)
+  gsn_panel(wks, t_k(0:5), (/2,3/), gres_ta)
   ;gsn_panel(wks, t_k(8:15), (/4,2/), gres_ta)
   ;gsn_panel(wks, t_k(16:32), (/4,4/), gres_ta)
   ;gsn_panel(wks, t_k(32:47), (/4,4/), gres_ta)
@@ -159,7 +159,7 @@ end do
 
   ;--------------------------------------------------------------------------------
 
-  gsn_define_colormap(wks,"amwg256")
+  gsn_define_colormap(wks,"MPL_autumn")
 
   colorr = ispan(0, 254, 1)
   ares = True

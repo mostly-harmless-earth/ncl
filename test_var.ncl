@@ -36,7 +36,7 @@ do in = 0, 23,1
     ;tb    =   ; calculate pressure across all time, levels
     ;t_pbl   = wrf_user_getvar(a, "te_temf", -1);
     ;p   = wrf_user_getvar(a, "p", 2)
-    dbz = wrf_user_getvar(a, "dbz", -1)
+    qv = wrf_user_getvar(a, "QVAPOR", -1)
     
     ;th = wrf_user_getvar(a,"th",-1)
     ;z = wrf_user_getvar(a, "z", -1)
@@ -73,6 +73,9 @@ do in = 0, 23,1
     
     ;outfilet = addfile("sim_lev100/wind10/wnd0"+nn(in)+".nc","c")
     ;outfilet->wnd = wnd
+
+    outfilet = addfile("sim_lev100/water/qv"+nn(in)+".nc","c")
+    outfilet->qv = qv
 
     ;p = wrf_user_getvar(a,"p",-1)
     ;printVarSummary(p)

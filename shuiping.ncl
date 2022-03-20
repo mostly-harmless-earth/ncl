@@ -93,9 +93,9 @@ begin
     plot = new(200, graphic)
     n=0
 
-do it = 36, 96, dt
+do it = 48, 96, dt
     
-    hi = (/38,42,46,50/)
+    hi = (/38,43,48,53/)
     hei = fspan(500, 27500, 100)/1000
     
 
@@ -124,6 +124,7 @@ do it = 36, 96, dt
         res@tmXBMode    = "Explicit"
         res@tmXBLabels  = r2(::20)
         res@tmXBValues  = r1(::20)
+
 
         ;res@tmXBMode    = "Explicit"
         ;res@tmXBValues  = (/0, 22, 43, 64, 85,107,128/)
@@ -182,23 +183,25 @@ do it = 36, 96, dt
         wres@cnLinesOn           = True
         wres@cnLineLabelsOn      = False
         wres@cnInfoLabelOn       = False
-        wres@cnLineThicknessF    = 0.8
+        wres@cnLineThicknessF    = 0.6
 
         ;wres@cnLevelSelectionMode = "ManualLevels" 
         ;wres@cnLevelSpacingF = 0.2
         ;wres@cnMinLevelValF  = -1.
         ;wres@cnMaxLevelValF  = 1.
         wres@cnLevelSelectionMode = "ExplicitLevels"   ; set explicit contour levels
-        wres@cnLevels     = (/1.,5.,10.,15./)   ; set levels
+        wres@cnLevels     = (/1.,5.,10.,15.,20./)   ; set levels
         ;wres@cnFillColors = (/  10,  15,  20,  30,  40,  60,  0, 70,75,80,85,90,95,100,105,110,112/) 
         wres@cnMonoLineColor  = False
-        wres@cnLineColors = (/"seagreen1","seagreen2","seagreen3","seagreen4"/)
+        wres@cnLineColors = (/"darkslategray3","darkslategray4","seagreen2","seagreen3","seagreen4"/)
 
         ;w_hori1 = dim_avg_n(ww(:,47:49,:,:),1)
         ;w_hori2 = dim_avg_n(ww(:,49:51,:,:),1)
         ;w_hori3 = dim_avg_n(ww(:,53:55,:,:),1)
 
         w_hori = ww(:,hi(in),:,:)
+        wres@gsnLeftString = " "
+        wres@gsnRightString = " "
 
         wplot = gsn_csm_contour(wks,w_hori(it,150:270,150:270),wres)
 
@@ -235,7 +238,8 @@ do it = 36, 96, dt
          ; cnres@cnMaxLevelValF  = 12       
       ;end if
     ;end if
-    
+        
+        cnres@lbLabelBarOn        = False 
         cnres@gsnLeftString = sprintf("%6.2f",hei(hi(in))) +" Km"
         cnres@gsnRightString = "time = " + time + "h " 
         plot(n) =  gsn_csm_contour(wks,t_hori(it,150:270,150:270), cnres)
@@ -256,7 +260,7 @@ end do
     gres@gsnPanelLabelBar = True
     gres@lbOrientation  = "Vertical"
     ;gres@txString = 
-    gsn_panel(wks, plot(0:19), (/5,4/), gres)
+    gsn_panel(wks, plot(0:15), (/4,4/), gres)
  
     ;gsn_panel(wks, plot(24:47), (/4,6/), gres)
     ;gsn_panel(wks, plot(48:59), (/4,6/), gres)
