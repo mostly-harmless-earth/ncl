@@ -126,6 +126,9 @@ begin
   res@gsnFrame = False
   res@gsnDraw  = False
 
+  res@tmXTOn                  = False
+  ;res@tmYROn                  = False
+
   res@vpWidthF         = 0.7            ; Change the aspect ratio, but 
   res@vpHeightF        = 0.4            ; make plot as large as possible.
 
@@ -166,7 +169,7 @@ begin
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Time loop ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-do it = 6, dims(0)-181, 36
+do it = 72, dims(0)-181,72
 
   aradial = dim_sum_n(radial(it-6:it+6,:,:), 0)/3.
   atangential = dim_sum_n(tangential(it-6:it+6,:,:), 0)/3.
@@ -178,7 +181,8 @@ do it = 6, dims(0)-181, 36
 
   res_radial = res
   res_radial@gsnLeftString  = "Temprature Anomaly (shading,K) ~C~Vr(contour,black) ~C~W(contour,green)"
-  res_radial@gsnRightString = " ~C~-2,-1.5,-1,1,3,5,7,11,15,20,25 ~C~-0.1,-0.01,0.1,0.25,1,2" 
+  ;res_radial@gsnRightString = " ~C~-2,-1.5,-1,1,3,5,7,11,15,20,25 ~C~-0.1,-0.01,0.1,0.25,1,2" 
+  res_radial@gsnRightString = ". ~C~ T = "+ it*10/60. +" h" 
   res_radial@cnFillOn = False
   res_radial@cnLinesOn = True
 
@@ -288,13 +292,14 @@ do it = 6, dims(0)-181, 36
   ;res_w@cnMinLevelValF   = -5.
   ;res_w@cnLevelSpacingF = 3.
   res_w@cnLineThicknessF  = 1.0
+
+
   
   w_wind = gsn_csm_contour(wks,awwnd(36:65,0:199),res_w) 
   w_wind1 = gsn_csm_contour(wks,awwnd(36:65,0:199),res_w) 
 
 ;--------------------------------------------------------------------------------
 ;---------------------- cold point tropopause -----------------------------------
-
   res_al = True
 
   res_al@gsnFrame = False
@@ -319,15 +324,15 @@ do it = 6, dims(0)-181, 36
   
   time = (it*10)/60./24.
   ;res_t@tiYAxisString = "Day  " + (time-1) + " - " + time
-  res_t@tiMainString  = "T = "+ it*10/60. +" h" 
+  ;res_t@tiMainString  = "T = "+ it*10/60. +" h" 
 
-  ;res_t@tmYLMode    = "Explicit"
-  ;res_t@tmYLValues  = (/0, 7, 14,21,28/)
-  ;res_t@tmYLLabels  = (/10,12,14,16,18/)
+  res_t@tmYLMode    = "Explicit"
+  res_t@tmYLValues  = (/0, 7, 14,21,28/)
+  res_t@tmYLLabels  = (/10,12,14,16,18/)
 
-  ;res_t@tmXBMode    = "Explicit"
-  ;res_t@tmXBValues  = (/0, 50,100,150,199/)
-  ;res_t@tmXBLabels  = (/0,100,200,300,400/)
+  res_t@tmXBMode    = "Explicit"
+  res_t@tmXBValues  = (/0, 50,100,150,199/)
+  res_t@tmXBLabels  = (/0,100,200,300,400/)
 
     ;res_t@cnLevelSelectionMode = "ManualLevels"   ; set explicit contour levels
     ;if (it.le.164) then
@@ -404,7 +409,7 @@ end do
   gres_ta@gsnPanelLabelBar = True
   gres_ta@lbOrientation        = "Vertical"
   
-  gsn_panel(wks, t_k(0:23), (/6,4/), gres_ta)
+  gsn_panel(wks, t_k(0:11), (/4,3/), gres_ta)
   gsn_panel(wks, t_k(24:47), (/6,4/), gres_ta)
   gsn_panel(wks, t_k(48:71), (/6,4/), gres_ta)
   gsn_panel(wks, t_k(72:95), (/6,4/), gres_ta)

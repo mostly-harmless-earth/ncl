@@ -112,6 +112,11 @@ end do
     ListSetType(a, "cat")
     t_ano = a[:]->ta
 
+    files = systemfunc("ls ./sim_lev100/angle/vertical_wind2*")
+    b = addfiles(files, "r")
+    ListSetType(b, "cat")
+    ww = b[:]->ww
+
     ae = addfile("/user_home/jyyin/dta/sim_lev100/d01/tha100.nc","r")
     t_d01 = ae->th
 
@@ -162,7 +167,7 @@ end do
     ;t_sum = runave_n(t_sum, 5, 0, 1)
     ;t_sum = runave_n(t_sum, 5, 0, 2)
 
-    wks=gsn_open_wks("pdf","sim_lev100/hor_bud_tt") 
+    wks=gsn_open_wks("pdf","sim_lev100/cb_heat") 
     gsn_define_colormap(wks,"MPL_RdBu")  ; Change color map.
     gsn_reverse_colormap(wks)
 
@@ -253,15 +258,34 @@ end do
   time1 = it*10/60.+24
   time2 = (it+dt+1)*10/60.+24
 
-  btano1 = ndtooned(t_ano(it,48,:,:))
-  btano2 = ndtooned(t_ano(it+dt+1,48,:,:))
+  ilev = 50
 
+  btano1 = ndtooned(t_ano(it,ilev,:,:))
+  btano2 = ndtooned(t_ano(it+dt+1,ilev,:,:))
+  
   res@gsnRightString = time1 +"h"
   plot6(0) = gsn_csm_contour(wks, btano1, tres)
 
   res@gsnRightString = time2 +"h"
   plot6(1) = gsn_csm_contour(wks, btano2, tres)
-  
+
+  vpres = res
+
+  vpres@cnLinesOn = True
+  vpres@cnFillOn = False
+
+  vpres@cnLevelSelectionMode = "ExplicitLevels"   ; set explicit contour levels
+  vpres@cnLevels     = (/5.,10.,15.,20./)   ; set levels
+  ;wres@cnFillColors = (/  10,  15,  20,  30,  40,  60,  0, 70,75,80,85,90,95,100,105,110,112/) 
+  vpres@cnMonoLineColor  = False
+  vpres@cnLineColors = (/"seagreen1","seagreen2","seagreen3","seagreen4"/)
+
+  bw1 = ndtooned(ww(it,ilev,:,:))
+  bw2 = ndtooned(ww(it+dt+1,ilev,:,:))
+
+  vp1 = gsn_csm_contour(wks, bw1, vpres)
+  vp2 = gsn_csm_contour(wks, bw2, vpres)
+
   ;res@gsnRightString = time+4 +"h"
   ;plot6(2) = gsn_csm_contour(wks, t_ano(it+24,36:65,:), res)
   
@@ -271,7 +295,10 @@ end do
   ;res@gsnRightString = time+12 +"h"
   ;plot6(4) = gsn_csm_contour(wks, t_ano(it+72,36:65,:), res)
 
-  gres@txString = "time = " + time1 +"h - "+ time2 + "h" +"at 14km"
+  overlay(plot6(0), vp1)
+  overlay(plot6(1), vp2)
+
+  gres@txString = "time = " + time1 +"h - "+ time2 + "h"
   gsn_panel(wks, plot6, (/1,2/), gres)
 
   ares = True
@@ -320,7 +347,7 @@ end do
 
   ;ares@cnLevelSelectionMode = "ExplicitLevels"   ; set explicit contour levels
   ;ares@cnLevels     = (/-10,-0.8,-0.6,-0.4,-0.2, 0,   2,  4,  6,  8,10/)   ; set levels
-  ;ares@cnFillColors = (/ 7, 23,33,59,71,101,148,152,167,183,199,215/)  ; set the colors to be used
+  ;ares@cnFillColors = (/ 7, 23,33,59,71,101,1ilev,152,167,183,199,215/)  ; set the colors to be used
 
   ;ares@lbLabelBarOn        = False           ; turn off individual cb's
   ;ares@lbOrientation        = "Vertical"
@@ -332,18 +359,18 @@ end do
   ares@cnLevelSelectionMode = "ManualLevels"   ; set explicit contour levels  
   if (it.le.1000) then 
     ares@cnLevelSpacingF = 0.5
-    ares@cnMinLevelValF  = -5.0
-    ares@cnMaxLevelValF  = 5.0
+    ares@cnMinLevelValF  = -3.0
+    ares@cnMaxLevelValF  = 3.0
   else
     ares@cnLevelSpacingF = 1.
     ares@cnMinLevelValF  = -6.
     ares@cnMaxLevelValF  = 6.
   end if
 
-  t_dire = t_sum_1h(48,:,:)*nmin-t_temp(48,:,:)
+  t_dire = t_sum_1h(ilev,:,:)*nmin-t_temp(ilev,:,:)
   
-  bsum = ndtooned(t_sum_1h(48,:,:))
-  bt_temp = ndtooned(t_temp(48,:,:))
+  bsum = ndtooned(t_sum_1h(ilev,:,:))
+  bt_temp = ndtooned(t_temp(ilev,:,:))
   bt_dire = ndtooned(t_dire(:,:))
 
   ares@tiMainString = "Sum of RHS"
@@ -363,13 +390,13 @@ end do
   ares@cnMinLevelValF  = -3.0
   ares@cnMaxLevelValF  = 3.0
   
-  bt_diff_1h = ndtooned(t_diff_1h(48,:,:))
-  bt_heat_1h = ndtooned(t_heat_1h(48,:,:))
-  bt_adv_1h  = ndtooned(t_adv_1h(48,:,:))
-  bt_adv_v_1h = ndtooned(t_adv_v_1h(48,:,:))
-  bt_adv_h_1h = ndtooned(t_adv_h_1h(48,:,:))
-  bt_pbl_1h = ndtooned(t_pbl_1h(48,:,:))
-  ;bt_adv_h_1h = ndtooned(t_adv_h_1h(48,:,:))
+  bt_diff_1h = ndtooned(t_diff_1h(ilev,:,:))
+  bt_heat_1h = ndtooned(t_heat_1h(ilev,:,:))
+  bt_adv_1h  = ndtooned(t_adv_1h(ilev,:,:))
+  bt_adv_v_1h = ndtooned(t_adv_v_1h(ilev,:,:))
+  bt_adv_h_1h = ndtooned(t_adv_h_1h(ilev,:,:))
+  bt_pbl_1h = ndtooned(t_pbl_1h(ilev,:,:))
+  ;bt_adv_h_1h = ndtooned(t_adv_h_1h(ilev,:,:))
 
   ares@tiMainString = "Diff"
   plot9(8) = gsn_csm_contour(wks,bt_diff_1h*nmin, ares)
@@ -385,7 +412,7 @@ end do
 
   ;ares@cnLevelSelectionMode = "ExplicitLevels"   ; set explicit contour levels
   ;ares@cnLevels     = (/-100,-80,-60,-40,-20, 0,   20,  40,  60,  80,100/)   ; set levels
-  ;ares@cnFillColors = (/ 7, 23,33,59,71,101,148,152,167,183,199,215/)  ; set the colors to be used
+  ;ares@cnFillColors = (/ 7, 23,33,59,71,101,1ilev,152,167,183,199,215/)  ; set the colors to be used
 
   ares@cnLevelSelectionMode = "ManualLevels"   ; set explicit contour levels
   ;if (it.le.400) then 
@@ -417,10 +444,10 @@ end do
  
   ;ares@cnLevelSelectionMode = "ExplicitLevels"   ; set explicit contour levels
   ;ares@cnLevels     = (/-5,-4,-3,-2,-1.5,-1/)   ; set levels
-  ;ares@cnFillColors = (/ 7, 23,33,59,71,101,148,152,167,183,199,215/)  ; set the colors to be used
+  ;ares@cnFillColors = (/ 7, 23,33,59,71,101,1ilev,152,167,183,199,215/)  ; set the colors to be used
 
-  ;ne1 = gsn_csm_contour(wks,t_temp(48,:,:), ares)
-  ;ne2 = gsn_csm_contour(wks,t_temp(48,:,:), ares)
+  ;ne1 = gsn_csm_contour(wks,t_temp(ilev,:,:), ares)
+  ;ne2 = gsn_csm_contour(wks,t_temp(ilev,:,:), ares)
 
   ;overlay(plot9(3), ne1)
   ;overlay(plot9(4), ne2)
@@ -431,18 +458,55 @@ end do
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+    dim = dimsizes(t_heat)
+
+    ll = 0
+    tcho = new(dim(1), float)
+    tcho = 0.
+    
+    do ctt = it, it+dt+1,6
+      do i = 1, 50
+        do j = 1, 359
+        
+          if (ismissing(ww(ctt,38,i,j))) then
+            
+            print("Missing at" + i +" / " + j)
+            continue
+
+          end if
+          
+          if (ww(ctt,38,i,j).ge.10.) then
+            
+            print("location = " + i +" / " + j +"when time = " + ctt)
+            
+            ;lx(ll) = i
+            ;ly(ll) = j
+            tcho(:) = t_heat(ctt,:,i,j) + tcho(:)
+            ll = ll+1
+
+          end if
+        
+        end do
+      end do
+    end do
+    
+    if (ll.ge.1) then
+      print("numbers = "+ll)
+      tcho(:) = tcho(:)/(ll+0.0)
+    end if
+
   vres = True
   vres@gsnDraw = False
   vres@gsnFrame = False
   
   vres@vpHeightF = 0.7
   vres@vpWidthF = 0.4
-
-  ;vres@trXMinF          = -7.           ; Set min/max of left Y axis
-  ;vres@trXMaxF          = 7.
+  
+  ;vres@trYMinF  = -800.           ; Set min/max of left Y axis
+  ;vres@trYMaxF  = 800.
 
   vres@gsnXRefLine  = 0.; four X reference lines 
-  vres@gsnXRefLineThicknessF = 1.2  
+  vres@gsnXRefLineThicknessF = 1.0  
 
   ;tcho = t_ano(it,:,236,203)+t_ano(it,:,237,202)+t_ano(it,:,237,203))/3
 
@@ -450,22 +514,52 @@ end do
   ;vres@tmYLValues  = (/0, 7, 14,21,28/)
   ;vres@tmYLLabels  = (/10,12,14,16,18/)
 
-  
+  bud = new((/5,dim(1)/), float)
 
-  tcho2 = dim_avg_n(t_heat_1h(:,:,:),2)
-  tcho3 = dim_avg_n(tcho2(:,25:75),1) ;;;;;;;;;;
+  do ir = 0,60,20
+
+  tcho2 = dim_avg_n(t_heat_1h(:,ir:ir+20,:),1)
+  tcho3 = dim_avg_n(tcho2,1) 
+  bud(0,:) = tcho3
+  
+  tcho2 = dim_avg_n(t_adv_1h(:,ir:ir+20,:),1)
+  tcho3 = dim_avg_n(tcho2,1) 
+  bud(1,:) = tcho3
+  
+  tcho2 = dim_avg_n(t_adv_v_1h(:,ir:ir+20,:),1)
+  tcho3 = dim_avg_n(tcho2,1) 
+  bud(2,:) = tcho3
+
+  tcho2 = dim_avg_n(t_adv_h_1h(:,ir:ir+20,:),1)
+  tcho3 = dim_avg_n(tcho2,1) 
+  bud(3,:) = tcho3
+
+  tcho2 = dim_avg_n(t_temp(:,ir:ir+20,:),1)
+  tcho3 = dim_avg_n(tcho2,1) 
+  bud(4,:) = tcho3
 
   printVarSummary(tcho2)
   printVarSummary(tcho3)
-  
-  vp(x) = gsn_csm_xy(wks, tcho1(0:65), hei(0:65),vres)
-  vp(x+4) = gsn_csm_xy(wks, tcho3(0:65), hei(0:65),vres) 
+  hei = fspan(500, 27500, 100)/1000
+
+  ;vres@xyLineColor = "green"
+  vres@xyLineColors     = (/10,50,110,90,150/) ; colors chosen
+  vres@xyDashPatterns   = 0.      ; make all lines solid
+  vres@xyLineThicknessF = 2.2
+  vres@pmLegendDisplayMode    = "Always"            ; turn on legend
+  vres@xyExplicitLegendLabels = (/"H_Diabatic"," Total Advection","Vertical Advection", \
+                                 "horizontal Advection","Actual Change"/)
+
+
+  vp(0) = gsn_csm_xy(wks, tcho(40:65)*dt*nmin, hei(40:65),vres)
+  vp(1) = gsn_csm_xy(wks, bud(:,40:65)*dt*nmin, hei(40:65),vres) 
+
+  gsn_panel(wks, vp, (/1,2/), gres)
+
+end do
   
   ;vp(x+1) = gsn_csm_y(wks, t_ano(it,36:65,237,202), vres)
   ;vp(x+2) = gsn_csm_y(wks, t_ano(it,36:65,237,203), vres) 
-  
-  x = x+1
-
 
 ;end do
 

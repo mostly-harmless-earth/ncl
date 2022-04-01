@@ -9,17 +9,41 @@ begin
 ; The WRF ARW input file.  
 ; This needs to have a ".nc" appended, so just do it.
 
-
   ;a = addfile("/user_home/jyyin/dta/sim_lev100/tk/hgtoflapsrate_avg.nc","r")
   a = addfile("/user_home/jyyin/dta/sim_lev100/tk/hgtoflapsrate_avg.nc","r")
   alti = a->alti(::6,:)
 
-  smin = asciiread("sim_lev100/slp_min.txt",(1008),"float")
+  b = addfile("/user_home/jyyin/dta/sim_lev100/tk/tk_azi.nc","r")
+  tk = b->tk(::6,:,:)
 
-  dims = dimsizes(alti)
+  ;smin_all = asciiread("sim_lev100/slp_min.txt",(1008),"float")
+  ;smin = smin_all(::6)
+
+  printVarSummary(alti)
+  printVarSummary(tk)
+  ;printVarSummary(smin)
+  
+  dims = dimsizes(tk)
   print(dims)
+  
 
-  wks = gsn_open_wks("pdf","sim_lev100/tp-height-time")
+  t_prf = new((/3,dims(0),dims(1)/), float)
+
+  t_avg_time = dim_avg_n(tk,0)
+  t_en = dim_avg_n(t_avg_time(:,100:199),1)
+  t_avg = conform(tk, t_en, 1)
+
+  tk = tk - t_avg
+
+  t_prf(0,:,:) = dim_avg_n(tk(:,:,0:16), 2)
+  t_prf(1,:,:) = dim_avg_n(tk(:,:,20:45), 2)
+  t_prf(2,:,:) = dim_avg_n(tk(:,:,50:180), 2)
+
+  t_alltime_avg = dim_avg_n(t_prf, 1)
+
+  printVarSummary(t_prf)
+
+  wks = gsn_open_wks("pdf","sim_lev100/pro_tk")
   gsn_define_colormap(wks, "MPL_RdBu")
   ;gsn_reverse_colormap(wks)
 
@@ -99,6 +123,19 @@ begin
 
   al = gsn_csm_y(wks,acp,res_al)
 
+  res_al@vpWidthF         = 0.4            ; Change the aspect ratio, but 
+  res_al@vpHeightF        = 0.7            ; make plot as large as possible.
+  res_al@tmYLMode = "Automatic"
+  delete(res_al@pmLegendDisplayMode)  
+
+
+  ;do it = 0, dims(0)-1,12
+    
+    pl=gsn_csm_xy(wks,t_alltime_avg,hei(0:90),res_al)
+
+  ;end do
+
+
   ;--------------------------------------------------------------------------------
 
   gsn_define_colormap(wks,"MPL_autumn")
@@ -119,15 +156,7 @@ begin
   ;ares@tmYLValues  = (/0, 7, 14,21,28/)
   ;ares@tmYLLabels  = (/10,12,14,16,18/)
 
-  cp = alti
-  cp = runave_n(cp, 3, 0, 1)
-  ;pk = new(100,graphic)
 
-  do it = 0, dims(0)-73,72
-
-    cp(it,:) = dim_sum_n(alti(it:it+72,:), 0)/12.
-    
-  end do
 
 ;pk = gsn_csm_y(wks,cp(::72,:),ares)
 
