@@ -161,8 +161,6 @@ end do
 ;-------------------------------------------------------------------------------------
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; vertical interp & decoupled mass;;;;;;;;;;;;;;;;;;;;;;;
 
-    hei = fspan(500, 27000, 100)
-
     t_adv_h = new((/nz,nx,ny/), "float")
     t_adv_v = t_adv_h
 
@@ -212,6 +210,7 @@ end do
  ;tp_ra   = new((/nz,nr*360/),"float")
 
 
+; how to check?
  tp_adv_v = linint2_points(lat,lon,t_adv_v,False,lat_p,lon_p,1)
  tp_adv_h = linint2_points(lat,lon,t_adv_h,False,lat_p,lon_p,1)
 

@@ -25,7 +25,7 @@ begin
 
   din = dimsizes(nn)
 
- do in = 0, din-1, 1
+ do in = 0, 3, 1
 
   print(in)
     

@@ -293,8 +293,6 @@ do it = 72, dims(0)-181,72
   ;res_w@cnLevelSpacingF = 3.
   res_w@cnLineThicknessF  = 1.0
 
-
-  
   w_wind = gsn_csm_contour(wks,awwnd(36:65,0:199),res_w) 
   w_wind1 = gsn_csm_contour(wks,awwnd(36:65,0:199),res_w) 
 
