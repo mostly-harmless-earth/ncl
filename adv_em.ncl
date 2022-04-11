@@ -21,30 +21,24 @@ begin
     ;c = addfile("/user_home/jyyin/dta/sim_lev100/t_wind_perh/vertical_wind"+nn1(in)+".nc","r")
     ;teh = addfile("/user_home/jyyin/dta/sim_lev100/t_wind_perh/cirtano"+nn1(in)+".nc","r")
 
-    files = systemfunc("ls ./sim_lev100/t_wind_perh/radial_wind5*")
+    nn = (/1,2,3,4,5,6,7/)
+
+  do in = 3, 3
+
+    files = systemfunc("ls ./sim_lev100/t_wind_perh/radial_wind"+nn(in)+"*")
     ano_h = addfiles(files, "r")
     ListSetType(ano_h, "cat")
     uu = ano_h[:]->wrad
     
-    files = systemfunc("ls ./sim_lev100/t_wind_perh/vertical_wind5*")
+    files = systemfunc("ls ./sim_lev100/t_wind_perh/vertical_wind"+nn(in)+"*")
     ano_h = addfiles(files, "r")
     ListSetType(ano_h, "cat")  
     ww = ano_h[:]->ww
 
-    files = systemfunc("ls ./sim_lev100/t_wind_perh/cirtano5*")
+    files = systemfunc("ls ./sim_lev100/t_wind_perh/cirtano"+nn(in)+"*")
     ano_h = addfiles(files, "r")
     ListSetType(ano_h, "cat")
     theta = ano_h[:]->ta
-
-    files1 = systemfunc("ls ./sim_lev100/bud/ang_adv_v_05*")
-    ano_h1 = addfiles(files1, "r")
-    ListSetType(ano_h1, "cat")
-    adv_v = ano_h1[:]->t_adv_v
-
-    files1 = systemfunc("ls ./sim_lev100/bud/ang_adv_h_05*")
-    ano_h1 = addfiles(files1, "r")
-    ListSetType(ano_h1, "cat")
-    adv_h = ano_h1[:]->t_adv_h
 
     ;uu = runave_n(uu, 3, 0, 0)
     ;ww = runave_n(ww, 3, 0, 0)
@@ -59,9 +53,9 @@ begin
     ;theta = runave_n(theta, 3, 0, 2)
 
     delete(ano_h)
-    delete(ano_h1)
+    ;delete(ano_h1)
     delete(files)
-    delete(files1)
+    ;delete(files1)
 
 ;;;;;;;;;;;;;;;;;; calculate the mean ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -94,6 +88,9 @@ begin
     we = ww-wmt
     thetae = theta - thetamt
 
+    print(um(5,5,5)-umt(5,5,5,5))
+    print(um(5,5,5)-umt(5,5,5,10))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
     radve = new((/dis(0),dis(1),dis(2)/), float)
@@ -104,7 +101,7 @@ begin
     total_adv_v1 = new(dis, float)
     total_adv_h1 = new(dis, float)
     
-    r = fspan(0, 400, 200)*1000
+    r = fspan(0.01, 400, 200)*1000
     dr = r(10)-r(9)
     print(dr)
 
@@ -125,31 +122,56 @@ begin
     printVarSummary(um)
     printVarSummary(thetam)
     printVarSummary(uthm)
-    
-    do ir = 1, dis(2)-2
+
+    rr = conform_dims(dis(0:2), r, 2)
+
+    dtmdr = center_finite_diff_n(thetam, dr, False, 0, 2)
+    duthmdr = center_finite_diff_n(uthm, dr, False, 0, 2)
+    dtdr = center_finite_diff_n(theta, dr, False, 0, 2)
+    dtedr = center_finite_diff_n(thetae, dr, False, 0, 2)
+
+    printVarSummary(duthmdr)
+    printVarSummary(rr)
+
+    radvm = -1*um*dtmdr
+    radve = -1*duthmdr-uthm/rr
+    total_adv_h1 = -1*uu*dtdr
+
+    wang_h = -1*dim_avg_n(ue*dtedr,3)
+
+    ;do ir = 0, dis(2)-1
 
 ; check diff 
-        radvm(:,:,ir) = -1*um(:,:,ir)*(thetam(:,:,ir+1)-thetam(:,:,ir-1))/2./dr
-        radve(:,:,ir) = -1*(uthm(:,:,ir+1)-uthm(:,:,ir+1))/2./dr-uthm(:,:,ir)/r(ir)
+        ;radvm(:,:,ir) = -1*um(:,:,ir)*(thetam(:,:,ir+1)-thetam(:,:,ir-1))/2./dr
+        ;radve(:,:,ir) = -1*(uthm(:,:,ir+1)-uthm(:,:,ir-1))/2./dr-uthm(:,:,ir)/r(ir)
 
-        total_adv_h1(:,:,ir,:) = -1*uu(:,:,ir,:)*(theta(:,:,ir+1,:)-theta(:,:,ir-1,:))/dr
-        print("r = " +ir)
+        ;total_adv_h1(:,:,ir,:) = -1*uu(:,:,ir,:)*(theta(:,:,ir+1,:)-theta(:,:,ir-1,:))/2./dr
+
+        ;print("r = " +ir)
     
-    end do
+    ;end do
 
-    do ih = 1, dis(1)-2
+    dtmdz = center_finite_diff_n(thetam, dz, False, 0, 1)
+    dwthmdz = center_finite_diff_n(wthm, dz, False, 0, 1)
+    dtdz = center_finite_diff_n(theta, dz, False, 0, 1)
+    dtedz = center_finite_diff_n(thetae, dz, False, 0, 1)
 
-        vadvm(:,ih,:) = -1*wm(:,ih,:)*(thetam(:,ih+1,:)-thetam(:,ih-1,:))/2./dz
-        vadve(:,ih,:) = -1*(wthm(:,ih,:)-wthm(:,ih-1,:))/dz
+    vadvm = -1*wm*dtmdz
+    vadve = -1*dwthmdz
+    total_adv_v1 = -1*ww*dtdz
 
-        total_adv_v1(:,ih,:,:) = -1*ww(:,ih,:,:)*(theta(:,ih+1,:,:)-theta(:,ih-1,:,:))/2./dz
-        print("h = "+ih)
+    wang_v = -1*dim_avg_n(we*dtedz, 3)
+
+    ;do ih = 1, dis(1)-2
+
+        ;vadvm(:,ih,:) = -1*wm(:,ih,:)*(thetam(:,ih+1,:)-thetam(:,ih-1,:))/2./dz
+        ;vadve(:,ih,:) = -1*(wthm(:,ih+1,:)-wthm(:,ih-1,:))/2./dz
+
+        ;total_adv_v1(:,ih,:,:) = -1*ww(:,ih,:,:)*(theta(:,ih+1,:,:)-theta(:,ih-1,:,:))/2./dz
+        ;print("h = "+ih)
     
-    end do
-
-    total_adv_v = dim_avg_n(total_adv_v1,3)
-    total_adv_h = dim_avg_n(total_adv_h1,3)
-
+   ; end do
+    
     delete(uu)
     delete(ww)
     delete(theta)
@@ -160,6 +182,35 @@ begin
     delete(thetam)
     delete(thetae)
 
+    delete(dtdr)
+    delete(dtdz)
+    delete(dtedr)
+    delete(dtedz)
+
+    files1 = systemfunc("ls ./sim_lev100/bud/angle/ang_adv_v_0"+nn(in)+"*")
+    ano_h1 = addfiles(files1, "r")
+    ListSetType(ano_h1, "cat")
+    adv_v = ano_h1[:]->t_adv_v
+
+    files1 = systemfunc("ls ./sim_lev100/bud/angle/ang_adv_h_0"+nn(in)+"*")
+    ano_h1 = addfiles(files1, "r")
+    ListSetType(ano_h1, "cat")
+    adv_h = ano_h1[:]->t_adv_h
+
+    delete(ano_h1)
+    ;delete(files)
+    delete(files1)
+
+    adv_vp = dim_avg_n(adv_v,3)
+    adv_hp = dim_avg_n(adv_h,3)
+
+    delete(adv_v)
+    delete(adv_h)
+
+
+    total_adv_v = dim_avg_n(total_adv_v1,3)
+    total_adv_h = dim_avg_n(total_adv_h1,3)
+
     d = addfile("/user_home/jyyin/dta/sim_lev100/angle/d7_t0_ta.nc","r")
     t_ano = d->ta
 
@@ -168,8 +219,8 @@ begin
     ;it = 12
     ;dt = 6
     
-    it = 0
-    dt = 36
+    it = 72
+    dt = 35
 
     ns = 10*60.
 
@@ -193,11 +244,11 @@ begin
     ;vadvm_6h = runave_n(vadvm_6h, 3, 0, 1)
     ;vadve_6h = runave_n(radve_6h, 3, 0, 1)
 
-    adv_vp = dim_avg_n(adv_v,3)
     model_adv_v_6h = dim_sum_n(adv_vp(it:it+dt,:,:), 0)
-
-    adv_hp = dim_avg_n(adv_h,3)
     model_adv_h_6h = dim_sum_n(adv_hp(it:it+dt,:,:), 0)
+
+    wang_h_6h = dim_sum_n(wang_h(it:it+dt,:,:), 0)
+    wang_v_6h = dim_sum_n(wang_v(it:it+dt,:,:), 0)
 
     radv_6h = radvm_6h + radve_6h
     vadv_6h = vadvm_6h + vadve_6h
@@ -210,23 +261,10 @@ begin
     h = radve + radvm
     v = vadve + vadvm 
 
- v!0 = "time"
- v!1 = "height"
- v!2 = "Radial"
- v@long_name = "vertical advection"
- v@units = "K/s"
- v@_FillValue = 9.96921e+36
-
- h!0 = "time"
- h!1 = "height"
- h!2 = "Radial"
- h@long_name = "Horizontal advection"
- h@units = "K/s"
- h@_FillValue = 9.96921e+36
-
     plot4 = new(15, graphic)
+    pw = new(4, graphic)
 
-    wks = gsn_open_wks("pdf","sim_lev100/test_d5") 
+    wks = gsn_open_wks("pdf","sim_lev100/test_wang_d4") 
     gsn_define_colormap(wks,"MPL_RdBu")  ; Change color map.
     gsn_reverse_colormap(wks)
 
@@ -303,13 +341,46 @@ begin
     res@tiMainString = "model adv_h"
     plot4(14) = gsn_csm_contour(wks, model_adv_h_6h(0:65,0:180)*ns, res)
 
+    ;overlay(plot9(3), ne1)
+    ;overlay(plot9(4), ne2)
+
+    gres = True
+    gsn_panel(wks, plot4, (/5,4/), gres)
+
+    res@cnLevelSelectionMode = "ManualLevels"   ; set explicit contour levels
+    res@cnLevelSpacingF = 0.5
+    res@cnMinLevelValF  = -10.
+    res@cnMaxLevelValF  = 10.
+    
+    res@tiMainString = "RADVE = ~C~ - d(avg(vr'*theta'))/dr - avg(vr'*theta')/r"
+    pw(0) = gsn_csm_contour(wks, radve_6h(0:65,0:180)*ns, res)
+
+    res@tiMainString = "VADAE = ~C~ - d(avg(w'*theta'))/dz"
+    pw(1) = gsn_csm_contour(wks, vadve_6h(0:65,0:180)*ns, res)
+    
+    res@tiMainString = "RADAE = ~C~ - avg(u'd(theta')/dz)"
+    pw(2) = gsn_csm_contour(wks, wang_h_6h(0:65,0:180)*ns, res)
+    
+    res@tiMainString = "VADAE = ~C~ - avg(w'd(theta')/dz)"
+    pw(3) = gsn_csm_contour(wks, wang_v_6h(0:65,0:180)*ns, res)
 
 
-  ;overlay(plot9(3), ne1)
-  ;overlay(plot9(4), ne2)
+    gres = True
+    gsn_panel(wks, pw, (/2,2/), gres)
 
-  gres = True
-  gsn_panel(wks, plot4, (/5,4/), gres)
+;outfilet = addfile("sim_lev100/bud/cal/radvm"+nn(in)+".nc","c")
+;outfilet->radvm = radvm
+
+;outfilet = addfile("sim_lev100/bud/cal/radve"+nn(in)+".nc","c")
+;outfilet->radve = radve
+
+;outfilet = addfile("sim_lev100/bud/cal/vadvm"+nn(in)+".nc","c")
+;outfilet->vadvm = vadvm
+
+;outfilet = addfile("sim_lev100/bud/cal/vadve"+nn(in)+".nc","c")
+;outfilet->vadve = vadve
+
+  end do
 
 end
 

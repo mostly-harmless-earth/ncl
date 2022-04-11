@@ -12,15 +12,15 @@ begin
 
     nn = (/"1_00","1_06","1_12","1_18","2_00","2_06","2_12","2_18",\
           "3_00","3_06","3_12","3_18","4_00","4_06","4_12","4_18",\
-          "5_00","5_06","5_12","5_18"/)
+          "5_00","5_06","5_12","5_18","6_00","6_06","6_12","6_18","7_00","7_06","7_12","7_18"/)
 
     nn1 = (/"100","106","112","118","200","206","212","218",\
           "300","306","312","318","400","406","412","418",\
-          "500","506","512","518","600","606","612","618"/)
+          "500","506","512","518","600","606","612","618","700","706","712","718"/)
 
  din = dimsizes(nn)
 
- do in = 0, din-1, 1
+ do in = 20, 27, 1
 
     outfilet = addfile("sim_lev100/budget_or/adv_h_0"+nn(in)+".nc","r")
     tb_adv_h = outfilet->T_TEND_ADV_H
@@ -34,7 +34,6 @@ begin
     outfilet = addfile("sim_lev100/budget_or/diff3_0"+nn(in)+".nc","r")
     tb_diff3 = outfilet->T_TEND_DIFF3
 
-    
     outfilet = addfile("sim_lev100/budget_or/pbl_0"+nn(in)+".nc","r")
     tb_pbl = outfilet->RTHBLTEN 
     
@@ -162,17 +161,17 @@ end do
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; vertical interp & decoupled mass;;;;;;;;;;;;;;;;;;;;;;;
 
     t_adv_h = new((/nz,nx,ny/), "float")
-    t_adv_v = t_adv_h
+    t_adv_v = new((/nz,nx,ny/), "float")
 
-    t_diff1  = t_adv_h
-    t_diff3  = t_adv_h
+    t_diff1  = new((/nz,nx,ny/), "float")
+    t_diff3  = new((/nz,nx,ny/), "float")
 
-    t_heat  = t_adv_h
+    t_heat  = new((/nz,nx,ny/), "float")
     
     ;t_cu    = tb_adv_h
     ;t_ra    = tb_adv_h
     
-    t_pbl   = t_adv_h
+    t_pbl   = new((/nz,nx,ny/), "float")
     
     do iz = 0, nz-1
 
@@ -260,7 +259,6 @@ end do
  ta_adv_h@units = "K/s"
  ta_adv_h@_FillValue = 9.96921e+36
 
-
  ta_diff1!0 = "time"
  ta_diff1!1 = "height"
  ta_diff1!2 = "Radial"
@@ -268,7 +266,6 @@ end do
  ta_diff1@long_name = "diffusion"
  ta_diff1@units = "K/s"
  ta_diff1@_FillValue = 9.96921e+36
- 
  
  ta_diff3!0 = "time"
  ta_diff3!1 = "height"
@@ -278,7 +275,6 @@ end do
  ta_diff3@units = "K/s"
  ta_diff3@_FillValue = 9.96921e+36
 
- 
  ta_heat!0 = "time"
  ta_heat!1 = "height"
  ta_heat!2 = "Radial"

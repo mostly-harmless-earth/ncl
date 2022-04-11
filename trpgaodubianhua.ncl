@@ -19,7 +19,7 @@ begin
   dims = dimsizes(alti)
   print(dims)
 
-  wks = gsn_open_wks("pdf","sim_lev100/tp-height-time")
+  wks = gsn_open_wks("pdf","sim_lev100/tp-time")
   gsn_define_colormap(wks, "MPL_RdBu")
   ;gsn_reverse_colormap(wks)
 
@@ -55,8 +55,8 @@ begin
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Time loop ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
   acp(0,:) = dim_avg_n(alti(:,2:15), 1)
-  acp(1,:) = dim_avg_n(alti(:,15:30), 1)
-  acp(2,:) = dim_avg_n(alti(:,30:60), 1)
+  acp(1,:) = dim_avg_n(alti(:,15:50), 1)
+  acp(2,:) = dim_avg_n(alti(:,50:190), 1)
 
   acp = runave_n(acp,3,1,1)
   acp = runave_n(acp,3,1,1)
@@ -86,13 +86,13 @@ begin
 
   res_al@pmLegendDisplayMode    = "Always"            ; turn on legend
   res_al@pmLegendSide           = "Top"               ; Change location of 
-  ;res_al@pmLegendParallelPosF   = -.0001                  ; move units right
+  res_al@pmLegendParallelPosF   = 0.2                 ; move units right
   res_al@pmLegendOrthogonalPosF = -0.4               ; move units down
   res_al@pmLegendWidthF         = 0.15                ; Change width and
   res_al@pmLegendHeightF        = 0.15                ; height of legend.
   res_al@lgPerimOn              = False               ; turn off box around
   res_al@lgLabelFontHeightF     = .01                 ; label font height
-  res_al@xyExplicitLegendLabels = (/" 0-30 km"," 30-60 km"," 60-120 km"/)       
+  res_al@xyExplicitLegendLabels = (/" 0-30 km"," 30-100 km"," 100-400 km"/)       
 
   res_al@vpWidthF         = 0.7            ; Change the aspect ratio, but 
   res_al@vpHeightF        = 0.4            ; make plot as large as possible.
